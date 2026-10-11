@@ -3,5 +3,6 @@
   "name": "Grizzly Bear",
   "rarity": "Common",
   "maxHp": 100,
+  "dropItem": "tower_shield",
   "abilityIds": ["thick_skin", "bear_claw"]
 }

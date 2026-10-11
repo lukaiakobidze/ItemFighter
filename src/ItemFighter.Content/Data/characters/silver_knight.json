@@ -2,6 +2,7 @@
   "id": "silver_knight",
   "name": "Silver Knight",
   "maxHp": 100,
+  "startingItems": ["sword", "metal_plating"],
   "abilities": [
     {
       "trigger": {

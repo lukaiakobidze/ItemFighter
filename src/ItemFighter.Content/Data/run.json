@@ -1,0 +1,46 @@
+{
+  "missions": 5,
+  "encountersPerMission": 10,
+  "choicesPerPick": 3,
+  "hotbarSize": 6,
+  "backpackSize": 12,
+
+  "startingGold": 10,
+  "fightGold": [5, 6, 7, 8, 9],
+  "eliteGoldPercent": 200,
+  "bossGold": 15,
+  "prices": { "Common": 4, "Uncommon": 7, "Rare": 12, "Epic": 18, "Legendary": 25 },
+  "sellPercent": 50,
+  "shopSize": 5,
+  "rerollBaseCost": 1,
+  "rerollCostStep": 1,
+
+  "encounterWeights": { "Fight": 60, "Elite": 15, "Shop": 25 },
+  "enemyHpPercentPerMission": 25,
+  "eliteHpPercent": 150,
+  "bosses": [
+    { "enemy": "flaming_rock", "hpPercent": 150 },
+    { "enemy": "green_snake", "hpPercent": 200 },
+    { "enemy": "grizzly_bear", "hpPercent": 200 },
+    { "enemy": "flaming_rock", "hpPercent": 300 },
+    { "enemy": "grizzly_bear", "hpPercent": 350 }
+  ],
+  "enemyRarityWeights": { "Common": 100, "Uncommon": 50, "Rare": 20, "Epic": 8, "Legendary": 3 },
+  "dropRarityWeights": {
+    "Common":    [100, 20,  5,  1,  0],
+    "Uncommon":  [ 60, 40, 15,  4,  1],
+    "Rare":      [ 30, 40, 25, 10,  3],
+    "Epic":      [ 15, 30, 30, 20,  8],
+    "Legendary": [  5, 20, 30, 30, 15]
+  },
+  "shopRarityWeights": [
+    [100, 15,  3,  0,  0],
+    [ 80, 30,  8,  2,  0],
+    [ 60, 40, 15,  5,  1],
+    [ 45, 40, 25, 10,  3],
+    [ 30, 40, 30, 15,  5]
+  ],
+  "characterPoolMultiplier": 3,
+  "tagBonusPercent": 15,
+  "itemDropChancePercent": 50
+}

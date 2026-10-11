@@ -39,7 +39,7 @@ public sealed class Battle
         Player = new Combatant(Side.Player, character?.MaxHp ?? DefaultPlayerHp);
         if (character is not null) AddSource(Player, character, null, 1);
         foreach (string id in setup.Player.PassiveIds)
-            AddSource(Player, Require(id, SourceKind.Passive), null, 1);
+            AddSource(Player, RequirePassive(id), null, 1);
 
         var usedSlots = new HashSet<int>();
         foreach (var item in setup.Player.Board.OrderBy(i => i.Slot))
@@ -52,7 +52,8 @@ public sealed class Battle
         }
 
         var enemy = Require(setup.EnemyId, SourceKind.Enemy);
-        Enemy = new Combatant(Side.Enemy, enemy.MaxHp);
+        if (setup.EnemyHpPercent <= 0) throw new ArgumentException("EnemyHpPercent must be positive");
+        Enemy = new Combatant(Side.Enemy, Math.Max(1, (int)((long)enemy.MaxHp * setup.EnemyHpPercent / 100)));
         EnemyDefinition = enemy;
         AddSource(Enemy, enemy, null, 1);
         foreach (string id in enemy.AbilityIds)
@@ -89,6 +90,14 @@ public sealed class Battle
     {
         if (!_db.TryGet(id, out var def)) throw new ArgumentException($"no content with id '{id}'");
         if (def.Kind != kind) throw new ArgumentException($"'{id}' is a {def.Kind}, expected {kind}");
+        return def;
+    }
+
+    /// <summary>Player passives: real passives, or enemy abilities without a cooldown (taken from enemy drops).</summary>
+    private SourceDefinition RequirePassive(string id)
+    {
+        if (!_db.TryGet(id, out var def)) throw new ArgumentException($"no content with id '{id}'");
+        if (def.Kind != SourceKind.Passive && !def.IsPassiveAbility) throw new ArgumentException($"'{id}' can't be a player passive");
         return def;
     }
 

@@ -27,6 +27,12 @@ public static class ContentValidator
                 else if (item.Kind != SourceKind.Item) Error($"starting item '{itemId}' is not an Item");
             }
 
+            if (def.DropItemId is string drop)
+            {
+                if (!db.TryGet(drop, out var item)) Error($"unknown dropItem '{drop}'");
+                else if (item.Kind != SourceKind.Item) Error($"dropItem '{drop}' is not an Item");
+            }
+
             if (def.Kind is SourceKind.Enemy or SourceKind.Character && def.MaxHp <= 0)
                 Error("'maxHp' must be positive");
             if (def.RequiresTarget && def.Activation != Activation.Active)

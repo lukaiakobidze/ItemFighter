@@ -3,5 +3,6 @@
   "name": "Squire Zombie",
   "rarity": "Common",
   "maxHp": 40,
+  "dropItem": "sword",
   "abilityIds": ["bite"]
 }

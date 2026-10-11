@@ -41,6 +41,12 @@ public sealed class SourceDefinition
     public IReadOnlyList<PhaseDefinition> Phases { get; init; } = [];
     public IReadOnlyList<string> StartingItems { get; init; } = [];
 
+    /// <summary>Enemies only: the item this enemy offers as a drop (it never uses it).</summary>
+    public string? DropItemId { get; init; }
+
+    /// <summary>An enemy ability with no cooldown (always on or reacting), which the player can also take as a passive.</summary>
+    public bool IsPassiveAbility => Kind == SourceKind.EnemyAbility && CooldownTicks is null;
+
     public bool HasTag(string tag) => Tags.Contains(tag, StringComparer.Ordinal);
 
     public override string ToString() => Id;

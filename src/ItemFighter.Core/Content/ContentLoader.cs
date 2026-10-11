@@ -123,6 +123,7 @@ public static class ContentLoader
             AbilityIds = ctx.ReadStrings("abilityIds"),
             Phases = ParsePhases(json),
             StartingItems = ctx.ReadStrings("startingItems"),
+            DropItemId = json.TryGetProperty("dropItem", out _) ? ctx.ReadString("dropItem") : null,
         };
     }
 

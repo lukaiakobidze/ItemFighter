@@ -3,5 +3,6 @@
   "name": "Archer Skeleton",
   "rarity": "Common",
   "maxHp": 20,
+  "dropItem": "ice_bow",
   "abilityIds": ["bow_shot"]
 }

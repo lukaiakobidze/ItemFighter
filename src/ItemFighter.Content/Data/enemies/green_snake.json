@@ -3,5 +3,6 @@
   "name": "Green Snake",
   "rarity": "Common",
   "maxHp": 30,
+  "dropItem": "venom_fang",
   "abilityIds": ["venomous", "fang_strike"]
 }
