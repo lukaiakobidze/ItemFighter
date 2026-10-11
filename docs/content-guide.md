@@ -59,7 +59,13 @@ Every number can be written directly (`"amount": 5`) or as a level value (`"amou
 - **Burn:** every 0.5s deals its stacks as damage (double against shield), then loses 1 stack.
 - **Poison:** no damage until 10 stacks, then bursts for 3 per stack (ignores shield) and resets.
 - **Chill:** each stack slows all the target's cooldowns by 10%. New stacks refresh a 3s timer. 5 stacks freeze the target for 2s.
-- **Freeze / Haste / Slow:** on single items or abilities, for a number of ticks. Haste ×2 speed, Slow ×0.5, Freeze stops.
+- **Freeze / Haste / Slow:** on single items or abilities, for a number of ticks. Haste ×2 speed, Slow ×0.5, Freeze stops. A frozen item that gets charged or reset to full waits and fires when the freeze ends.
+
+## Safety limits
+
+- Reaction chains stop 8 levels deep, and at most 256 reactions (including `CopyEffect` copies) happen per 0.1s tick. `CopyEffect` never copies its own item.
+- Healing does nothing once HP is 0 or below: lethal damage stays lethal.
+- Cooldowns must be above 0 and at most 600 seconds.
 
 ## Passives, characters and enemies
 

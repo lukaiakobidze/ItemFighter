@@ -67,11 +67,17 @@ public static class ContentLoader
                     {
                         errors.Add(new ContentError(path, id, ex.Message));
                     }
+                    catch (Exception ex) when (ex is InvalidOperationException or FormatException or OverflowException or ArgumentException)
+                    {
+                        errors.Add(new ContentError(path, id, $"unreadable value ({ex.Message})"));
+                    }
                 }
             }
         }
         return new ContentLoadResult(db, errors);
     }
+
+    public const int MaxCooldownSeconds = 600;
 
     public static int SecondsToTicks(decimal seconds) =>
         Math.Max(1, (int)Math.Round(seconds * TicksPerSecond, MidpointRounding.AwayFromZero));
@@ -87,8 +93,8 @@ public static class ContentLoader
         int? cooldown = null;
         if (json.TryGetProperty("cooldown", out var cd))
         {
-            if (cd.ValueKind != JsonValueKind.Number || !cd.TryGetDecimal(out decimal seconds) || seconds <= 0)
-                throw new ContentException("'cooldown' must be a positive number of seconds");
+            if (cd.ValueKind != JsonValueKind.Number || !cd.TryGetDecimal(out decimal seconds) || seconds <= 0 || seconds > MaxCooldownSeconds)
+                throw new ContentException($"'cooldown' must be a number of seconds above 0 and at most {MaxCooldownSeconds}");
             cooldown = SecondsToTicks(seconds);
         }
         var activation = ctx.ReadEnum("activation", cooldown is null ? Activation.None : Activation.Passive);
@@ -137,7 +143,7 @@ public static class ContentLoader
         {
             if (prop.Value.ValueKind != JsonValueKind.Array || prop.Value.GetArrayLength() != LevelCount)
                 throw new ContentException($"level value '{prop.Name}' must have {LevelCount} entries");
-            levels[prop.Name] = prop.Value.EnumerateArray().Select(e => e.TryGetInt32(out int n) ? n
+            levels[prop.Name] = prop.Value.EnumerateArray().Select(e => e.ValueKind == JsonValueKind.Number && e.TryGetInt32(out int n) ? n
                 : throw new ContentException($"level value '{prop.Name}' must contain whole numbers")).ToArray();
         }
         return levels;

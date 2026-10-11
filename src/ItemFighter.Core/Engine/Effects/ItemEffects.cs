@@ -58,7 +58,10 @@ public sealed class ModifyStatEffect(string stat, ValueRef amount, TargetSpec ta
     }
 }
 
-/// <summary>Runs the target items' own cooldown/activation effects once more.</summary>
+/// <summary>
+/// Runs the target items' own cooldown/activation effects once more, one chain level deeper.
+/// Never copies its own item, and copies of copies stop at the chain cap.
+/// </summary>
 public sealed class CopyEffect(TargetSpec target) : IEffect
 {
     public static CopyEffect Parse(ParseContext ctx) => new(ItemTarget.Read(ctx));
@@ -66,8 +69,12 @@ public sealed class CopyEffect(TargetSpec target) : IEffect
     public void Apply(EffectContext ctx)
     {
         foreach (var item in Targeting.ResolveItems(target, ctx))
+        {
+            if (item == ctx.Source) continue;
             foreach (var ability in item.Def.Abilities)
-                if (ability.Trigger is Triggers.OnCooldownTrigger or Triggers.OnActivateTrigger)
-                    ctx.Battle.RunEffects(ability, item, null, ctx.Depth);
+                if (ability.Trigger is Triggers.OnCooldownTrigger or Triggers.OnActivateTrigger
+                    && ctx.Battle.TryReact(item, ctx.Depth + 1))
+                    ctx.Battle.RunEffects(ability, item, null, ctx.Depth + 1);
+        }
     }
 }

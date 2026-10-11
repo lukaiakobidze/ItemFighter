@@ -15,6 +15,8 @@ public enum BattleResult { Ongoing, PlayerWon, EnemyWon, Draw }
 public sealed class Battle
 {
     public const int MaxChainDepth = 8;
+    /// <summary>Reactions (and copied effects) allowed per tick; later ones are dropped with ChainCapped so wide boards stay fast.</summary>
+    public const int MaxReactionsPerTick = 256;
     public const int FatigueStartTick = 300;
     public const int FatigueInterval = 10;
     public const int MaxTicks = 1200;
@@ -112,6 +114,7 @@ public sealed class Battle
             Emit(new FightStarted(Tick), 0, null);
         }
         Tick++;
+        _reactionsThisTick = 0;
         ApplyCommands();
         TickStatuses();
         AdvanceCooldowns();
@@ -198,8 +201,9 @@ public sealed class Battle
         // Each source fires at most once per tick.
         while (true)
         {
+            // Frozen passives hold a full cooldown and fire once the freeze ends ("freeze wins" over charge/reset).
             var due = AllSources.FirstOrDefault(s => s.HasCooldown && !s.Ready && s.Progress >= s.FullProgress
-                && (s.Def.Activation == Activation.Active || s.LastFiredTick != Tick));
+                && (s.Def.Activation == Activation.Active || (s.LastFiredTick != Tick && !IsFrozen(s))));
             if (due is null) return;
             if (due.Def.Activation == Activation.Active)
             {
@@ -211,6 +215,25 @@ public sealed class Battle
             Fire(due, 0, null);
         }
     }
+
+    private int _reactionsThisTick;
+
+    /// <summary>
+    /// Claims one reaction slot at the given depth. Past <see cref="MaxChainDepth"/> or the per-tick
+    /// <see cref="MaxReactionsPerTick"/> budget it logs <see cref="ChainCapped"/> and returns false.
+    /// </summary>
+    public bool TryReact(SourceInstance source, int depth)
+    {
+        if (depth > MaxChainDepth || _reactionsThisTick >= MaxReactionsPerTick)
+        {
+            _events.Add(new ChainCapped(Tick, source.Id));
+            return false;
+        }
+        _reactionsThisTick++;
+        return true;
+    }
+
+    private bool IsFrozen(SourceInstance s) => s.FreezeTicks > 0 || Get(s.Owner).IsFrozenAt(Tick);
 
     private readonly List<ICommand> _pending = [];
 
@@ -378,11 +401,7 @@ public sealed class Battle
                 if (t is OnCooldownTrigger or OnActivateTrigger) continue;
                 if (source == producer && !t.AllowSelf) continue;
                 if (!t.Matches(e, source, this)) continue;
-                if (depth + 1 > MaxChainDepth)
-                {
-                    _events.Add(new ChainCapped(Tick, source.Id));
-                    continue;
-                }
+                if (!TryReact(source, depth + 1)) continue;
                 React(source, ability, depth + 1, trigger);
             }
             if (source.Script is not null && depth + 1 <= MaxChainDepth)
@@ -419,6 +438,7 @@ public sealed class Battle
     public void Heal(Side target, int amount, SourceInstance? source, int depth)
     {
         var c = Get(target);
+        if (c.Hp <= 0) return; // lethal damage stays lethal
         int healed = Math.Min(Modify("HealGained", amount, source), c.MaxHp - c.Hp);
         if (healed <= 0) return;
         c.Hp += healed;
