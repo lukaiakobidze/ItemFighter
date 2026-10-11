@@ -16,7 +16,7 @@
 - `ItemFighter.Core` must not reference MonoGame or any package besides the BCL.
 - 1 tick = 0.1s. `TicksPerSecond = 10`. All gameplay values are `int`. Data cooldowns are given in seconds (decimal) and converted with `ticks = (int)Math.Round(seconds * 10m, MidpointRounding.AwayFromZero)`, minimum 1.
 - No `System.Random`, `DateTime`, `Stopwatch`, `string.GetHashCode()` or `float`/`double` in Core gameplay logic. Never depend on `Dictionary`/`HashSet` enumeration order. Iterate sources in order **(side: Player then Enemy, slot ascending, then runtime id ascending)**.
-- Board: 10 slots, item size 1–3. Item levels 1–4; every per-level value array has exactly 4 entries.
+- Board: 6 slots (`Board.SlotCount = 6`); every item takes exactly 1 slot (no sizes, per Luka 2026-10-11). Item levels 1–4; every per-level value array has exactly 4 entries.
 - Fatigue starts at tick 300 (30s). From then on, every 10 ticks both sides take fatigue damage that ignores shield: 1, then 2, then 3, and so on.
 - If both sides reach 0 HP in the same tick, the result is `Draw`, which counts as a player loss.
 - Reaction chain depth cap: 8. A trigger that would fire at depth > 8 is dropped and emits `ChainCapped`.
@@ -29,7 +29,7 @@
 2. **Simultaneous death** in one tick, including from fatigue. Expect `Draw`, never a player win. Test lives in Task 4.
 3. **Bad player commands:** activating a passive, a not-ready item, an unknown id, a frozen item, or a targeted effect with no or invalid target. Expect `CommandRejected(reason)` with no state change and no exception. Tests live in Task 7.
 4. **Stacked speed effects:** haste + slow + chill + freeze on one item, and charge larger than the remaining cooldown. Expect freeze to win, cooldown speed never below 10%, cooldown never negative, and at most one fire per tick. Tests live in Tasks 5 and 7.
-5. **Broken content files:** unknown trigger or effect type, duplicate ids, a level array not 4 long, size outside 1–3, an unknown `{placeholder}`, or an unknown script name. Expect the validator to report all errors at once with file and id, and the loader never to throw halfway through. Tests live in Task 3.
+5. **Broken content files:** unknown trigger or effect type, duplicate ids, a level array not 4 long, an unknown `{placeholder}`, or an unknown script name. Expect the validator to report all errors at once with file and id, and the loader never to throw halfway through. Tests live in Task 3.
 
 ---
 
@@ -110,7 +110,7 @@ tests/ItemFighter.Tests/           xUnit, one file per Core area + Content/Combo
 **Interfaces:**
 - Produces:
   - `enum SourceKind { Item, Passive, Character, EnemyAbility, Enemy }`, `enum Activation { Passive, Active, None }`, `enum Rarity { Common, Uncommon, Rare, Epic, Legendary }`.
-  - `record SourceDefinition(string Id, string Name, SourceKind Kind, int Size, Rarity Rarity, IReadOnlyList<string> Tags, IReadOnlyList<string> Pools, int? CooldownTicks, Activation Activation, IReadOnlyDictionary<string,int[]> Levels, IReadOnlyList<AbilityDefinition> Abilities, IReadOnlyList<ModifierDefinition> Modifiers, string? Script, int MaxHp, IReadOnlyList<PhaseDefinition> Phases, IReadOnlyList<string> AbilityIds, IReadOnlyList<string> StartingItems)`. Enemy/character-only fields default to 0 or empty.
+  - `record SourceDefinition(string Id, string Name, SourceKind Kind, Rarity Rarity, IReadOnlyList<string> Tags, IReadOnlyList<string> Pools, int? CooldownTicks, Activation Activation, IReadOnlyDictionary<string,int[]> Levels, IReadOnlyList<AbilityDefinition> Abilities, IReadOnlyList<ModifierDefinition> Modifiers, string? Script, int MaxHp, IReadOnlyList<PhaseDefinition> Phases, IReadOnlyList<string> AbilityIds, IReadOnlyList<string> StartingItems)`. Enemy/character-only fields default to 0 or empty.
   - `record AbilityDefinition(ITrigger Trigger, IReadOnlyList<IEffect> Effects)`.
   - `record PhaseDefinition(int HpBelowPercent, IReadOnlyList<string> AddAbilityIds)`.
   - `record ModifierDefinition(string Stat, int Amount, ModifierFilter Filter)` where `record ModifierFilter(SourceKind? SourceKind, string? Tag)`. `Stat` is one of `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PoisonThreshold`, `CooldownPercent`.
@@ -123,7 +123,7 @@ tests/ItemFighter.Tests/           xUnit, one file per Core area + Content/Combo
 - [ ] **Step 1: Failing tests** (one per Review Focus #5 case plus the happy path)
   - `Loads_Item_FromSpecExample`: the Fire Flask JSON from spec §10 loads with `CooldownTicks == 40`, `Levels["burn"] == [3,5,8,12]`, 1 ability.
   - `UnknownEffectType_ReportsError_AndContinues`: a directory with one bad and one good file gives 1 error naming the file, the id and `"unknown effect type 'Explode'"`, and the good item is still in the database.
-  - `DuplicateId_Reported`, `LevelArrayNotFour_Reported`, `SizeOutOfRange_Reported`, `UnknownPlaceholder_Reported` (`"{dmg}"` with no `dmg` level key), `UnknownScript_Reported`, `UnknownAbilityIdOnEnemy_Reported`.
+  - `DuplicateId_Reported`, `LevelArrayNotFour_Reported`, `UnknownPlaceholder_Reported` (`"{dmg}"` with no `dmg` level key), `UnknownScript_Reported`, `UnknownAbilityIdOnEnemy_Reported`.
   - `MalformedJson_ReportedNotThrown`.
 - [ ] **Step 2:** Run the tests. Expected: FAIL.
 - [ ] **Step 3:** Implement. JSON property names are camelCase as in spec §10. `cooldown` is seconds → ticks per Global Constraints. Each file holds one definition object or an array of them.
@@ -145,7 +145,7 @@ tests/ItemFighter.Tests/           xUnit, one file per Core area + Content/Combo
   - `interface IEffect { void Apply(EffectContext ctx); }`, `record EffectContext(Battle Battle, SourceInstance Source, SourceInstance? ChosenTarget, int Depth)`.
   - `interface ITrigger { /* see Task 6 */ }`, with `OnCooldownTrigger` as the marker used by the tick loop.
   - Events: `abstract record BattleEvent(int Tick)`. Subtypes `SourceFired(int SourceId)`, `DamageDealt(Side Target, int Amount, int Absorbed, int SourceId)`, `ShieldGained(Side, int Amount, int SourceId)`, `Healed(Side, int Amount, int SourceId)`, `FatigueDamage(int Amount)`, `BattleEnded(BattleResult)`, `CommandRejected(int SourceId, string Reason)`, `ChainCapped(int SourceId)`.
-  - `TargetSpec` values: `Self`, `Enemy`, `SelfItem`, `AdjacentItems`, `LeftItem`, `RightItem`, `ItemsWithTag:<tag>`, `RandomOwnItem`, `RandomEnemyAbility`, `Chosen`. Random targets draw from the battle's `"combat"` rng stream. `Targeting.ResolveItems(...)` returns items in canonical order. "Adjacent" means the item touching the left edge or right edge, which accounts for size.
+  - `TargetSpec` values: `Self`, `Enemy`, `SelfItem`, `AdjacentItems`, `LeftItem`, `RightItem`, `ItemsWithTag:<tag>`, `RandomOwnItem`, `RandomEnemyAbility`, `Chosen`. Random targets draw from the battle's `"combat"` rng stream. `Targeting.ResolveItems(...)` returns items in canonical order. "Adjacent" means the items in slot − 1 and slot + 1.
 - Tick order inside `Step()` (decided here, used everywhere): ① apply commands queued for this tick (Task 7) → ② status ticks (Task 5) → ③ advance cooldowns → ④ fire every passive source whose cooldown completed this tick, in canonical order; actives become `Ready` → ⑤ fatigue → ⑥ phase checks (Task 8) → ⑦ resolve result (both ≤ 0 → Draw).
 - Damage hits shield first, then HP. Heal is capped at MaxHp. HP may go below 0 internally; the result checks `<= 0`.
 
@@ -196,7 +196,7 @@ tests/ItemFighter.Tests/           xUnit, one file per Core area + Content/Combo
   - `{"type":"EveryNthUse","n":3}` (on the owner's own fire count)
 - Dispatch: every emitted event is offered, in canonical source order, to all abilities except the one that produced it (`OnItemFired:Self` excepted). A matching ability runs its effects at `Depth + 1`. If the depth would exceed 8, emit `ChainCapped` and skip it. A reaction does **not** reset the reacting item's cooldown, and does count as a use (`UseCount++`) and emits `SourceFired`.
 
-- [ ] **Step 1: Failing tests:** one per trigger type (e.g. `OnItemFired_Adjacent_OnlyNeighboursReact` with a size-2 item in slots 1–2 and neighbours in slots 0 and 3, a non-neighbour in slot 5), `OnHpBelow_FiresOnce`, `EveryNthUse_FiresOnThird`, `MutualReactionLoop_StopsAtDepth8_BattleContinues` (Review Focus #1: two items that each react to the other's fire; expect exactly one `ChainCapped` per origin fire and the battle reaching a result).
+- [ ] **Step 1: Failing tests:** one per trigger type (e.g. `OnItemFired_Adjacent_OnlyNeighboursReact` with an item in slot 2, neighbours in slots 1 and 3, a non-neighbour in slot 5), `OnHpBelow_FiresOnce`, `EveryNthUse_FiresOnThird`, `MutualReactionLoop_StopsAtDepth8_BattleContinues` (Review Focus #1: two items that each react to the other's fire; expect exactly one `ChainCapped` per origin fire and the battle reaching a result).
 - [ ] **Step 2:** Run. Expected: FAIL.
 - [ ] **Step 3:** Implement.
 - [ ] **Step 4:** Run. Expected: PASS.
@@ -244,7 +244,7 @@ tests/ItemFighter.Tests/           xUnit, one file per Core area + Content/Combo
 
 **Interfaces:**
 - Produces: `interface ISourceScript { void OnEvent(BattleEvent e, SourceInstance self, Battle b, int depth); }`; `[AttributeUsage(Class)] SourceScriptAttribute(string Name)`; `ScriptRegistry.FromAssemblies(params Assembly[])`, which discovers attributed types and orders them by name. Scripted sources receive every dispatched event after the data abilities, under the same depth cap.
-- `MirrorShard` (size 1, Rare, Active, 6s): "Activate on an item: the next time that item fires, it fires a second time." Uses the `Chosen` target and a per-battle flag.
+- `MirrorShard` (Rare, Active, 6s): "Activate on an item: the next time that item fires, it fires a second time." Uses the `Chosen` target and a per-battle flag.
 
 - [ ] **Step 1: Failing tests:** `ScriptRegistry_DiscoversMirrorShard`, `MirrorShard_DoublesNextFire_Once`.
 - [ ] **Step 2:** Run. Expected: FAIL.
@@ -258,28 +258,28 @@ tests/ItemFighter.Tests/           xUnit, one file per Core area + Content/Combo
 
 Activation column: P = passive (fires on cooldown), A = active (player clicks), N = none (reacts only). Content to author (numbers are starting values. Every item has 4-entry level arrays scaling roughly ×1, ×1.6, ×2.5, ×4):
 
-| id | size | tags | act. | cd s | behaviour (level 1) |
-|---|---|---|---|---|---|
-| rusty_sword | 1 | Weapon | P | 3 | 8 damage |
-| great_axe | 3 | Weapon | P | 7 | 35 damage |
-| twin_daggers | 2 | Weapon | P | 2 | 4 damage, twice (two effects) |
-| buckler | 1 | Armor | P | 4 | 10 shield |
-| tower_shield | 3 | Armor | P | 8 | 40 shield; adjacent items' shield +3 (ModifyStat on adjacent at fight start) |
-| fire_flask | 1 | Fire, Potion | P | 4 | 3 burn |
-| bellows | 2 | Fire, Tool | N | — | OnItemFired Adjacent+Tag:Fire: charge that item 1s |
-| inferno_tome | 2 | Fire | A | 10 | 8 burn; haste all Fire items 20 ticks |
-| venom_vial | 1 | Poison, Potion | P | 3 | 2 poison |
-| plague_bellows | 2 | Poison, Tool | P | 6 | 2 poison; OnItemFired Adjacent+Tag:Poison: 1 poison |
-| frost_shard | 1 | Ice | A | 6 | 2 chill; freeze a random enemy ability 20 ticks |
-| ice_wall | 2 | Ice, Armor | P | 6 | 15 shield; 1 chill |
-| apple | 1 | Food | P | 5 | heal 8 |
-| feast_table | 3 | Food | P | 9 | heal 10; haste adjacent items 20 ticks |
-| whetstone | 1 | Tool | A | 8 | targeted: ModifyStat Damage +5 on chosen Weapon |
-| gear_box | 2 | Tech | P | 4 | charge a random own item 1s |
-| overclocker | 1 | Tech | A | 12 | targeted: ResetCooldown on chosen item |
-| mirror_shard | 1 | Tech | A | 6 | script (Task 9) |
-| spiked_mail | 2 | Armor | N | — | OnDamageTaken: 3 damage to enemy |
-| war_drum | 1 | Tool | P | 6 | haste all Weapon items 10 ticks |
+| id | tags | act. | cd s | behaviour (level 1) |
+|---|---|---|---|---|
+| rusty_sword | Weapon | P | 3 | 8 damage |
+| great_axe | Weapon | P | 7 | 35 damage |
+| twin_daggers | Weapon | P | 2 | 4 damage, twice (two effects) |
+| buckler | Armor | P | 4 | 10 shield |
+| tower_shield | Armor | P | 8 | 40 shield; adjacent items' shield +3 (ModifyStat on adjacent at fight start) |
+| fire_flask | Fire, Potion | P | 4 | 3 burn |
+| bellows | Fire, Tool | N | — | OnItemFired Adjacent+Tag:Fire: charge that item 1s |
+| inferno_tome | Fire | A | 10 | 8 burn; haste all Fire items 20 ticks |
+| venom_vial | Poison, Potion | P | 3 | 2 poison |
+| plague_bellows | Poison, Tool | P | 6 | 2 poison; OnItemFired Adjacent+Tag:Poison: 1 poison |
+| frost_shard | Ice | A | 6 | 2 chill; freeze a random enemy ability 20 ticks |
+| ice_wall | Ice, Armor | P | 6 | 15 shield; 1 chill |
+| apple | Food | P | 5 | heal 8 |
+| feast_table | Food | P | 9 | heal 10; haste adjacent items 20 ticks |
+| whetstone | Tool | A | 8 | targeted: ModifyStat Damage +5 on chosen Weapon |
+| gear_box | Tech | P | 4 | charge a random own item 1s |
+| overclocker | Tech | A | 12 | targeted: ResetCooldown on chosen item |
+| mirror_shard | Tech | A | 6 | script (Task 9) |
+| spiked_mail | Armor | N | — | OnDamageTaken: 3 damage to enemy |
+| war_drum | Tool | P | 6 | haste all Weapon items 10 ticks |
 
 Enemies: `goblin_scrapper` (60 HP; `scrap_stab`: 3s 6 dmg), `bog_witch` (90 HP; `hex_poison`: 4s 2 poison; passive `thorny_hide`: OnDamageTaken 1 dmg back), `ember_king` boss (300 HP; `royal_slash` 4s 15 dmg; `ember_aura`: 6s, 4 burn on player; phase at 50%: adds `molten_rage` 3s 10 dmg + haste own abilities). Character `wanderer` (100 HP, no modifier). Passives `iron_skin` (+5 ShieldGained from Kind=Item), `kindling` (+1 BurnApplied, Tag Fire).
 
@@ -304,7 +304,7 @@ Enemies: `goblin_scrapper` (60 HP; `scrap_stab`: 3s 6 dmg), `bog_witch` (90 HP; 
 
 - [ ] **Step 1: Failing tests:** `RandomBoards_1000Fights_NoExceptions_AllEndByCap` (random legal boards vs each enemy, seeds 0..999), `RandomBoards_SameSeed_SameResult` (100 seeds run twice, identical results and event counts).
 - [ ] **Step 2:** Run. Expected: FAIL (helper missing).
-- [ ] **Step 3:** Implement the board randomiser (`Core/Engine/RandomBoard.cs`, `static PlayerSetup RandomBoard.Create(ContentDatabase db, Rng rng)`, which fills 10 slots left to right respecting sizes) and the CLI.
+- [ ] **Step 3:** Implement the board randomiser (`Core/Engine/RandomBoard.cs`, `static PlayerSetup RandomBoard.Create(ContentDatabase db, Rng rng)`, which fills the 6 slots with random distinct items) and the CLI.
 - [ ] **Step 4:** Run `dotnet test` (all PASS) and `dotnet run --project tools/ItemFighter.Sim -- bulk --enemy ember_king --runs 1000 --seed 1`. Expected: it completes and prints a table. Note any item with an inclusion win rate > 85% or < 15% in the hand-off message for Luka.
 - [ ] **Step 5:** Commit `feat(sim): fight and bulk simulation CLI`.
 

@@ -35,7 +35,7 @@ Everything that "does something" is a **Source** built from the same parts:
 
 | Source kind | Where it lives | Examples |
 |---|---|---|
-| Item | On the board, has a position and size | Sword, Shield Generator, Fire Flask |
+| Item | On the board, has a position (1 slot each) | Sword, Shield Generator, Fire Flask |
 | Passive | No slot, always on | "+5 to all shield gained from items" |
 | Character | Picked at run start | "Fire items start each fight with 1 charge" |
 | Enemy ability | The enemy's ability list | "Every 4s: slam for 30", "Reflects 20% of burn" |
@@ -60,7 +60,7 @@ Design rules:
 
 ## 5. Items
 
-- **Board:** a row of 10 slots. Items are 1, 2 or 3 slots wide. Adjacency matters.
+- **Board:** a row of 6 slots (for now). Every item takes exactly 1 slot. Adjacency matters.
 - **Rarity** (Common, Uncommon, Rare, Epic, Legendary) only controls how often an item shows up.
 - **Level** (1 to 4, bronze → silver → gold → diamond): buying a duplicate levels the item up. Every item can grow, so early favourites stay viable.
 - **Evolution:** some items transform when a condition is met (e.g. "after 50 burns, becomes Inferno Core").
@@ -71,7 +71,7 @@ Design rules:
 
 - Picked before a run, unlocked through play. **Sidegrades, never stronger** than the starting ones.
 - Each has a starting passive or rule change, a starting board, and a character item pool that shops lean toward.
-- Examples: *Pyromancer* (burn stacks never decay); *Tinkerer* (8 slots, but items charge each other on fire); *Duelist* (active items have −30% cooldown, passives +30%).
+- Examples: *Pyromancer* (burn stacks never decay); *Tinkerer* (5 slots, but items charge each other on fire); *Duelist* (active items have −30% cooldown, passives +30%).
 
 ## 7. Enemies and bosses
 
@@ -136,7 +136,6 @@ The current `ItemFighter` project becomes `ItemFighter.Game`. Its screen manager
 {
   "id": "fire_flask",
   "name": "Fire Flask",
-  "size": 1,
   "rarity": "Common",
   "tags": ["Fire", "Potion"],
   "pools": ["neutral"],
