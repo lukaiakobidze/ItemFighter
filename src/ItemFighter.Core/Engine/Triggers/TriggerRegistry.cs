@@ -15,6 +15,8 @@ public sealed class TriggerRegistry
     public static TriggerRegistry CreateDefault()
     {
         var r = new TriggerRegistry();
+        r.Register("OnCooldown", _ => new OnCooldownTrigger());
+        r.Register("OnActivate", _ => new OnActivateTrigger());
         return r;
     }
 }

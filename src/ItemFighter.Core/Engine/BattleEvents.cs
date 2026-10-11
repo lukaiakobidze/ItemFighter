@@ -1,4 +1,24 @@
 namespace ItemFighter.Core.Engine;
 
-/// <summary>Something that happened during a battle. The frontend animates from these.</summary>
+public enum DamageKind { Direct, Burn, Poison, Fatigue }
+
+/// <summary>Something that happened during a battle. The frontend animates from these, in order.</summary>
 public abstract record BattleEvent(int Tick);
+
+public sealed record FightStarted(int Tick) : BattleEvent(Tick);
+
+/// <param name="Reaction">True when the source fired because a trigger matched, not from its cooldown or a click.</param>
+public sealed record SourceFired(int Tick, int SourceId, Side Owner, int? TargetSourceId, bool Reaction) : BattleEvent(Tick);
+
+public sealed record DamageDealt(int Tick, Side Target, int HpDamage, int ShieldDamage, DamageKind Kind, int? SourceId) : BattleEvent(Tick)
+{
+    public int Total => HpDamage + ShieldDamage;
+}
+
+public sealed record ShieldGained(int Tick, Side Target, int Amount, int? SourceId) : BattleEvent(Tick);
+
+public sealed record Healed(int Tick, Side Target, int Amount, int? SourceId) : BattleEvent(Tick);
+
+public sealed record ChainCapped(int Tick, int SourceId) : BattleEvent(Tick);
+
+public sealed record BattleEnded(int Tick, BattleResult Result) : BattleEvent(Tick);

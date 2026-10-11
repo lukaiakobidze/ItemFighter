@@ -1,0 +1,32 @@
+namespace ItemFighter.Core.Engine;
+
+/// <summary>One side of a fight: HP, shield, statuses and its sources.</summary>
+public sealed class Combatant
+{
+    private readonly List<SourceInstance> _sources = [];
+
+    public Combatant(Side side, int maxHp)
+    {
+        Side = side;
+        MaxHp = maxHp;
+        Hp = maxHp;
+    }
+
+    public Side Side { get; }
+    public int MaxHp { get; }
+    public int Hp { get; set; }
+    public int Shield { get; set; }
+
+    /// <summary>All sources in canonical order: board items by slot, then slotless sources by id.</summary>
+    public IReadOnlyList<SourceInstance> Sources => _sources;
+
+    public IEnumerable<SourceInstance> Items => _sources.Where(s => s.Slot is not null);
+
+    public bool IsDead => Hp <= 0;
+
+    internal void Add(SourceInstance source)
+    {
+        _sources.Add(source);
+        _sources.Sort(SourceInstance.CanonicalOrder);
+    }
+}

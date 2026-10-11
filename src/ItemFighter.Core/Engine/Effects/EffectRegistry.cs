@@ -15,6 +15,9 @@ public sealed class EffectRegistry
     public static EffectRegistry CreateDefault()
     {
         var r = new EffectRegistry();
+        r.Register("Damage", DamageEffect.Parse);
+        r.Register("Shield", ShieldEffect.Parse);
+        r.Register("Heal", HealEffect.Parse);
         return r;
     }
 }
