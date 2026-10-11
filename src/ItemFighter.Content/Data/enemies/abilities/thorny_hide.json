@@ -1,0 +1,16 @@
+{
+  "id": "thorny_hide",
+  "kind": "EnemyAbility",
+  "name": "Thorny Hide",
+  "abilities": [
+    {
+      "trigger": "OnDamageTaken",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

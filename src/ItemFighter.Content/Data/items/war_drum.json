@@ -1,0 +1,33 @@
+{
+  "id": "war_drum",
+  "name": "War Drum",
+  "rarity": "Rare",
+  "tags": [
+    "Tool"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 6,
+  "activation": "Passive",
+  "levels": {
+    "haste": [
+      10,
+      15,
+      20,
+      30
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Haste",
+          "amount": "{haste}",
+          "target": "ItemsWithTag:Weapon"
+        }
+      ]
+    }
+  ]
+}

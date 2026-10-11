@@ -149,4 +149,15 @@ public class TriggerTests
         Assert.Equal(1000 - 1 - Battle.MaxChainDepth, battle.Enemy.Hp);
         Assert.NotEqual(BattleResult.Ongoing, battle.RunToEnd());
     }
+
+    [Fact]
+    public void Reaction_CanTargetTheTriggeringItem()
+    {
+        var bellows = Reactor("bellows", """{ "type": "OnItemFired", "filter": "Adjacent" }""", """{ "type": "Charge", "amount": 10, "target": "TriggeringItem" }""");
+        var db = TestContent.Db(("items/sword.json", Sword), ("items/bellows.json", bellows), ("enemies/dummy.json", Enemy()));
+        var b = Fight(db, "dummy", ("sword", 0), ("bellows", 1), ("sword", 2));
+        b.Steps(20);
+        var charged = b.Of<Charged>().Select(c => b.FindSource(c.TargetSourceId)!.Slot).ToList();
+        Assert.Equal(new int?[] { 0, 2 }, charged);
+    }
 }

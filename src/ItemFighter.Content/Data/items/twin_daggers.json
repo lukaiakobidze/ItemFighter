@@ -1,0 +1,35 @@
+{
+  "id": "twin_daggers",
+  "name": "Twin Daggers",
+  "rarity": "Common",
+  "tags": [
+    "Weapon"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 2,
+  "activation": "Passive",
+  "levels": {
+    "damage": [
+      4,
+      6,
+      10,
+      16
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}"
+        },
+        {
+          "type": "Damage",
+          "amount": "{damage}"
+        }
+      ]
+    }
+  ]
+}

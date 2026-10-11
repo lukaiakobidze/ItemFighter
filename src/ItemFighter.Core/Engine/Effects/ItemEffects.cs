@@ -20,7 +20,7 @@ public sealed class ChargeEffect(ValueRef ticks, TargetSpec target) : IEffect
     public void Apply(EffectContext ctx)
     {
         int value = ticks.Resolve(ctx.Source);
-        foreach (var item in Targeting.ResolveItems(target, ctx.Source, ctx.ChosenTarget, ctx.Battle))
+        foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.Charge(item, value, ctx.Source, ctx.Depth);
     }
 }
@@ -32,7 +32,7 @@ public sealed class ResetCooldownEffect(TargetSpec target) : IEffect
 
     public void Apply(EffectContext ctx)
     {
-        foreach (var item in Targeting.ResolveItems(target, ctx.Source, ctx.ChosenTarget, ctx.Battle))
+        foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.ResetCooldown(item, ctx.Source, ctx.Depth);
     }
 }
@@ -53,7 +53,7 @@ public sealed class ModifyStatEffect(string stat, ValueRef amount, TargetSpec ta
     public void Apply(EffectContext ctx)
     {
         int value = amount.Resolve(ctx.Source);
-        foreach (var item in Targeting.ResolveItems(target, ctx.Source, ctx.ChosenTarget, ctx.Battle))
+        foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.ModifyStat(item, stat, value, ctx.Source, ctx.Depth);
     }
 }
@@ -65,7 +65,7 @@ public sealed class CopyEffect(TargetSpec target) : IEffect
 
     public void Apply(EffectContext ctx)
     {
-        foreach (var item in Targeting.ResolveItems(target, ctx.Source, ctx.ChosenTarget, ctx.Battle))
+        foreach (var item in Targeting.ResolveItems(target, ctx))
             foreach (var ability in item.Def.Abilities)
                 if (ability.Trigger is Triggers.OnCooldownTrigger or Triggers.OnActivateTrigger)
                     ctx.Battle.RunEffects(ability, item, null, ctx.Depth);

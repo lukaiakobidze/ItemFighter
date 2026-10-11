@@ -1,0 +1,14 @@
+{
+  "id": "kindling",
+  "name": "Kindling",
+  "rarity": "Common",
+  "modifiers": [
+    {
+      "stat": "BurnApplied",
+      "amount": 1,
+      "filter": {
+        "tag": "Fire"
+      }
+    }
+  ]
+}

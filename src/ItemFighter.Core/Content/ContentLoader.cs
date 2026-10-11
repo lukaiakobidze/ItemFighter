@@ -26,14 +26,16 @@ public static class ContentLoader
         CommentHandling = JsonCommentHandling.Skip,
     };
 
-    public static ContentLoadResult LoadDirectory(string dataDir, TriggerRegistry triggers, EffectRegistry effects)
-    {
-        var files = Directory.EnumerateFiles(dataDir, "*.json", SearchOption.AllDirectories)
+    public static ContentLoadResult LoadDirectory(string dataDir, TriggerRegistry triggers, EffectRegistry effects) =>
+        LoadFromStrings(ReadDirectory(dataDir), triggers, effects);
+
+    /// <summary>All *.json files under a directory as (relative path with '/', text), sorted by path.</summary>
+    public static IReadOnlyList<(string Path, string Json)> ReadDirectory(string dataDir) =>
+        Directory.EnumerateFiles(dataDir, "*.json", SearchOption.AllDirectories)
             .Select(f => Path.GetRelativePath(dataDir, f).Replace('\\', '/'))
             .OrderBy(f => f, StringComparer.Ordinal)
-            .Select(f => (f, File.ReadAllText(Path.Combine(dataDir, f))));
-        return LoadFromStrings(files, triggers, effects);
-    }
+            .Select(f => (f, File.ReadAllText(Path.Combine(dataDir, f))))
+            .ToList();
 
     public static ContentLoadResult LoadFromStrings(IEnumerable<(string Path, string Json)> files, TriggerRegistry triggers, EffectRegistry effects)
     {

@@ -1,0 +1,14 @@
+{
+  "id": "iron_skin",
+  "name": "Iron Skin",
+  "rarity": "Uncommon",
+  "modifiers": [
+    {
+      "stat": "ShieldGained",
+      "amount": 5,
+      "filter": {
+        "kind": "Item"
+      }
+    }
+  ]
+}

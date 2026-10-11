@@ -1,0 +1,17 @@
+{
+  "id": "hex_poison",
+  "kind": "EnemyAbility",
+  "name": "Hex Poison",
+  "cooldown": 4,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Poison",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "rusty_sword",
+  "name": "Rusty Sword",
+  "rarity": "Common",
+  "tags": [
+    "Weapon"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 3,
+  "activation": "Passive",
+  "levels": {
+    "damage": [
+      8,
+      13,
+      20,
+      32
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}"
+        }
+      ]
+    }
+  ]
+}

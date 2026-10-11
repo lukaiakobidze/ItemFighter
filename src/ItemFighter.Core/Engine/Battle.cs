@@ -341,18 +341,18 @@ public sealed class Battle
     }
 
     /// <summary>Runs one ability because its trigger matched. Counts as a use and lets others react in turn.</summary>
-    public void React(SourceInstance source, AbilityDefinition ability, int depth)
+    public void React(SourceInstance source, AbilityDefinition ability, int depth, SourceInstance? trigger = null)
     {
         source.UseCount++;
         var fired = new SourceFired(Tick, source.Id, source.Owner, null, Reaction: true);
         _events.Add(fired);
-        RunEffects(ability, source, null, depth);
+        RunEffects(ability, source, null, depth, trigger);
         Dispatch(fired, depth, source);
     }
 
-    public void RunEffects(AbilityDefinition ability, SourceInstance source, SourceInstance? chosenTarget, int depth)
+    public void RunEffects(AbilityDefinition ability, SourceInstance source, SourceInstance? chosenTarget, int depth, SourceInstance? trigger = null)
     {
-        var ctx = new EffectContext(this, source, chosenTarget, depth);
+        var ctx = new EffectContext(this, source, chosenTarget, depth, trigger);
         foreach (var effect in ability.Effects) effect.Apply(ctx);
     }
 
@@ -369,20 +369,21 @@ public sealed class Battle
     /// </summary>
     private void Dispatch(BattleEvent e, int depth, SourceInstance? producer)
     {
+        var trigger = e is SourceFired f ? FindSource(f.SourceId) : null;
         foreach (var source in AllSources.ToList())
         {
             foreach (var ability in source.Def.Abilities)
             {
-                var trigger = ability.Trigger;
-                if (trigger is OnCooldownTrigger or OnActivateTrigger) continue;
-                if (source == producer && !trigger.AllowSelf) continue;
-                if (!trigger.Matches(e, source, this)) continue;
+                var t = ability.Trigger;
+                if (t is OnCooldownTrigger or OnActivateTrigger) continue;
+                if (source == producer && !t.AllowSelf) continue;
+                if (!t.Matches(e, source, this)) continue;
                 if (depth + 1 > MaxChainDepth)
                 {
                     _events.Add(new ChainCapped(Tick, source.Id));
                     continue;
                 }
-                React(source, ability, depth + 1);
+                React(source, ability, depth + 1, trigger);
             }
             if (source.Script is not null && depth + 1 <= MaxChainDepth)
                 source.Script.OnEvent(e, source, this, depth + 1);

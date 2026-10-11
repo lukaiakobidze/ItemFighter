@@ -26,7 +26,7 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
             ctx.Battle.ApplyStatus(CombatantTarget.Resolve(target, ctx.Source), status, value, ctx.Source, ctx.Depth);
             return;
         }
-        foreach (var item in Targeting.ResolveItems(target, ctx.Source, ctx.ChosenTarget, ctx.Battle))
+        foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.ApplyItemStatus(item, status, value, ctx.Source, ctx.Depth);
     }
 }

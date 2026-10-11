@@ -15,6 +15,7 @@ public enum TargetKind
     RandomOwnItem,
     RandomEnemyAbility,
     Chosen,
+    TriggeringItem,
 }
 
 /// <summary>Who an effect hits. Self/Enemy are combatants; everything else resolves to sources (items or enemy abilities).</summary>
@@ -46,8 +47,9 @@ public static class Targeting
         c.Side == Side.Player ? c.Items : c.Sources.Where(s => s.HasCooldown);
 
     /// <summary>Resolves an item target to sources, in canonical order. Random picks use the battle's combat rng.</summary>
-    public static IReadOnlyList<SourceInstance> ResolveItems(TargetSpec spec, SourceInstance source, SourceInstance? chosen, Battle battle)
+    public static IReadOnlyList<SourceInstance> ResolveItems(TargetSpec spec, Effects.EffectContext ctx)
     {
+        var (battle, source, chosen) = (ctx.Battle, ctx.Source, ctx.ChosenTarget);
         var own = battle.Get(source.Owner);
         switch (spec.Kind)
         {
@@ -69,6 +71,8 @@ public static class Targeting
                 return PickRandom(Targetable(battle.OpponentOf(source.Owner)).Where(i => i.HasCooldown).ToList(), battle);
             case TargetKind.Chosen:
                 return chosen is null ? [] : [chosen];
+            case TargetKind.TriggeringItem:
+                return ctx.Trigger is null ? [] : [ctx.Trigger];
             default:
                 throw new InvalidOperationException($"{spec} is a combatant target, not an item target");
         }

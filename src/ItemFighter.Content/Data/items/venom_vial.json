@@ -1,0 +1,33 @@
+{
+  "id": "venom_vial",
+  "name": "Venom Vial",
+  "rarity": "Common",
+  "tags": [
+    "Poison",
+    "Potion"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 3,
+  "activation": "Passive",
+  "levels": {
+    "poison": [
+      2,
+      3,
+      5,
+      8
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Poison",
+          "amount": "{poison}"
+        }
+      ]
+    }
+  ]
+}

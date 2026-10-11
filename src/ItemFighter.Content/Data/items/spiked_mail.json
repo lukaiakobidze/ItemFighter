@@ -1,0 +1,31 @@
+{
+  "id": "spiked_mail",
+  "name": "Spiked Mail",
+  "rarity": "Uncommon",
+  "tags": [
+    "Armor"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "activation": "None",
+  "levels": {
+    "damage": [
+      3,
+      5,
+      8,
+      12
+    ]
+  },
+  "abilities": [
+    {
+      "trigger": "OnDamageTaken",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}"
+        }
+      ]
+    }
+  ]
+}

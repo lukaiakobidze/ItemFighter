@@ -1,0 +1,24 @@
+{
+  "id": "overclocker",
+  "name": "Overclocker",
+  "rarity": "Epic",
+  "tags": [
+    "Tech"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 12,
+  "activation": "Active",
+  "requiresTarget": true,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ResetCooldown",
+          "target": "Chosen"
+        }
+      ]
+    }
+  ]
+}

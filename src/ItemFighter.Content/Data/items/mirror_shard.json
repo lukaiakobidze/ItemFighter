@@ -1,0 +1,16 @@
+{
+  "id": "mirror_shard",
+  "name": "Mirror Shard",
+  "rarity": "Rare",
+  "tags": [
+    "Tech"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 6,
+  "activation": "Active",
+  "requiresTarget": true,
+  "script": "MirrorShard",
+  "abilities": []
+}

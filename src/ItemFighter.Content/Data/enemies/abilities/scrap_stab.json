@@ -1,0 +1,16 @@
+{
+  "id": "scrap_stab",
+  "kind": "EnemyAbility",
+  "name": "Scrap Stab",
+  "cooldown": 3,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 6
+        }
+      ]
+    }
+  ]
+}

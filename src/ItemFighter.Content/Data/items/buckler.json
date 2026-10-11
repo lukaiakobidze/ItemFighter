@@ -1,0 +1,31 @@
+{
+  "id": "buckler",
+  "name": "Buckler",
+  "rarity": "Common",
+  "tags": [
+    "Armor"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 4,
+  "activation": "Passive",
+  "levels": {
+    "shield": [
+      10,
+      16,
+      25,
+      40
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Shield",
+          "amount": "{shield}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "molten_rage",
+  "kind": "EnemyAbility",
+  "name": "Molten Rage",
+  "cooldown": 3,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 10
+        },
+        {
+          "type": "ApplyStatus",
+          "status": "Haste",
+          "amount": 10,
+          "target": "AllOwn"
+        }
+      ]
+    }
+  ]
+}

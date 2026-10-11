@@ -1,0 +1,38 @@
+{
+  "id": "inferno_tome",
+  "name": "Inferno Tome",
+  "rarity": "Rare",
+  "tags": [
+    "Fire"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 10,
+  "activation": "Active",
+  "levels": {
+    "burn": [
+      8,
+      13,
+      20,
+      32
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Burn",
+          "amount": "{burn}"
+        },
+        {
+          "type": "ApplyStatus",
+          "status": "Haste",
+          "amount": 20,
+          "target": "ItemsWithTag:Fire"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "apple",
+  "name": "Apple",
+  "rarity": "Common",
+  "tags": [
+    "Food"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 5,
+  "activation": "Passive",
+  "levels": {
+    "heal": [
+      8,
+      13,
+      20,
+      32
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Heal",
+          "amount": "{heal}"
+        }
+      ]
+    }
+  ]
+}

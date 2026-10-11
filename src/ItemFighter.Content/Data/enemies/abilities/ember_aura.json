@@ -1,0 +1,17 @@
+{
+  "id": "ember_aura",
+  "kind": "EnemyAbility",
+  "name": "Ember Aura",
+  "cooldown": 6,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Burn",
+          "amount": 4
+        }
+      ]
+    }
+  ]
+}

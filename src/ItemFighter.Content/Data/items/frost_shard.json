@@ -1,0 +1,38 @@
+{
+  "id": "frost_shard",
+  "name": "Frost Shard",
+  "rarity": "Uncommon",
+  "tags": [
+    "Ice"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 6,
+  "activation": "Active",
+  "levels": {
+    "chill": [
+      2,
+      2,
+      3,
+      4
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Chill",
+          "amount": "{chill}"
+        },
+        {
+          "type": "ApplyStatus",
+          "status": "Freeze",
+          "amount": 20,
+          "target": "RandomEnemyAbility"
+        }
+      ]
+    }
+  ]
+}
