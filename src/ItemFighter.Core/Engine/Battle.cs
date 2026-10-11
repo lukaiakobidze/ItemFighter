@@ -53,6 +53,15 @@ public sealed class Battle
         AddSource(Enemy, enemy, null, 1);
         foreach (string id in enemy.AbilityIds)
             AddSource(Enemy, Require(id, SourceKind.EnemyAbility), null, 1);
+
+        foreach (var s in AllSources)
+            ApplyCooldownModifier(s);
+    }
+
+    private void ApplyCooldownModifier(SourceInstance s)
+    {
+        if (s.HasCooldown)
+            s.CooldownTicks = ModifierPipeline.ModifiedCooldown(s.Def.CooldownTicks!.Value, ModifierPipeline.Sum(this, "CooldownPercent", s));
     }
 
     public int Tick { get; private set; }
@@ -107,6 +116,7 @@ public sealed class Battle
         AdvanceCooldowns();
         FireCompletedSources();
         ApplyFatigue();
+        CheckPhases();
         ResolveResult();
     }
 
@@ -156,6 +166,7 @@ public sealed class Battle
     public void ApplyStatus(Side target, StatusType status, int amount, SourceInstance? source, int depth)
     {
         if (!status.IsCombatantStatus()) throw new ArgumentException($"{status} goes on items; use ApplyItemStatus");
+        amount = Modify(status + "Applied", amount, source);
         if (amount <= 0) return;
         var c = Get(target);
         Emit(new StatusApplied(Tick, target, null, status, amount, source?.Id), depth, source);
@@ -177,7 +188,8 @@ public sealed class Battle
     }
 
     /// <summary>Applies a modifier stat to a base value for the given producer. Filled in by the modifier pipeline.</summary>
-    public int Modify(string stat, int baseValue, SourceInstance? producer) => baseValue;
+    public int Modify(string stat, int baseValue, SourceInstance? producer) =>
+        producer is null ? baseValue : baseValue + ModifierPipeline.Sum(this, stat, producer);
 
     private void FireCompletedSources()
     {
@@ -285,6 +297,25 @@ public sealed class Battle
         DealDamage(Side.Enemy, amount, DamageKind.Fatigue, null, 0, ignoreShield: true);
     }
 
+    private readonly HashSet<int> _phasesStarted = [];
+
+    private void CheckPhases()
+    {
+        var phases = EnemyDefinition.Phases;
+        for (int i = 0; i < phases.Count; i++)
+        {
+            if (_phasesStarted.Contains(i) || Enemy.Hp * 100 >= Enemy.MaxHp * phases[i].HpBelowPercent) continue;
+            _phasesStarted.Add(i);
+            Emit(new PhaseStarted(Tick, i), 0, null);
+            foreach (string id in phases[i].AddAbilityIds)
+            {
+                var added = AddSource(Enemy, Require(id, SourceKind.EnemyAbility), null, 1);
+                ApplyCooldownModifier(added);
+                Emit(new SourceAdded(Tick, added.Id, Side.Enemy), 0, added);
+            }
+        }
+    }
+
     private void ResolveResult()
     {
         if (Player.IsDead && Enemy.IsDead) Result = BattleResult.Draw;
@@ -357,6 +388,7 @@ public sealed class Battle
 
     public void DealDamage(Side target, int amount, DamageKind kind, SourceInstance? source, int depth, bool ignoreShield = false)
     {
+        if (kind == DamageKind.Direct) amount = Modify("DamageDealt", amount, source);
         if (amount <= 0) return;
         int shieldDamage = ignoreShield ? 0 : Math.Min(Get(target).Shield, amount);
         ApplyRawDamage(target, amount - shieldDamage, shieldDamage, kind, source, depth);
@@ -374,6 +406,7 @@ public sealed class Battle
 
     public void GainShield(Side target, int amount, SourceInstance? source, int depth)
     {
+        amount = Modify("ShieldGained", amount, source);
         if (amount <= 0) return;
         Get(target).Shield += amount;
         Emit(new ShieldGained(Tick, target, amount, source?.Id), depth, source);
@@ -382,7 +415,7 @@ public sealed class Battle
     public void Heal(Side target, int amount, SourceInstance? source, int depth)
     {
         var c = Get(target);
-        int healed = Math.Min(amount, c.MaxHp - c.Hp);
+        int healed = Math.Min(Modify("HealGained", amount, source), c.MaxHp - c.Hp);
         if (healed <= 0) return;
         c.Hp += healed;
         Emit(new Healed(Tick, target, healed, source?.Id), depth, source);

@@ -40,3 +40,8 @@ public sealed record Charged(int Tick, int TargetSourceId, int Ticks, int? Sourc
 public sealed record CooldownReset(int Tick, int TargetSourceId, int? SourceId) : BattleEvent(Tick);
 
 public sealed record StatModified(int Tick, int TargetSourceId, string Stat, int Amount, int? SourceId) : BattleEvent(Tick);
+
+/// <summary>A boss crossed an HP threshold; its new abilities follow as <see cref="SourceAdded"/>.</summary>
+public sealed record PhaseStarted(int Tick, int Index) : BattleEvent(Tick);
+
+public sealed record SourceAdded(int Tick, int SourceId, Side Owner) : BattleEvent(Tick);
