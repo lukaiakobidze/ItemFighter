@@ -29,3 +29,14 @@ public sealed record StatusApplied(int Tick, Side? TargetSide, int? TargetSource
 public sealed record PoisonBurst(int Tick, Side Target, int Damage) : BattleEvent(Tick);
 
 public sealed record ChillFroze(int Tick, Side Target) : BattleEvent(Tick);
+
+/// <summary>An active item finished its cooldown and can be clicked.</summary>
+public sealed record ItemReady(int Tick, int SourceId) : BattleEvent(Tick);
+
+public sealed record CommandRejected(int Tick, int SourceId, string Reason) : BattleEvent(Tick);
+
+public sealed record Charged(int Tick, int TargetSourceId, int Ticks, int? SourceId) : BattleEvent(Tick);
+
+public sealed record CooldownReset(int Tick, int TargetSourceId, int? SourceId) : BattleEvent(Tick);
+
+public sealed record StatModified(int Tick, int TargetSourceId, string Stat, int Amount, int? SourceId) : BattleEvent(Tick);

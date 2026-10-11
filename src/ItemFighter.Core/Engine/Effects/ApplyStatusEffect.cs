@@ -22,6 +22,7 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
         int value = amount.Resolve(ctx.Source);
         if (status.IsCombatantStatus())
         {
+            value += ctx.Source.BonusFor(status.ToString());
             ctx.Battle.ApplyStatus(CombatantTarget.Resolve(target, ctx.Source), status, value, ctx.Source, ctx.Depth);
             return;
         }

@@ -102,6 +102,7 @@ public sealed class Battle
             Emit(new FightStarted(Tick), 0, null);
         }
         Tick++;
+        ApplyCommands();
         TickStatuses();
         AdvanceCooldowns();
         FireCompletedSources();
@@ -120,7 +121,7 @@ public sealed class Battle
     {
         foreach (var s in AllSources.ToList())
         {
-            if (s.HasCooldown && !s.Ready)
+            if (s.HasCooldown && !s.Ready && s.LastFiredTick != Tick)
                 s.Progress = Math.Min(s.FullProgress, s.Progress + CooldownSpeed(s));
             if (s.FreezeTicks > 0) s.FreezeTicks--;
             if (s.HasteTicks > 0) s.HasteTicks--;
@@ -184,11 +185,96 @@ public sealed class Battle
         // Each source fires at most once per tick.
         while (true)
         {
-            var due = AllSources.FirstOrDefault(s => s.HasCooldown && !s.Ready && s.Progress >= s.FullProgress && s.LastFiredTick != Tick);
+            var due = AllSources.FirstOrDefault(s => s.HasCooldown && !s.Ready && s.Progress >= s.FullProgress
+                && (s.Def.Activation == Activation.Active || s.LastFiredTick != Tick));
             if (due is null) return;
+            if (due.Def.Activation == Activation.Active)
+            {
+                due.Ready = true;
+                Emit(new ItemReady(Tick, due.Id), 0, due);
+                continue;
+            }
             due.Progress = 0;
             Fire(due, 0, null);
         }
+    }
+
+    private readonly List<ICommand> _pending = [];
+
+    /// <summary>Queues player input. It applies at the start of its tick; a command for a tick already played is rejected.</summary>
+    public void Enqueue(ICommand command)
+    {
+        if (command.Tick <= Tick && _started)
+        {
+            if (command is ActivateCommand late) Reject(late, RejectReasons.Late);
+            return;
+        }
+        _pending.Add(command);
+    }
+
+    public BattleResult RunToEnd(IEnumerable<ICommand> commands)
+    {
+        foreach (var c in commands) Enqueue(c);
+        return RunToEnd();
+    }
+
+    private void ApplyCommands()
+    {
+        var due = _pending.Where(c => c.Tick <= Tick).ToList();
+        _pending.RemoveAll(c => c.Tick <= Tick);
+        foreach (var command in due)
+            if (command is ActivateCommand activate) Activate(activate);
+    }
+
+    private void Reject(ActivateCommand c, string reason) =>
+        Emit(new CommandRejected(Tick, c.SourceId, reason), 0, null);
+
+    private void Activate(ActivateCommand c)
+    {
+        var source = FindSource(c.SourceId);
+        if (source is null || source.Owner != Side.Player) { Reject(c, RejectReasons.UnknownSource); return; }
+        if (source.Def.Activation != Activation.Active) { Reject(c, RejectReasons.NotActive); return; }
+        if (source.FreezeTicks > 0 || Player.IsFrozenAt(Tick)) { Reject(c, RejectReasons.Frozen); return; }
+        if (!source.Ready) { Reject(c, RejectReasons.NotReady); return; }
+        SourceInstance? target = null;
+        if (source.Def.RequiresTarget)
+        {
+            if (c.TargetSourceId is null) { Reject(c, RejectReasons.TargetRequired); return; }
+            target = FindSource(c.TargetSourceId.Value);
+            if (target is null || !IsValidTarget(source, target)) { Reject(c, RejectReasons.InvalidTarget); return; }
+        }
+        source.Ready = false;
+        source.Progress = 0;
+        Fire(source, 0, target);
+    }
+
+    /// <summary>Targeted actives pick another of the player's items; "OwnItemTag:X" also requires the tag.</summary>
+    public static bool IsValidTarget(SourceInstance source, SourceInstance target)
+    {
+        if (target == source || target.Owner != source.Owner || !target.IsItem) return false;
+        string filter = source.Def.TargetFilter;
+        if (filter.StartsWith("OwnItemTag:", StringComparison.Ordinal)) return target.Def.HasTag(filter["OwnItemTag:".Length..]);
+        return true;
+    }
+
+    public void Charge(SourceInstance target, int ticks, SourceInstance? source, int depth)
+    {
+        if (!target.HasCooldown || target.Ready || ticks <= 0) return;
+        target.Progress = Math.Min(target.FullProgress, target.Progress + ticks * SourceInstance.ProgressPerTick);
+        Emit(new Charged(Tick, target.Id, ticks, source?.Id), depth, source);
+    }
+
+    public void ResetCooldown(SourceInstance target, SourceInstance? source, int depth)
+    {
+        if (!target.HasCooldown || target.Ready) return;
+        target.Progress = target.FullProgress;
+        Emit(new CooldownReset(Tick, target.Id, source?.Id), depth, source);
+    }
+
+    public void ModifyStat(SourceInstance target, string stat, int amount, SourceInstance? source, int depth)
+    {
+        target.AddBonus(stat, amount);
+        Emit(new StatModified(Tick, target.Id, stat, amount, source?.Id), depth, source);
     }
 
     private void ApplyFatigue()

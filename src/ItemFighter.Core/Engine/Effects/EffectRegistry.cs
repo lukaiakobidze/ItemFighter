@@ -19,6 +19,10 @@ public sealed class EffectRegistry
         r.Register("Shield", ShieldEffect.Parse);
         r.Register("Heal", HealEffect.Parse);
         r.Register("ApplyStatus", ApplyStatusEffect.Parse);
+        r.Register("Charge", ChargeEffect.Parse);
+        r.Register("ResetCooldown", ResetCooldownEffect.Parse);
+        r.Register("ModifyStat", ModifyStatEffect.Parse);
+        r.Register("CopyEffect", CopyEffect.Parse);
         return r;
     }
 }

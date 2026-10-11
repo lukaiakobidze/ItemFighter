@@ -22,7 +22,7 @@ public sealed class DamageEffect(ValueRef amount, TargetSpec target) : IEffect
         new(ctx.ReadValue("amount"), CombatantTarget.Read(ctx, TargetSpec.Enemy));
 
     public void Apply(EffectContext ctx) =>
-        ctx.Battle.DealDamage(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source), DamageKind.Direct, ctx.Source, ctx.Depth);
+        ctx.Battle.DealDamage(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Damage"), DamageKind.Direct, ctx.Source, ctx.Depth);
 }
 
 public sealed class ShieldEffect(ValueRef amount, TargetSpec target) : IEffect
@@ -31,7 +31,7 @@ public sealed class ShieldEffect(ValueRef amount, TargetSpec target) : IEffect
         new(ctx.ReadValue("amount"), CombatantTarget.Read(ctx, TargetSpec.Self));
 
     public void Apply(EffectContext ctx) =>
-        ctx.Battle.GainShield(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source), ctx.Source, ctx.Depth);
+        ctx.Battle.GainShield(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Shield"), ctx.Source, ctx.Depth);
 }
 
 public sealed class HealEffect(ValueRef amount, TargetSpec target) : IEffect
@@ -40,5 +40,5 @@ public sealed class HealEffect(ValueRef amount, TargetSpec target) : IEffect
         new(ctx.ReadValue("amount"), CombatantTarget.Read(ctx, TargetSpec.Self));
 
     public void Apply(EffectContext ctx) =>
-        ctx.Battle.Heal(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source), ctx.Source, ctx.Depth);
+        ctx.Battle.Heal(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Heal"), ctx.Source, ctx.Depth);
 }

@@ -54,6 +54,13 @@ public sealed class SourceInstance
 
     public bool IsItem => Slot is not null;
 
+    private readonly Dictionary<string, int> _bonus = new(StringComparer.Ordinal);
+
+    /// <summary>Extra Damage/Shield/Heal/Burn/Poison/Chill this source adds for the rest of the fight (from ModifyStat).</summary>
+    public int BonusFor(string stat) => _bonus.GetValueOrDefault(stat);
+
+    internal void AddBonus(string stat, int amount) => _bonus[stat] = BonusFor(stat) + amount;
+
     public int FreezeTicks { get; set; }
     public int HasteTicks { get; set; }
     public int SlowTicks { get; set; }
