@@ -17,6 +17,13 @@ public sealed class TriggerRegistry
         var r = new TriggerRegistry();
         r.Register("OnCooldown", _ => new OnCooldownTrigger());
         r.Register("OnActivate", _ => new OnActivateTrigger());
+        r.Register("OnFightStart", _ => new OnFightStartTrigger());
+        r.Register("OnItemFired", OnItemFiredTrigger.Parse);
+        r.Register("OnDamageTaken", _ => new OnDamageTakenTrigger());
+        r.Register("OnHpBelow", OnHpBelowTrigger.Parse);
+        r.Register("OnStatusApplied", OnStatusAppliedTrigger.Parse);
+        r.Register("OnShieldGained", _ => new OnShieldGainedTrigger());
+        r.Register("EveryNthUse", EveryNthUseTrigger.Parse);
         return r;
     }
 }

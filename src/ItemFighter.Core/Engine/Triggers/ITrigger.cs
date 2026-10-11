@@ -4,4 +4,7 @@ namespace ItemFighter.Core.Engine.Triggers;
 public interface ITrigger
 {
     bool Matches(BattleEvent e, SourceInstance owner, Battle battle);
+
+    /// <summary>Whether this trigger may react to events its own source produced.</summary>
+    bool AllowSelf => false;
 }

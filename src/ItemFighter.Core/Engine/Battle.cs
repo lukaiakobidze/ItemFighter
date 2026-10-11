@@ -187,7 +187,7 @@ public sealed class Battle
             var due = AllSources.FirstOrDefault(s => s.HasCooldown && !s.Ready && s.Progress >= s.FullProgress && s.LastFiredTick != Tick);
             if (due is null) return;
             due.Progress = 0;
-            Fire(due, 0, null, reaction: false);
+            Fire(due, 0, null);
         }
     }
 
@@ -209,18 +209,26 @@ public sealed class Battle
     }
 
     /// <summary>Fires a source: logs it, runs its cooldown/activation abilities, then lets others react.</summary>
-    public void Fire(SourceInstance source, int depth, SourceInstance? chosenTarget, bool reaction)
+    public void Fire(SourceInstance source, int depth, SourceInstance? chosenTarget)
     {
         source.UseCount++;
+        source.CycleCount++;
         source.LastFiredTick = Tick;
-        var fired = new SourceFired(Tick, source.Id, source.Owner, chosenTarget?.Id, reaction);
+        var fired = new SourceFired(Tick, source.Id, source.Owner, chosenTarget?.Id, Reaction: false);
         _events.Add(fired);
-        if (!reaction)
-        {
-            foreach (var ability in source.Def.Abilities)
-                if (ability.Trigger is OnCooldownTrigger or OnActivateTrigger)
-                    RunEffects(ability, source, chosenTarget, depth);
-        }
+        foreach (var ability in source.Def.Abilities)
+            if (ability.Trigger is OnCooldownTrigger or OnActivateTrigger)
+                RunEffects(ability, source, chosenTarget, depth);
+        Dispatch(fired, depth, source);
+    }
+
+    /// <summary>Runs one ability because its trigger matched. Counts as a use and lets others react in turn.</summary>
+    public void React(SourceInstance source, AbilityDefinition ability, int depth)
+    {
+        source.UseCount++;
+        var fired = new SourceFired(Tick, source.Id, source.Owner, null, Reaction: true);
+        _events.Add(fired);
+        RunEffects(ability, source, null, depth);
         Dispatch(fired, depth, source);
     }
 
@@ -237,9 +245,28 @@ public sealed class Battle
         Dispatch(e, depth, producer);
     }
 
+    /// <summary>
+    /// Offers an event to every triggered ability, in canonical order. Reactions run one level deeper;
+    /// beyond <see cref="MaxChainDepth"/> they are dropped with a <see cref="ChainCapped"/> event, so loops always end.
+    /// </summary>
     private void Dispatch(BattleEvent e, int depth, SourceInstance? producer)
     {
-        // Filled in by the trigger system.
+        foreach (var source in AllSources.ToList())
+        {
+            foreach (var ability in source.Def.Abilities)
+            {
+                var trigger = ability.Trigger;
+                if (trigger is OnCooldownTrigger or OnActivateTrigger) continue;
+                if (source == producer && !trigger.AllowSelf) continue;
+                if (!trigger.Matches(e, source, this)) continue;
+                if (depth + 1 > MaxChainDepth)
+                {
+                    _events.Add(new ChainCapped(Tick, source.Id));
+                    continue;
+                }
+                React(source, ability, depth + 1);
+            }
+        }
     }
 
     public void DealDamage(Side target, int amount, DamageKind kind, SourceInstance? source, int depth, bool ignoreShield = false)

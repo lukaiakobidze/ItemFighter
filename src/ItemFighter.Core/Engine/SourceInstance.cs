@@ -42,7 +42,14 @@ public sealed class SourceInstance
 
     /// <summary>For active items: cooldown finished, waiting for the player to click.</summary>
     public bool Ready { get; set; }
+    /// <summary>Every fire, including reactions.</summary>
     public int UseCount { get; internal set; }
+
+    /// <summary>Fires from its own cooldown or a click (not reactions).</summary>
+    public int CycleCount { get; internal set; }
+
+    /// <summary>Once-per-battle triggers that have already gone off for this source.</summary>
+    public HashSet<object> FiredOnce { get; } = new(ReferenceEqualityComparer.Instance);
     internal int LastFiredTick { get; set; } = -1;
 
     public bool IsItem => Slot is not null;
