@@ -18,6 +18,7 @@ public sealed class EffectRegistry
         r.Register("Damage", DamageEffect.Parse);
         r.Register("Shield", ShieldEffect.Parse);
         r.Register("Heal", HealEffect.Parse);
+        r.Register("ApplyStatus", ApplyStatusEffect.Parse);
         return r;
     }
 }

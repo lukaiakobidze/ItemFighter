@@ -22,3 +22,10 @@ public sealed record Healed(int Tick, Side Target, int Amount, int? SourceId) : 
 public sealed record ChainCapped(int Tick, int SourceId) : BattleEvent(Tick);
 
 public sealed record BattleEnded(int Tick, BattleResult Result) : BattleEvent(Tick);
+
+/// <summary>A status was applied to a combatant (TargetSide) or to one item/ability (TargetSourceId).</summary>
+public sealed record StatusApplied(int Tick, Side? TargetSide, int? TargetSourceId, StatusType Status, int Amount, int? SourceId) : BattleEvent(Tick);
+
+public sealed record PoisonBurst(int Tick, Side Target, int Damage) : BattleEvent(Tick);
+
+public sealed record ChillFroze(int Tick, Side Target) : BattleEvent(Tick);

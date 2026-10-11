@@ -16,6 +16,9 @@ public sealed class Combatant
     public int MaxHp { get; }
     public int Hp { get; set; }
     public int Shield { get; set; }
+    public StatusSet Statuses { get; } = new();
+
+    public bool IsFrozenAt(int tick) => tick <= Statuses.FrozenUntilTick;
 
     /// <summary>All sources in canonical order: board items by slot, then slotless sources by id.</summary>
     public IReadOnlyList<SourceInstance> Sources => _sources;

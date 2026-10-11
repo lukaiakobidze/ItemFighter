@@ -47,5 +47,9 @@ public sealed class SourceInstance
 
     public bool IsItem => Slot is not null;
 
+    public int FreezeTicks { get; set; }
+    public int HasteTicks { get; set; }
+    public int SlowTicks { get; set; }
+
     public override string ToString() => $"{Def.Id}#{Id}";
 }

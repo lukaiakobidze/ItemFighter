@@ -102,20 +102,81 @@ public sealed class Battle
             Emit(new FightStarted(Tick), 0, null);
         }
         Tick++;
+        TickStatuses();
         AdvanceCooldowns();
         FireCompletedSources();
         ApplyFatigue();
         ResolveResult();
     }
 
+    private void TickStatuses()
+    {
+        foreach (var c in new[] { Player, Enemy })
+            foreach (var rule in StatusRules.Values)
+                rule.OnTick(this, c);
+    }
+
     private void AdvanceCooldowns()
     {
         foreach (var s in AllSources.ToList())
         {
-            if (!s.HasCooldown || s.Ready) continue;
-            s.Progress = Math.Min(s.FullProgress, s.Progress + SourceInstance.ProgressPerTick);
+            if (s.HasCooldown && !s.Ready)
+                s.Progress = Math.Min(s.FullProgress, s.Progress + CooldownSpeed(s));
+            if (s.FreezeTicks > 0) s.FreezeTicks--;
+            if (s.HasteTicks > 0) s.HasteTicks--;
+            if (s.SlowTicks > 0) s.SlowTicks--;
         }
     }
+
+    public const int MinSpeed = 10;
+
+    /// <summary>Progress gained this tick: 100 normally, x2 hasted, x0.5 slowed (both cancel), -10 per chill stack, at least 10; 0 when frozen.</summary>
+    public int CooldownSpeed(SourceInstance s)
+    {
+        var owner = Get(s.Owner);
+        if (s.FreezeTicks > 0 || owner.IsFrozenAt(Tick)) return 0;
+        int speed = SourceInstance.ProgressPerTick;
+        bool haste = s.HasteTicks > 0, slow = s.SlowTicks > 0;
+        if (haste && !slow) speed *= 2;
+        else if (slow && !haste) speed /= 2;
+        speed -= ChillRule.SlowPerStack * owner.Statuses.Chill;
+        return Math.Max(MinSpeed, speed);
+    }
+
+    /// <summary>Burn, poison and chill rules, in a fixed order.</summary>
+    public static readonly IReadOnlyDictionary<StatusType, IStatusRule> StatusRules = new SortedDictionary<StatusType, IStatusRule>
+    {
+        [StatusType.Burn] = new BurnRule(),
+        [StatusType.Poison] = new PoisonRule(),
+        [StatusType.Chill] = new ChillRule(),
+    };
+
+    /// <summary>Adds burn, poison or chill stacks to a combatant.</summary>
+    public void ApplyStatus(Side target, StatusType status, int amount, SourceInstance? source, int depth)
+    {
+        if (!status.IsCombatantStatus()) throw new ArgumentException($"{status} goes on items; use ApplyItemStatus");
+        if (amount <= 0) return;
+        var c = Get(target);
+        Emit(new StatusApplied(Tick, target, null, status, amount, source?.Id), depth, source);
+        StatusRules[status].OnApply(this, c, amount, source, depth);
+    }
+
+    /// <summary>Sets freeze, haste or slow on one item or ability for <paramref name="ticks"/> ticks (longest wins).</summary>
+    public void ApplyItemStatus(SourceInstance target, StatusType status, int ticks, SourceInstance? source, int depth)
+    {
+        if (status.IsCombatantStatus()) throw new ArgumentException($"{status} goes on combatants; use ApplyStatus");
+        if (ticks <= 0) return;
+        switch (status)
+        {
+            case StatusType.Freeze: target.FreezeTicks = Math.Max(target.FreezeTicks, ticks); break;
+            case StatusType.Haste: target.HasteTicks = Math.Max(target.HasteTicks, ticks); break;
+            case StatusType.Slow: target.SlowTicks = Math.Max(target.SlowTicks, ticks); break;
+        }
+        Emit(new StatusApplied(Tick, null, target.Id, status, ticks, source?.Id), depth, source);
+    }
+
+    /// <summary>Applies a modifier stat to a base value for the given producer. Filled in by the modifier pipeline.</summary>
+    public int Modify(string stat, int baseValue, SourceInstance? producer) => baseValue;
 
     private void FireCompletedSources()
     {
@@ -184,10 +245,16 @@ public sealed class Battle
     public void DealDamage(Side target, int amount, DamageKind kind, SourceInstance? source, int depth, bool ignoreShield = false)
     {
         if (amount <= 0) return;
+        int shieldDamage = ignoreShield ? 0 : Math.Min(Get(target).Shield, amount);
+        ApplyRawDamage(target, amount - shieldDamage, shieldDamage, kind, source, depth);
+    }
+
+    /// <summary>Removes exactly the given HP and shield, for statuses with their own shield rules.</summary>
+    public void ApplyRawDamage(Side target, int hpDamage, int shieldDamage, DamageKind kind, SourceInstance? source, int depth)
+    {
+        if (hpDamage <= 0 && shieldDamage <= 0) return;
         var c = Get(target);
-        int shieldDamage = ignoreShield ? 0 : Math.Min(c.Shield, amount);
         c.Shield -= shieldDamage;
-        int hpDamage = amount - shieldDamage;
         c.Hp -= hpDamage;
         Emit(new DamageDealt(Tick, target, hpDamage, shieldDamage, kind, source?.Id), depth, source);
     }
