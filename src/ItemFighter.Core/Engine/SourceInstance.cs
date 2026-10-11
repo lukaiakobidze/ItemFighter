@@ -54,6 +54,8 @@ public sealed class SourceInstance
 
     public bool IsItem => Slot is not null;
 
+    public ISourceScript? Script { get; internal set; }
+
     private readonly Dictionary<string, int> _bonus = new(StringComparer.Ordinal);
 
     /// <summary>Extra Damage/Shield/Heal/Burn/Poison/Chill this source adds for the rest of the fight (from ModifyStat).</summary>

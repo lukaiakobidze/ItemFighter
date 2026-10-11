@@ -91,6 +91,7 @@ public sealed class Battle
     internal SourceInstance AddSource(Combatant owner, SourceDefinition def, int? slot, int level)
     {
         var source = new SourceInstance(_nextId++, def, owner.Side, slot, level);
+        if (def.Script is not null) source.Script = Scripts.Create(def.Script);
         owner.Add(source);
         return source;
     }
@@ -383,6 +384,8 @@ public sealed class Battle
                 }
                 React(source, ability, depth + 1);
             }
+            if (source.Script is not null && depth + 1 <= MaxChainDepth)
+                source.Script.OnEvent(e, source, this, depth + 1);
         }
     }
 
