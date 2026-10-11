@@ -82,7 +82,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 
 Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
 
-A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a `rarity` (how rarely you meet it), a `dropItem` (the item it offers after you beat it; it never uses it), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a `rarity` (how rarely you meet it; rarer enemies also pay more gold and drop rarer rewards), a hidden `difficulty` from 1 to 10 (default 1; harder enemies only show up later in a run, see `daysPerDifficulty`), a `dropItem` (the item it offers after you beat it; it never uses it), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 
 Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's passives. They can show up as a reward after you beat that enemy, and then work for you instead.
 
@@ -96,16 +96,18 @@ Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's
 | `hotbarSize`, `backpackSize` | 6, 12 | Items that fight, and items you can carry besides |
 | `startingGold` | 10 | Gold at the start of a run |
 | `fightGold` | [5,6,7,8,9] | Gold for a normal win, per mission |
-| `eliteGoldPercent`, `bossGold` | 200, 15 | Elite gold as a % of a normal win; boss gold |
+| `rarityGoldPercent` | Common 100 … Legendary 400 | A win pays `fightGold` × this % for the enemy's rarity |
+| `bossGold` | 15 | Gold for beating the mission boss |
 | `prices` | Common 4 … Legendary 25 | Buy price per rarity (× level). Selling gives `sellPercent` of it |
 | `sellPercent` | 50 | |
 | `shopSize`, `rerollBaseCost`, `rerollCostStep` | 5, 1, 1 | Shop stock size; the first reroll costs 1, each one after costs 1 more |
-| `encounterWeights` | Fight 60, Elite 15, Shop 25 | How often each encounter type is offered |
-| `enemyHpPercentPerMission` | 25 | Enemy HP +25% per mission after the first |
-| `eliteHpPercent` | 150 | Elites have 150% of that |
-| `bosses` | 5 entries | `{ "enemy": id, "hpPercent": 200 }` per mission (missing missions reuse the last) |
+| `dayWeights` | Fight 70, Shop 30 | How often each kind of day comes up. A fight day offers different enemies; a shop day offers the shops |
+| `shops` | one "Shop" | `{ "id", "name", "tags": [] }` per shop. Tags limit the stock to items with any of those tags; empty sells everything |
+| `daysPerDifficulty` | 5 | The hardest enemy difficulty allowed goes up by 1 every 5 days (difficulty 2 from day 6, 3 from mission 2 …, 10 in the last half of mission 5) |
+| `difficultyWindow` | 3 | Fight days use the hardest allowed difficulty and the 2 below it; easier enemies fill in when there are too few |
+| `bosses` | 5 entries | `{ "enemy": id }` per mission (missing missions reuse the last). Enemies always keep their base stats |
 | `enemyRarityWeights` | Common 100 … Legendary 3 | How often you meet enemies of each rarity |
-| `dropRarityWeights` | by enemy rarity | Rarity odds of random rewards after beating an enemy of that rarity (elites count one rarity higher) |
+| `dropRarityWeights` | by enemy rarity | Rarity odds of random rewards after beating an enemy of that rarity |
 | `shopRarityWeights` | one row per mission | Rarity odds of shop items |
 | `characterPoolMultiplier` | 3 | Items in your character's pool (`"pools": ["silver_knight"]`) are this many times as likely |
 | `tagBonusPercent` | 15 | Each item you own that shares a tag with an offer makes it 15% more likely |

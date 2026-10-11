@@ -2,6 +2,7 @@
   "id": "squire_zombie",
   "name": "Squire Zombie",
   "rarity": "Common",
+  "difficulty": 1,
   "maxHp": 40,
   "dropItem": "sword",
   "abilityIds": ["bite"]

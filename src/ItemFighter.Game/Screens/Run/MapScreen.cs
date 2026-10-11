@@ -11,7 +11,9 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
 
     public IReadOnlyList<Encounter> Choices => _choices;
 
-    protected override string Title => Run.IsBossNext ? "The mission boss" : "Choose your next encounter";
+    protected override string Title => Run.IsBossNext ? "Boss day"
+        : _choices.Count > 0 && _choices[0].Kind == EncounterKind.Shop ? $"Day {Run.Encounter + 1}: shop day"
+        : $"Day {Run.Encounter + 1}: fight day";
 
     public static Rectangle ChoiceRect(int index, int count)
     {
@@ -43,7 +45,6 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
         var (label, color) = e.Kind switch
         {
             EncounterKind.Boss => ("BOSS", Palette.Damage),
-            EncounterKind.Elite => ("Elite fight", Palette.Burn),
             EncounterKind.Shop => ("Shop", Palette.Accent),
             _ => ("Fight", Palette.Text),
         };
@@ -52,24 +53,20 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
         var art = new Rectangle(r.X + 20, r.Y + 42, r.Width - 40, 150);
         if (e.Kind == EncounterKind.Shop)
         {
-            ui.Art("Encounters", "shop", "Shop", art);
-            ui.TextIn("Buy items, reroll, sell", new Rectangle(r.X, r.Y + 200, r.Width, 24), 16, Palette.Text);
-            ui.TextIn($"Stock: {Run.Config.ShopSize} items", new Rectangle(r.X, r.Y + 226, r.Width, 22), 14, Palette.TextDim);
+            var shop = Run.Config.Shops.FirstOrDefault(s => s.Id == e.ShopId);
+            string name = shop?.Name ?? "Shop";
+            ui.Art("Encounters", e.ShopId ?? "shop", name, art);
+            ui.TextIn(name, new Rectangle(r.X, r.Y + 198, r.Width, 26), 19, Palette.Text, bold: true);
+            string sells = shop?.Tags is { Count: > 0 } tags ? "Sells " + string.Join(", ", tags) + " items" : "Sells any item";
+            ui.TextIn(sells, new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.TextDim);
         }
         else if (Db.TryGet(e.EnemyId!, out var enemy))
         {
             ui.Art("Enemies", enemy.Id, enemy.Name, art);
             ui.TextIn(enemy.Name, new Rectangle(r.X, r.Y + 198, r.Width, 26), 19, Palette.Text, bold: true);
-            int hp = enemy.MaxHp * Run.EnemyHpPercent(e) / 100;
-            ui.TextIn($"{enemy.Rarity} enemy  ·  {hp} HP", new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.TextDim);
-            int gold = e.Kind switch
-            {
-                EncounterKind.Boss => Run.Config.BossGold,
-                EncounterKind.Elite => Run.Config.GoldForFight(Run.Mission) * Run.Config.EliteGoldPercent / 100,
-                _ => Run.Config.GoldForFight(Run.Mission),
-            };
-            string better = e.Kind == EncounterKind.Elite ? ", better drop" : "";
-            ui.TextIn($"Win: +{gold} gold{better}", new Rectangle(r.X, r.Y + 250, r.Width, 22), 15, Palette.Accent);
+            int hp = enemy.MaxHp;
+            ui.TextIn($"{enemy.Rarity} enemy  ·  {hp} HP", new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.For(enemy.Rarity));
+            ui.TextIn($"Win: +{Run.GoldFor(e)} gold", new Rectangle(r.X, r.Y + 250, r.Width, 22), 15, Palette.Accent);
             if (hover) ui.Tooltip(enemy.Name, [$"{enemy.Rarity} enemy  ·  {hp} HP", "You learn its abilities by fighting it."], color);
         }
         ui.Text("click to choose", new Vector2(r.Center.X, r.Bottom - 28), 13, hover ? Palette.Text : Palette.TextDim, align: Align.Center);

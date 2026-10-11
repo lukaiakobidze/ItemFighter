@@ -41,6 +41,9 @@ public sealed class SourceDefinition
     public IReadOnlyList<PhaseDefinition> Phases { get; init; } = [];
     public IReadOnlyList<string> StartingItems { get; init; } = [];
 
+    /// <summary>Enemies only, never shown: 1 to 10. Harder enemies are met later in a run.</summary>
+    public int Difficulty { get; init; } = 1;
+
     /// <summary>Enemies only: the item this enemy offers as a drop (it never uses it).</summary>
     public string? DropItemId { get; init; }
 

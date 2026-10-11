@@ -124,6 +124,7 @@ public static class ContentLoader
             Phases = ParsePhases(json),
             StartingItems = ctx.ReadStrings("startingItems"),
             DropItemId = json.TryGetProperty("dropItem", out _) ? ctx.ReadString("dropItem") : null,
+            Difficulty = ctx.ReadInt("difficulty", 1),
         };
     }
 

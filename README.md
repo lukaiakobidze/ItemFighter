@@ -13,7 +13,7 @@ A roguelike autobattler. Design: `docs/design/`. Build plans: `docs/superpowers/
 3. Main menu → **New run** to play a run (see below), or **Fight Lab** to test any board against any enemy.
    **A run:**
    - Pick a character. Each mission has 10 encounters, then its boss. Win 5 missions to win the run. Losing any fight ends the run.
-   - On the map, pick 1 of 3 encounters: a fight, an elite fight (more HP, more gold, a better drop) or a shop.
+   - Each day is a fight day (pick 1 of 3 different enemies; rarer ones pay more gold) or a shop day (pick a shop). Harder enemies show up as the run goes on.
    - Before each fight you arrange your hotbar (the 6 items that fight). It stays as you left it last fight.
    - Click an item to pick it up and click a slot to put it there. Right-click an item to sell it for half its price.
    - After a win you get gold and pick 1 of 3 rewards: items (the first is the enemy's own drop) or passives (the first is one of the enemy's passives).

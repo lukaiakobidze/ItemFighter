@@ -97,6 +97,8 @@ Design rules:
   - Items: one choice is the enemy's drop item (an item each enemy carries but never uses); the other two are random by rarity and tags.
   - Passives: if the enemy has passives, the first choice is one of them (picked by rarity and tags); the rest are random by rarity and tags. An enemy with no passives offers 3 random passives.
   - The enemy's rarity pushes the rarity of the random choices up.
+- **Days (Luka, 2026-10-11):** each encounter is a day. A fight day offers only fights, against different enemies; a rarer enemy pays more gold. A shop day offers the shops (one for now, more later). More kinds of day later. No elites.
+- **Enemy difficulty (Luka, 2026-10-11):** enemies never grow; they keep their base stats. Each has a hidden difficulty 1 to 10, and harder enemies show up further into the run (difficulty 2 from the second half of mission 1, reaching 10 by mission 5). All starter enemies are 1 except the Grizzly Bear (2).
 - **Rarity everywhere:** items, passives and enemies all carry a rarity (all Common for now). Enemy rarity means how rare it is to meet that enemy.
 - **Item levels:** each level slightly improves the item's main number (about +25% per level, set per item in data). Whether upgrading stays in the game is still open.
 - Expected run length: roughly 1.5 to 3 hours. **Mid-run save/quit is required.**

@@ -2,6 +2,7 @@
   "id": "flaming_rock",
   "name": "Flaming Rock",
   "rarity": "Common",
+  "difficulty": 1,
   "maxHp": 50,
   "dropItem": "cinder",
   "abilityIds": ["explosive", "fiery_stone"]

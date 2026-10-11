@@ -48,7 +48,7 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         string character = Run.CharacterId is string c && Db.TryGet(c, out var ch) ? ch.Name : "No character";
         ui.Text(character, new Vector2(x, y), 22, Palette.Text, bold: true);
         y += 34;
-        string where = Run.IsBossNext ? "boss fight" : $"encounter {Run.Encounter + 1} of {Run.Config.EncountersPerMission}";
+        string where = Run.IsBossNext ? "boss day" : $"day {Run.Encounter + 1} of {Run.Config.EncountersPerMission}";
         ui.Text($"Mission {Run.Mission} of {Run.Config.Missions}  ·  {where}", new Vector2(x, y), 16, Palette.TextDim);
         y += 26;
         var boss = Run.Boss(Run.Mission);
@@ -56,7 +56,7 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         {
             var r = new Rectangle(x, y, 340, 22);
             ui.Text($"Mission boss: {bossDef.Name}", new Vector2(x, y), 16, Palette.Damage);
-            if (ui.Hover(r)) ui.Tooltip(bossDef.Name, [$"{bossDef.MaxHp * Run.EnemyHpPercent(boss) / 100} HP", "Waits at the end of this mission."], Palette.Damage);
+            if (ui.Hover(r)) ui.Tooltip(bossDef.Name, [$"{bossDef.MaxHp} HP", "Waits at the end of this mission."], Palette.Damage);
             y += 30;
         }
         ui.Text($"Gold: {Run.Gold}", new Vector2(x, y), 24, Palette.Accent, bold: true);

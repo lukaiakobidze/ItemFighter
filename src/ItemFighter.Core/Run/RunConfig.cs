@@ -5,10 +5,16 @@ using ItemFighter.Core.Engine;
 
 namespace ItemFighter.Core.Run;
 
-public enum EncounterKind { Fight, Elite, Shop, Boss }
+public enum EncounterKind { Fight, Shop, Boss }
 
-/// <summary>A mission's boss: an enemy and how much bigger its HP is than normal.</summary>
-public sealed record BossConfig(string Enemy, int HpPercent = 200);
+/// <summary>What a day offers: a fight day shows different enemies, a shop day shows the shops.</summary>
+public enum DayKind { Fight, Shop }
+
+/// <summary>A mission's boss. Enemies always keep their base stats.</summary>
+public sealed record BossConfig(string Enemy);
+
+/// <summary>A kind of shop. Tags limits its stock to items with any of those tags; empty means every item.</summary>
+public sealed record ShopConfig(string Id, string Name, IReadOnlyList<string>? Tags = null);
 
 /// <summary>
 /// Every number of the run loop, from Data/run.json. A key missing from the file keeps the default below.
@@ -33,7 +39,11 @@ public sealed class RunConfig
     public int StartingGold { get; init; } = 10;
     /// <summary>Gold for winning a normal fight, per mission (the last entry repeats).</summary>
     public int[] FightGold { get; init; } = [5, 6, 7, 8, 9];
-    public int EliteGoldPercent { get; init; } = 200;
+    /// <summary>A win pays FightGold × this percent of the enemy's rarity, so rarer fights pay more.</summary>
+    public Dictionary<Rarity, int> RarityGoldPercent { get; init; } = new()
+    {
+        [Rarity.Common] = 100, [Rarity.Uncommon] = 150, [Rarity.Rare] = 200, [Rarity.Epic] = 300, [Rarity.Legendary] = 400,
+    };
     public int BossGold { get; init; } = 15;
     public Dictionary<Rarity, int> Prices { get; init; } = new()
     {
@@ -44,13 +54,16 @@ public sealed class RunConfig
     public int RerollBaseCost { get; init; } = 1;
     public int RerollCostStep { get; init; } = 1;
 
-    /// <summary>How often each encounter type shows up among the choices (bosses are never random).</summary>
-    public Dictionary<EncounterKind, int> EncounterWeights { get; init; } = new()
+    /// <summary>How often each kind of day comes up (the boss day is never random).</summary>
+    public Dictionary<DayKind, int> DayWeights { get; init; } = new()
     {
-        [EncounterKind.Fight] = 60, [EncounterKind.Elite] = 15, [EncounterKind.Shop] = 25,
+        [DayKind.Fight] = 70, [DayKind.Shop] = 30,
     };
-    public int EnemyHpPercentPerMission { get; init; } = 25;
-    public int EliteHpPercent { get; init; } = 150;
+    public List<ShopConfig> Shops { get; init; } = [new ShopConfig("shop", "Shop")];
+    /// <summary>The hardest enemy difficulty you can meet goes up by 1 every this many days (5 → difficulty 2 from day 6).</summary>
+    public int DaysPerDifficulty { get; init; } = 5;
+    /// <summary>Fight days pick from the hardest allowed difficulty and this many below it (3 → max, max-1, max-2).</summary>
+    public int DifficultyWindow { get; init; } = 3;
     /// <summary>One boss per mission. Missions past the end of the list reuse the last boss.</summary>
     public List<BossConfig> Bosses { get; init; } = [];
     /// <summary>How often each enemy rarity is met.</summary>
@@ -81,6 +94,16 @@ public sealed class RunConfig
     public int ItemDropChancePercent { get; init; } = 50;
 
     public int Price(Rarity rarity) => Prices.TryGetValue(rarity, out int p) ? p : 0;
+
+    /// <summary>The hardest enemy difficulty allowed on a day (encounter is 0-based within the mission), 1 to 10.</summary>
+    public int MaxDifficulty(int mission, int encounter)
+    {
+        int day = (mission - 1) * EncountersPerMission + encounter;
+        return Math.Clamp(1 + day / Math.Max(1, DaysPerDifficulty), 1, 10);
+    }
+
+    public int GoldForFight(int mission, Rarity enemyRarity) =>
+        GoldForFight(mission) * (RarityGoldPercent.TryGetValue(enemyRarity, out int p) ? p : 100) / 100;
 
     public int GoldForFight(int mission) => FightGold.Length == 0 ? 0 : FightGold[Math.Clamp(mission - 1, 0, FightGold.Length - 1)];
 
@@ -128,8 +151,12 @@ public sealed class RunConfig
         Check(StartingGold >= 0 && SellPercent >= 0 && ShopSize >= 0 && RerollBaseCost >= 0 && RerollCostStep >= 0 && BossGold >= 0,
             "gold, prices, sizes and costs can't be negative");
         Check(FightGold.All(g => g >= 0) && Prices.Values.All(p => p >= 0), "gold and prices can't be negative");
-        Check(EncounterWeights.Values.All(w => w >= 0) && EnemyRarityWeights.Values.All(w => w >= 0), "weights can't be negative");
-        Check(EnemyHpPercentPerMission >= 0 && EliteHpPercent > 0, "HP percents must be positive");
+        Check(DayWeights.Values.All(w => w >= 0) && EnemyRarityWeights.Values.All(w => w >= 0) && RarityGoldPercent.Values.All(w => w >= 0),
+            "weights and percents can't be negative");
+        Check(DayWeights.Values.Sum() > 0, "'dayWeights' needs at least one weight above 0");
+        Check(DaysPerDifficulty >= 1 && DifficultyWindow >= 1, "'daysPerDifficulty' and 'difficultyWindow' must be at least 1");
+        Check(Shops.Count > 0 && Shops.All(s => s is not null && !string.IsNullOrWhiteSpace(s.Id) && !string.IsNullOrWhiteSpace(s.Name)),
+            "'shops' needs at least one shop, each with an id and a name");
         Check(CharacterPoolMultiplier >= 0 && TagBonusPercent >= 0, "'characterPoolMultiplier' and 'tagBonusPercent' can't be negative");
         Check(ItemDropChancePercent is >= 0 and <= 100, "'itemDropChancePercent' must be 0 to 100");
         foreach (var w in DropRarityWeights.Values.Concat(ShopRarityWeights))
@@ -138,7 +165,6 @@ public sealed class RunConfig
         {
             if (boss is null || !db.TryGet(boss.Enemy ?? "", out var def)) errors.Add($"unknown boss enemy '{boss?.Enemy}'");
             else if (def.Kind != SourceKind.Enemy) errors.Add($"boss '{boss.Enemy}' is not an enemy");
-            else Check(boss.HpPercent > 0, $"boss '{boss.Enemy}' needs a positive hpPercent");
         }
     }
 }

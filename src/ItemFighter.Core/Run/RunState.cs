@@ -68,7 +68,7 @@ public sealed class RunState
     // ---- encounters -------------------------------------------------------------------------------------------
 
     public IReadOnlyList<Encounter> EncounterChoices() =>
-        IsBossNext ? [Boss(Mission)] : Offers.EncounterChoices(RngFor($"enc:{Mission}:{Encounter}"), View);
+        IsBossNext ? [Boss(Mission)] : Offers.EncounterChoices(RngFor($"enc:{Mission}:{Encounter}"), View, Config.MaxDifficulty(Mission, Encounter));
 
     /// <summary>The mission's boss from run.json, or the enemy with the most HP when none is listed.</summary>
     public Encounter Boss(int mission)
@@ -86,7 +86,7 @@ public sealed class RunState
         if (encounter.Kind == EncounterKind.Shop)
         {
             ShopRerolls = 0;
-            ShopStock = Offers.Shop(RngFor(ShopKey), View).ToList();
+            ShopStock = Offers.Shop(RngFor(ShopKey), View, encounter.ShopId).ToList();
             Phase = RunPhase.Shopping;
         }
         else Phase = RunPhase.Preparing;
@@ -96,12 +96,10 @@ public sealed class RunState
 
     [JsonIgnore] public bool CanFight => Hotbar.Any(h => h is not null);
 
-    public int EnemyHpPercent(Encounter encounter) => encounter.Kind switch
-    {
-        EncounterKind.Boss => Config.Boss(Mission)?.HpPercent ?? 200,
-        EncounterKind.Elite => (100 + (Mission - 1) * Config.EnemyHpPercentPerMission) * Config.EliteHpPercent / 100,
-        _ => 100 + (Mission - 1) * Config.EnemyHpPercentPerMission,
-    };
+    /// <summary>Gold for winning an encounter: the boss pays BossGold, other fights pay more for rarer enemies.</summary>
+    public int GoldFor(Encounter encounter) =>
+        encounter.Kind == EncounterKind.Boss ? Config.BossGold
+        : Config.GoldForFight(Mission, Db.TryGet(encounter.EnemyId ?? "", out var e) ? e.Rarity : Rarity.Common);
 
     /// <summary>The fight for the current encounter. Same run + same encounter = same fight, so a restart replays it.</summary>
     public BattleSetup StartFight()
@@ -114,8 +112,7 @@ public sealed class RunState
             if (Hotbar[i] is OwnedItem item) board.Add(new BoardItem(item.ItemId, i, item.Level));
         ulong seed = StableHash.Of($"fight:{Seed}:{Mission}:{Encounter}");
         Phase = RunPhase.Fighting;
-        return new BattleSetup(new PlayerSetup(CharacterId, board, Passives.ToList()), encounter.EnemyId!, seed == 0 ? 1 : seed,
-            Math.Max(1, EnemyHpPercent(encounter)));
+        return new BattleSetup(new PlayerSetup(CharacterId, board, Passives.ToList()), encounter.EnemyId!, seed == 0 ? 1 : seed);
     }
 
     public void FinishFight(bool won)
@@ -128,13 +125,8 @@ public sealed class RunState
             return;
         }
         FightsWon++;
-        Gold += encounter.Kind switch
-        {
-            EncounterKind.Boss => Config.BossGold,
-            EncounterKind.Elite => Config.GoldForFight(Mission) * Config.EliteGoldPercent / 100,
-            _ => Config.GoldForFight(Mission),
-        };
-        PendingDrop = Offers.Drop(RngFor($"drop:{Mission}:{Encounter}"), encounter.EnemyId!, encounter.Kind == EncounterKind.Elite, View);
+        Gold += GoldFor(encounter);
+        PendingDrop = Offers.Drop(RngFor($"drop:{Mission}:{Encounter}"), encounter.EnemyId!, View);
         Phase = RunPhase.Dropping;
     }
 
@@ -213,7 +205,7 @@ public sealed class RunState
         if (Gold < cost) return false;
         Gold -= cost;
         ShopRerolls++;
-        ShopStock = Offers.Shop(RngFor(ShopKey), View).ToList();
+        ShopStock = Offers.Shop(RngFor(ShopKey), View, Current?.ShopId).ToList();
         return true;
     }
 

@@ -27,6 +27,8 @@ public static class ContentValidator
                 else if (item.Kind != SourceKind.Item) Error($"starting item '{itemId}' is not an Item");
             }
 
+            if (def.Difficulty is < 1 or > 10) Error($"'difficulty' must be 1 to 10, not {def.Difficulty}");
+
             if (def.DropItemId is string drop)
             {
                 if (!db.TryGet(drop, out var item)) Error($"unknown dropItem '{drop}'");

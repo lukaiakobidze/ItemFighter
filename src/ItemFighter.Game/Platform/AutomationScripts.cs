@@ -150,7 +150,7 @@ public static class AutomationScripts
         {
             var session = SessionOf(g);
             Check(session.Run.Encounter == 2, "continue resumed at encounter 3");
-            session.Run.Choose(new Encounter(EncounterKind.Elite, "grizzly_bear"));
+            session.Run.Choose(new Encounter(EncounterKind.Fight, "grizzly_bear"));
             session.Commit();
             session.ShowCurrent(g);
         }),

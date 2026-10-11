@@ -106,7 +106,7 @@ public class RunContentTests
     public void RunConfig_UnknownBoss_IsError()
     {
         var db = TestContent.Db(("enemies/dummy.json", Enemy()));
-        RunConfig.Parse("""{ "bosses": [ { "enemy": "nope", "hpPercent": 200 } ] }""", db, out var errors);
+        RunConfig.Parse("""{ "bosses": [ { "enemy": "nope" } ] }""", db, out var errors);
         Assert.Contains(errors, e => e.Contains("nope"));
         RunConfig.Parse("""{ "backpackSize": "lots" """, db, out var broken);
         Assert.NotEmpty(broken);

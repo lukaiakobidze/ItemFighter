@@ -67,7 +67,7 @@ public class OffersTests
             Assert.Equal(picks.Count, picks.Distinct().Count());
         }
         // The zombie normally drops "a", but a maxed "a" can't be offered, so the item slots are all random.
-        var drop = Offers.Drop(new Rng(1), "zombie", false, view with { Config = new RunConfig { ItemDropChancePercent = 100 } });
+        var drop = Offers.Drop(new Rng(1), "zombie", view with { Config = new RunConfig { ItemDropChancePercent = 100 } });
         Assert.DoesNotContain("a", drop.Choices);
     }
 
@@ -78,7 +78,7 @@ public class OffersTests
         var view = View(db, new RunConfig { ItemDropChancePercent = 100 });
         for (ulong seed = 1; seed < 50; seed++)
         {
-            var drop = Offers.Drop(new Rng(seed), "snake", false, view);
+            var drop = Offers.Drop(new Rng(seed), "snake", view);
             Assert.Equal(DropKind.Items, drop.Kind);
             Assert.Equal(3, drop.Choices.Count);
             Assert.Equal("b", drop.Choices[0]);
@@ -90,7 +90,7 @@ public class OffersTests
     public void Drop_Passives_FirstIsEnemyPassive()
     {
         var db = SmallDb();
-        var drop = Offers.Drop(new Rng(1), "snake", false, View(db, new RunConfig { ItemDropChancePercent = 0 }));
+        var drop = Offers.Drop(new Rng(1), "snake", View(db, new RunConfig { ItemDropChancePercent = 0 }));
         Assert.Equal(DropKind.Passives, drop.Kind);
         Assert.Equal("venomous", drop.Choices[0]);
         Assert.Equal(3, drop.Choices.Count); // no other passives exist, so items fill the rest
@@ -101,7 +101,7 @@ public class OffersTests
     public void Drop_NoPassivesAnywhere_IsItems()
     {
         var db = SmallDb();
-        var drop = Offers.Drop(new Rng(1), "zombie", false, View(db, new RunConfig { ItemDropChancePercent = 0 }));
+        var drop = Offers.Drop(new Rng(1), "zombie", View(db, new RunConfig { ItemDropChancePercent = 0 }));
         Assert.Equal(DropKind.Items, drop.Kind);
         Assert.Equal("a", drop.Choices[0]);
     }
@@ -111,7 +111,7 @@ public class OffersTests
     {
         var db = SmallDb();
         var view = View(db, new RunConfig { ItemDropChancePercent = 0 }) with { PassiveIds = ["venomous"] };
-        var drop = Offers.Drop(new Rng(1), "snake", false, view);
+        var drop = Offers.Drop(new Rng(1), "snake", view);
         Assert.DoesNotContain("venomous", drop.Choices);
     }
 
@@ -121,8 +121,8 @@ public class OffersTests
         var content = GameContent.Load();
         var view = new RunView(content.Run, content.Database, "silver_knight", 2, [new OwnedItem("sword", 1)], []);
         for (ulong seed = 1; seed < 30; seed++)
-            Assert.Equal(Offers.Drop(new Rng(seed).Fork("drop:1:3"), "green_snake", false, view).Choices,
-                Offers.Drop(new Rng(seed).Fork("drop:1:3"), "green_snake", false, view).Choices);
+            Assert.Equal(Offers.Drop(new Rng(seed).Fork("drop:1:3"), "green_snake", view).Choices,
+                Offers.Drop(new Rng(seed).Fork("drop:1:3"), "green_snake", view).Choices);
     }
 
     [Fact]
@@ -131,32 +131,18 @@ public class OffersTests
         var db = TestContent.Db(
             ("enemies/common.json", """{ "id": "common", "maxHp": 10, "rarity": "Common" }"""),
             ("enemies/rare.json", """{ "id": "rare", "maxHp": 10, "rarity": "Rare" }"""));
-        var config = new RunConfig { EncounterWeights = new() { [EncounterKind.Fight] = 1 } };
+        var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
         var counts = new Dictionary<string, int> { ["common"] = 0, ["rare"] = 0 };
         for (ulong seed = 1; seed <= 2000; seed++)
         {
             // Only the first choice: later ones avoid repeats, which skews a 2-enemy pool.
-            var e = Offers.EncounterChoices(new Rng(seed), View(db, config))[0];
+            var e = Offers.EncounterChoices(new Rng(seed), View(db, config), maxDifficulty: 1)[0];
             Assert.Equal(EncounterKind.Fight, e.Kind);
             counts[e.EnemyId!]++;
         }
         // Common 100 vs Rare 20 by default: about 5 to 1.
         double ratio = (double)counts["common"] / counts["rare"];
         Assert.InRange(ratio, 3.5, 7.0);
-    }
-
-    [Fact]
-    public void Encounters_ShowChoicesPerPick_AndEnemiesExist()
-    {
-        var content = GameContent.Load();
-        var view = new RunView(content.Run, content.Database, "silver_knight", 1, [], []);
-        for (ulong seed = 1; seed < 100; seed++)
-        {
-            var choices = Offers.EncounterChoices(new Rng(seed), view);
-            Assert.Equal(3, choices.Count);
-            Assert.All(choices.Where(c => c.Kind != EncounterKind.Shop), c => Assert.Equal(SourceKind.Enemy, content.Database.Get(c.EnemyId!).Kind));
-            Assert.Equal(choices.Count, choices.Distinct().Count());
-        }
     }
 
     [Fact]

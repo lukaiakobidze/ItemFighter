@@ -17,9 +17,9 @@ public sealed class PrepScreen(Game1 game, RunSession session) : RunScreen(game,
         if (!Db.TryGet(e.EnemyId!, out var enemy)) return;
         var card = new Rectangle(24, 64, 260, 306);
         DrawCard(ui, enemy, card);
-        int hp = enemy.MaxHp * Run.EnemyHpPercent(e) / 100;
+        int hp = enemy.MaxHp;
         float x = 312, y = 70;
-        string kind = e.Kind switch { EncounterKind.Boss => "Mission boss", EncounterKind.Elite => "Elite fight", _ => "Fight" };
+        string kind = e.Kind == EncounterKind.Boss ? "Mission boss" : "Fight";
         ui.Text($"{kind}: {enemy.Name}", new Vector2(x, y), 26, e.Kind == EncounterKind.Boss ? Palette.Damage : Palette.Text, bold: true);
         ui.Text($"{enemy.Rarity} enemy  ·  {hp} HP", new Vector2(x, y + 40), 18, Palette.TextDim);
         ui.Text("You learn its abilities by fighting it.", new Vector2(x, y + 72), 17, Palette.TextDim);

@@ -200,14 +200,6 @@ public class RunStateTests
     }
 
     [Fact]
-    public void FinishFight_Elite_DoubleGold()
-    {
-        var run = NewRun();
-        WinFight(run, new Encounter(EncounterKind.Elite, "squire_zombie"));
-        Assert.Equal(20, run.Gold);
-    }
-
-    [Fact]
     public void FinishFight_Lost_EndsRun()
     {
         var run = NewRun();
@@ -239,7 +231,7 @@ public class RunStateTests
     [Fact]
     public void LastBoss_Won_RunWon()
     {
-        var run = NewRun(config: new RunConfig { Missions = 1, EncountersPerMission = 0, Bosses = [new BossConfig("grizzly_bear", 200)] });
+        var run = NewRun(config: new RunConfig { Missions = 1, EncountersPerMission = 0, Bosses = [new BossConfig("grizzly_bear")] });
         var boss = Assert.Single(run.EncounterChoices());
         WinFight(run, boss);
         run.SkipDrop();
@@ -247,26 +239,13 @@ public class RunStateTests
     }
 
     [Fact]
-    public void StartFight_HpScalesByMission_Elite_Boss()
+    public void Boss_IsTheMissionsListedBoss()
     {
         var run = NewRun();
-        run.Mission = 3;
-        run.Choose(new Encounter(EncounterKind.Fight, "squire_zombie"));
-        Assert.Equal(150, run.StartFight().EnemyHpPercent); // +25% per mission after the first
-        run.FinishFight(false);
-
-        run = NewRun();
-        run.Mission = 3;
-        run.Choose(new Encounter(EncounterKind.Elite, "squire_zombie"));
-        Assert.Equal(225, run.StartFight().EnemyHpPercent); // × 150%
-
-        run = NewRun();
         run.Mission = 2;
         run.Encounter = 10;
         run.Choose(run.EncounterChoices()[0]);
-        var setup = run.StartFight();
-        Assert.Equal("green_snake", setup.EnemyId);
-        Assert.Equal(200, setup.EnemyHpPercent); // bosses use their own hpPercent
+        Assert.Equal("green_snake", run.StartFight().EnemyId);
     }
 
     [Fact]
