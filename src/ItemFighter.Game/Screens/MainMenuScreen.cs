@@ -1,48 +1,19 @@
-using System;
+using ItemFighter.UI;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-
-using ItemFighter.Input;
-using ItemFighter.Helpers;
-using System.Collections.Generic;
 
 namespace ItemFighter.Screens;
 
-public class MainMenuScreen : Screen
+public sealed class MainMenuScreen(Game1 game) : Screen(game)
 {
-    private SpriteFont _font;
-    private GraphicsDeviceManager _graphics;
-    private ShapeDrawer _shapes;
-    private List<Texture2D> _textures;
-    private int _selectionIndex = 0;
-    private List<string> _strings;
-    public MainMenuScreen(SpriteFont font, GraphicsDeviceManager graphics, ShapeDrawer shapes, List<Texture2D> textures)
-    {
-        _font = font;
-        _graphics = graphics;
-        _shapes = shapes;
-        _textures = textures;
-        _strings = new List<string>() {"Start Game", "Exit"};
-    }
+    public static readonly Rectangle FightLabButton = new(490, 330, 300, 60);
+    public static readonly Rectangle QuitButton = new(490, 410, 300, 60);
 
-    public override void Update(GameTime gameTime)
+    public override void Draw(Ui ui)
     {
-    }
-
-    public override void Draw(SpriteBatch spriteBatch)
-    {
-        spriteBatch.Begin();
-        for (int i = 0; i < _strings.Count; i++)
-        {
-            Color color = (i == _selectionIndex) ? Color.Yellow : Color.White;
-            spriteBatch.DrawString(_font, _strings[i], new Vector2(100, 100 + i * 30), color);
-        }
-        spriteBatch.End();
-    }
-
-    public override void HandleInput(InputState inputState)
-    {
-        
+        ui.TextIn("ItemFighter", new Rectangle(0, 140, 1280, 90), 72, Palette.Accent, bold: true);
+        ui.TextIn("test build: combat lab", new Rectangle(0, 230, 1280, 40), 22, Palette.TextDim);
+        if (ui.Button(FightLabButton, "Fight Lab", 26)) Game.Show(new FightLabScreen(Game));
+        if (ui.Button(QuitButton, "Quit", 26)) Game.Exit();
+        ui.Text($"{Game.Data.Database.All.Count} things loaded from {Platform.Paths.Data}", new Vector2(16, 690), 14, Palette.TextDim);
     }
 }

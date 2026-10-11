@@ -8,10 +8,14 @@
     <TieredCompilation>false</TieredCompilation>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="FontStashSharp.MonoGame" Version="1.6.1" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.2.1105" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Fonts and art are plain files loaded at runtime (no content pipeline). -->
+    <None Include="Content\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ItemFighter.Core\ItemFighter.Core.csproj" />

@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ItemFighter.Core\ItemFighter.Core.csproj" />
     <ProjectReference Include="..\..\src\ItemFighter.Content\ItemFighter.Content.csproj" />
+    <ProjectReference Include="..\..\src\ItemFighter.Game\ItemFighter.Game.csproj" />
   </ItemGroup>
 </Project>

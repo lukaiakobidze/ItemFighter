@@ -1,14 +1,13 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using ItemFighter.Input;
+using ItemFighter.UI;
 
 namespace ItemFighter.Screens;
 
-public abstract class Screen
+/// <summary>One full-window screen. Draw describes the whole UI each frame and handles its clicks.</summary>
+public abstract class Screen(Game1 game)
 {
-    public abstract void Update(GameTime gameTime);
-    public abstract void Draw(SpriteBatch spriteBatch);
-    public abstract void HandleInput(InputState inputState);
-    
+    protected Game1 Game => game;
+
+    public virtual void Update(double seconds) { }
+
+    public abstract void Draw(Ui ui);
 }
