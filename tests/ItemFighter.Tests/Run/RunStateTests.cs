@@ -295,3 +295,46 @@ public class RunStateTests
         Assert.Equal(before, run.Hotbar);
     }
 }
+
+public class FullRunTests
+{
+    /// <summary>Walks whole runs with random choices and forced wins: every phase is reachable and the run ends Won.</summary>
+    [Theory]
+    [InlineData(1UL)]
+    [InlineData(2UL)]
+    [InlineData(3UL)]
+    public void WholeRun_WithForcedWins_EndsWon(ulong seed)
+    {
+        var run = RunStateTests.NewRun(seed);
+        var pick = new Core.Determinism.Rng(seed);
+        int steps = 0;
+        while (!run.IsOver && steps++ < 1000)
+        {
+            switch (run.Phase)
+            {
+                case RunPhase.ChoosingEncounter:
+                    var choices = run.EncounterChoices();
+                    run.Choose(choices[pick.NextInt(choices.Count)]);
+                    break;
+                case RunPhase.Preparing:
+                    if (!run.CanFight) run.Move(new ItemRef(false, 0), new ItemRef(true, 0));
+                    run.StartFight();
+                    run.FinishFight(won: true);
+                    break;
+                case RunPhase.Dropping:
+                    if (!run.TakeDrop(pick.NextInt(3))) run.SkipDrop();
+                    break;
+                case RunPhase.Shopping:
+                    while (run.Buy(0)) { }
+                    if (run.Gold > 20) run.Reroll();
+                    run.LeaveShop();
+                    break;
+            }
+            Assert.True(run.AllOwned.Count <= run.Config.HotbarSize + run.Config.BackpackSize);
+            Assert.True(run.Gold >= 0);
+        }
+        Assert.Equal(RunPhase.Won, run.Phase);
+        Assert.Equal(5, run.Mission);
+        Assert.True(run.FightsWon >= 5);
+    }
+}

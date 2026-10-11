@@ -10,7 +10,17 @@ A roguelike autobattler. Design: `docs/design/`. Build plans: `docs/superpowers/
    dotnet run --project src/ItemFighter.Game
    ```
    The first run downloads packages and takes a minute.
-3. Main menu → **Fight Lab**.
+3. Main menu → **New run** to play a run (see below), or **Fight Lab** to test any board against any enemy.
+   **A run:**
+   - Pick a character. Each mission has 10 encounters, then its boss. Win 5 missions to win the run. Losing any fight ends the run.
+   - On the map, pick 1 of 3 encounters: a fight, an elite fight (more HP, more gold, a better drop) or a shop.
+   - Before each fight you arrange your hotbar (the 6 items that fight). It stays as you left it last fight.
+   - Click an item to pick it up and click a slot to put it there. Right-click an item to sell it for half its price.
+   - After a win you get gold and pick 1 of 3 rewards: items (the first is the enemy's own drop) or passives (the first is one of the enemy's passives).
+   - A duplicate merges into your copy, one level higher.
+   - "Save and quit to menu" (or Esc) keeps the run. **Continue run** picks it up again. Quitting mid-fight replays that fight.
+   - Every run number (gold, prices, backpack size, bosses, odds) is in `src/ItemFighter.Content/Data/run.json`.
+   **The Fight Lab:**
    - Click a board slot, then an item. Right-click a slot to empty it. Use the mouse wheel or −/+ to change an item's level.
    - Pick an enemy, a character and passives on the right, then press **FIGHT**.
 4. In a fight:

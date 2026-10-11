@@ -82,7 +82,34 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 
 Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
 
-A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a `rarity` (how rarely you meet it), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a `rarity` (how rarely you meet it), a `dropItem` (the item it offers after you beat it; it never uses it), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+
+Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's passives. They can show up as a reward after you beat that enemy, and then work for you instead.
+
+## The run: run.json
+
+`Data/run.json` holds every number of the run loop. Leave a key out to use its default. Rarity weights are always 5 numbers, for Common, Uncommon, Rare, Epic and Legendary; a 0 means "never".
+
+| Key | Default | What it does |
+|---|---|---|
+| `missions`, `encountersPerMission`, `choicesPerPick` | 5, 10, 3 | Run length, and how many encounters you choose from |
+| `hotbarSize`, `backpackSize` | 6, 12 | Items that fight, and items you can carry besides |
+| `startingGold` | 10 | Gold at the start of a run |
+| `fightGold` | [5,6,7,8,9] | Gold for a normal win, per mission |
+| `eliteGoldPercent`, `bossGold` | 200, 15 | Elite gold as a % of a normal win; boss gold |
+| `prices` | Common 4 … Legendary 25 | Buy price per rarity (× level). Selling gives `sellPercent` of it |
+| `sellPercent` | 50 | |
+| `shopSize`, `rerollBaseCost`, `rerollCostStep` | 5, 1, 1 | Shop stock size; the first reroll costs 1, each one after costs 1 more |
+| `encounterWeights` | Fight 60, Elite 15, Shop 25 | How often each encounter type is offered |
+| `enemyHpPercentPerMission` | 25 | Enemy HP +25% per mission after the first |
+| `eliteHpPercent` | 150 | Elites have 150% of that |
+| `bosses` | 5 entries | `{ "enemy": id, "hpPercent": 200 }` per mission (missing missions reuse the last) |
+| `enemyRarityWeights` | Common 100 … Legendary 3 | How often you meet enemies of each rarity |
+| `dropRarityWeights` | by enemy rarity | Rarity odds of random rewards after beating an enemy of that rarity (elites count one rarity higher) |
+| `shopRarityWeights` | one row per mission | Rarity odds of shop items |
+| `characterPoolMultiplier` | 3 | Items in your character's pool (`"pools": ["silver_knight"]`) are this many times as likely |
+| `tagBonusPercent` | 15 | Each item you own that shares a tag with an offer makes it 15% more likely |
+| `itemDropChancePercent` | 50 | Chance a reward is items rather than passives |
 
 ## Unique behaviour
 

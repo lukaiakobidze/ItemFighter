@@ -5,16 +5,18 @@ namespace ItemFighter.UI;
 /// <summary>Tooltip text for content, shared by the lab and the fight screen.</summary>
 public static class Tooltips
 {
-    public static (string Title, List<string> Lines) For(SourceDefinition def, int level, ContentDatabase db)
+    /// <summary>ownedByPlayer words an enemy passive the player has taken from the player's side.</summary>
+    public static (string Title, List<string> Lines) For(SourceDefinition def, int level, ContentDatabase db, bool ownedByPlayer = false)
     {
+        ownedByPlayer &= def.IsPassiveAbility; // only enemy passives change wording when the player has them
         var lines = new List<string>();
         var facts = new List<string>();
-        if (def.Kind is SourceKind.Item or SourceKind.Passive) facts.Add(def.Rarity.ToString());
+        if (def.Kind is SourceKind.Item or SourceKind.Passive || ownedByPlayer) facts.Add(def.Rarity.ToString() + (ownedByPlayer ? " passive" : ""));
         if (def.Tags.Count > 0) facts.Add(string.Join(", ", def.Tags));
         if (def.CooldownTicks is int cd) facts.Add($"{Words.Seconds(cd)} cooldown" + (def.Activation == Activation.Active ? " (click)" : ""));
         if (def.MaxHp > 0) facts.Add($"{def.MaxHp} HP");
         if (facts.Count > 0) lines.Add(string.Join("  ·  ", facts));
-        lines.AddRange(SourceDescriber.Lines(def, level));
+        lines.AddRange(SourceDescriber.Lines(def, level, ownedByPlayer));
         if (def.Kind == SourceKind.Enemy)
         {
             foreach (string id in def.AbilityIds)

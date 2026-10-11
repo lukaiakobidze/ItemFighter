@@ -1,4 +1,7 @@
+using ItemFighter.Core.Run;
 using ItemFighter.Screens;
+using ItemFighter.Screens.Run;
+using ItemFighter.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Step = ItemFighter.Platform.Automation.Step;
@@ -14,6 +17,7 @@ public static class AutomationScripts
         "lab" => [.. ToLab(), new(Wait: 0.2, Do: Automation.Hover(FightLabScreen.GridCell(3)), Shot: "lab")],
         "fight" => Fight(),
         "bear" => Bear(),
+        "run" => RunLoop(),
         _ => throw new ArgumentException($"unknown automation script '{name}'"),
     };
 
@@ -78,5 +82,83 @@ public static class AutomationScripts
         new(Do: g => FightOf(g).Speed = 8),
         new(Until: g => FightOf(g).Battle.Result != Core.Engine.BattleResult.Ongoing),
         new(Wait: 1.2, Shot: "bear-end"),
+    ];
+
+    private static RunSession SessionOf(Game1 g) => ((RunScreen)g.Current!).Session;
+
+    private static void Check(bool ok, string what)
+    {
+        if (!ok) throw new InvalidOperationException("automation check failed: " + what);
+    }
+
+    /// <summary>A short run: character pick, map, prep, a fight, the drop, a shop, then save and continue from the menu.</summary>
+    private static Step[] RunLoop() =>
+    [
+        new(Wait: 0.2, Do: g =>
+        {
+            CharacterSelectScreen.SeedOverride = 11;
+            Automation.Click(MainMenuScreen.NewRunButton)(g);
+        }),
+        new(Wait: 0.2, Until: g => g.Current is CharacterSelectScreen, Shot: "run-character"),
+        new(Do: Automation.Click(CharacterSelectScreen.CardRect(0))),
+        new(Wait: 0.3, Until: g => g.Current is MapScreen, Do: Automation.Hover(MapScreen.ChoiceRect(0, 3)), Shot: "run-map"),
+        // Fight the zombie whatever the map offered, so the script can rely on winning with the starting items.
+        new(Do: g =>
+        {
+            var session = SessionOf(g);
+            session.Run.Choose(new Encounter(EncounterKind.Fight, "squire_zombie"));
+            session.Commit();
+            session.ShowCurrent(g);
+        }),
+        new(Wait: 0.3, Until: g => g.Current is PrepScreen, Do: Automation.Hover(InventoryPanel.HotbarSlot(0)), Shot: "run-prep"),
+        new(Do: Automation.Click(PrepScreen.FightButton)),
+        new(Wait: 0.2, Until: g => g.Current is FightScreen, Do: g => FightOf(g).Speed = 8),
+        new(Until: g => FightOf(g).Battle.Result != Core.Engine.BattleResult.Ongoing),
+        new(Wait: 1.2, Do: g => g.Input.Inject(new Vector2(640, 600)), Shot: "run-fight-end"),
+        new(Do: g =>
+        {
+            Check(FightOf(g).Battle.Result == Core.Engine.BattleResult.PlayerWon, "the starting items beat the zombie");
+            Automation.Click(FightScreen.ReplayButton)(g);
+        }),
+        new(Wait: 0.3, Until: g => g.Current is DropScreen, Do: Automation.Hover(DropScreen.ChoiceRect(1, 3)), Shot: "run-drop"),
+        new(Do: Automation.Click(DropScreen.TakeRect(0, 3))),
+        new(Wait: 0.3, Until: g => g.Current is MapScreen, Shot: "run-map2"),
+        new(Do: g =>
+        {
+            var session = SessionOf(g);
+            Check(session.Run.Encounter == 1 && session.Run.Gold == 15, "won fight gave 5 gold and moved on");
+            session.Run.Choose(new Encounter(EncounterKind.Shop, null));
+            session.Commit();
+            session.ShowCurrent(g);
+        }),
+        new(Wait: 0.3, Until: g => g.Current is ShopScreen, Do: Automation.Hover(ShopScreen.StockRect(1)), Shot: "run-shop"),
+        new(Do: Automation.Click(ShopScreen.BuyRect(0))),
+        new(Wait: 0.2, Do: Automation.Click(InventoryPanel.HotbarSlot(0))),
+        new(Wait: 0.2, Do: Automation.Hover(InventoryPanel.BackpackSlot(0)), Shot: "run-shop-holding"),
+        new(Do: Automation.Click(InventoryPanel.BackpackSlot(0))),
+        new(Wait: 0.2, Shot: "run-shop-moved"),
+        new(Do: Automation.Click(ShopScreen.LeaveButton)),
+        new(Wait: 0.3, Until: g => g.Current is MapScreen, Do: Automation.Click(RunScreen.MenuButton)),
+        new(Wait: 0.3, Until: g => g.Current is MainMenuScreen, Shot: "run-menu-continue"),
+        new(Do: g =>
+        {
+            Check(((MainMenuScreen)g.Current!).HasSavedRun, "save and quit kept the run");
+            Automation.Click(MainMenuScreen.ContinueButton)(g);
+        }),
+        new(Wait: 0.3, Until: g => g.Current is MapScreen, Shot: "run-continued"),
+        new(Do: g =>
+        {
+            var session = SessionOf(g);
+            Check(session.Run.Encounter == 2, "continue resumed at encounter 3");
+            session.Run.Choose(new Encounter(EncounterKind.Elite, "grizzly_bear"));
+            session.Commit();
+            session.ShowCurrent(g);
+        }),
+        new(Wait: 0.3, Until: g => g.Current is PrepScreen, Do: Automation.Click(PrepScreen.FightButton)),
+        new(Wait: 0.5, Until: g => g.Current is FightScreen, Do: Automation.Click(FightScreen.GiveUpButton)),
+        new(Wait: 0.2, Shot: "run-giveup-confirm"),
+        new(Do: Automation.Click(FightScreen.GiveUpButton)),
+        new(Wait: 0.3, Until: g => g.Current is RunEndScreen, Shot: "run-end"),
+        new(Do: g => Check(!File.Exists(RunSession.DefaultSavePath), "a lost run deletes its save")),
     ];
 }

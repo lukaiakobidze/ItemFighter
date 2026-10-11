@@ -112,3 +112,18 @@ public class RunContentTests
         Assert.NotEmpty(broken);
     }
 }
+
+public class EnemyPassiveWordingTests
+{
+    [Fact]
+    public void EnemyPassive_TakenByPlayer_IsWordedForThePlayer()
+    {
+        var content = GameContent.Load();
+        var venomous = content.Database.Get("venomous");
+        string enemyView = string.Join(" ", SourceDescriber.Lines(venomous, 1));
+        string playerView = string.Join(" ", SourceDescriber.Lines(venomous, 1, ownedByPlayer: true));
+        Assert.Contains("you", enemyView);
+        Assert.Contains("the enemy", playerView);
+        Assert.DoesNotContain(" you", playerView.Replace("When you", ""));
+    }
+}

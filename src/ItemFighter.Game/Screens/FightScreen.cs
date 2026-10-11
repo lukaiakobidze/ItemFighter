@@ -17,7 +17,10 @@ public sealed class FightScreen : Screen
     private static readonly Rectangle PlayerHpBar = new(246, 350, 632, 28);
     private static readonly int[] Speeds = [1, 2, 4];
 
-    private readonly LabSetup _setup;
+    private readonly LabSetup? _lab;
+    private readonly BattleSetup _battleSetup;
+    private readonly Action<BattleResult>? _onFinished;
+    private bool _confirmGiveUp;
     private readonly FightClock _clock;
     private readonly EventCursor _cursor;
     private readonly TargetingState _targeting = new();
@@ -29,10 +32,18 @@ public sealed class FightScreen : Screen
     private double _endedAt = -1;
     private bool _wasActive;
 
-    public FightScreen(Game1 game, LabSetup setup) : base(game)
+    /// <summary>A Fight Lab fight: the result offers a new seed, the same seed, or back to the lab.</summary>
+    public FightScreen(Game1 game, LabSetup setup) : this(game, setup.ToBattleSetup(), null, setup) { }
+
+    /// <summary>A run fight: the result offers only Continue, which reports the result.</summary>
+    public FightScreen(Game1 game, BattleSetup setup, Action<BattleResult> onFinished) : this(game, setup, onFinished, null) { }
+
+    private FightScreen(Game1 game, BattleSetup setup, Action<BattleResult>? onFinished, LabSetup? lab) : base(game)
     {
-        _setup = setup;
-        Battle = new Battle(setup.ToBattleSetup(), game.Data.Database, game.Data.Scripts);
+        _lab = lab;
+        _battleSetup = setup;
+        _onFinished = onFinished;
+        Battle = new Battle(setup, game.Data.Database, game.Data.Scripts);
         _clock = new FightClock(Battle);
         _cursor = new EventCursor(Battle);
         _wasActive = game.IsActive;
@@ -109,7 +120,7 @@ public sealed class FightScreen : Screen
         if (ui.Input.KeyPressed(Keys.Escape) || ui.Input.RightClicked)
         {
             if (_targeting.Selecting is not null) _targeting.Cancel();
-            else if (ui.Input.KeyPressed(Keys.Escape) && Battle.Result != BattleResult.Ongoing) BackToLab();
+            else if (ui.Input.KeyPressed(Keys.Escape) && Battle.Result != BattleResult.Ongoing) Leave(Battle.Result);
             ui.Input.ConsumeClicks();
         }
         if ((ui.Input.KeyPressed(Keys.Space) || ui.Input.KeyPressed(Keys.P)) && Battle.Result == BattleResult.Ongoing) Paused = !Paused;
@@ -181,7 +192,7 @@ public sealed class FightScreen : Screen
     private void DrawPlayer(Ui ui)
     {
         ui.Panel(PlayerPanel);
-        string title = _setup.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? $"You ({ch.Name})" : "You";
+        string title = _battleSetup.Player.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? $"You ({ch.Name})" : "You";
         ui.Text(title, new Vector2(32, 350), 24, Palette.Text, bold: true);
         DrawHp(ui, Battle.Player, PlayerHpBar);
         DrawStatuses(ui, Battle.Player, new Vector2(246, 384));
@@ -279,7 +290,7 @@ public sealed class FightScreen : Screen
 
     private void DrawExtras(Ui ui)
     {
-        var passives = Battle.Player.Sources.Where(s => s.Def.Kind == SourceKind.Passive).ToList();
+        var passives = Battle.Player.Sources.Where(s => s.Def.Kind == SourceKind.Passive || s.Def.IsPassiveAbility).ToList();
         float x = 32;
         if (passives.Count > 0) ui.Text("Passives:", new Vector2(x, 670), 15, Palette.TextDim);
         x += 80;
@@ -291,7 +302,7 @@ public sealed class FightScreen : Screen
             ui.Text(p.Def.Name, new Vector2(x + 8, 670), 15, Palette.For(p.Def.Rarity), bold: true);
             if (ui.Hover(r))
             {
-                var (title, lines) = Tooltips.For(p.Def, 1, Game.Data.Database);
+                var (title, lines) = Tooltips.For(p.Def, 1, Game.Data.Database, ownedByPlayer: true);
                 ui.Tooltip(title, lines, Palette.For(p.Def.Rarity));
             }
             x += r.Width + 8;
@@ -383,7 +394,13 @@ public sealed class FightScreen : Screen
         for (int i = 0; i < Speeds.Length; i++)
             if (ui.Button(SpeedButton(i), $"{Speeds[i]}×", 18, selected: Speed == Speeds[i])) Speed = Speeds[i];
         if (ui.Button(PauseButton, Paused ? "Resume" : "Pause", 16, Battle.Result == BattleResult.Ongoing, selected: Paused)) Paused = !Paused;
-        if (ui.Button(new Rectangle(1172, 14, 92, 38), "Give up", 16, Battle.Result == BattleResult.Ongoing)) BackToLab();
+        if (ui.Button(GiveUpButton, _confirmGiveUp ? "Sure?" : "Give up", 16, Battle.Result == BattleResult.Ongoing, selected: _confirmGiveUp))
+        {
+            // In a run giving up loses the run, so it takes a second click.
+            if (_lab is null && !_confirmGiveUp) _confirmGiveUp = true;
+            else Leave(BattleResult.EnemyWon);
+        }
+        else if (ui.Input.LeftClicked) _confirmGiveUp = false;
 
         ui.Panel(LogPanel);
         ui.Text("Combat log", new Vector2(LogPanel.X + 10, LogPanel.Y + 8), 16, Palette.TextDim, bold: true);
@@ -398,6 +415,8 @@ public sealed class FightScreen : Screen
             ui.Wrapped(entry.Text, new Vector2(LogPanel.X + 10, y), width, 14, entry.Color);
         }
     }
+
+    public static readonly Rectangle GiveUpButton = new(1172, 14, 92, 38);
 
     public static Rectangle SpeedButton(int index) => new(906 + index * 60, 14, 54, 38);
     public static readonly Rectangle PauseButton = new(1086, 14, 80, 38);
@@ -419,21 +438,35 @@ public sealed class FightScreen : Screen
             _ => ("Draw", Palette.TextDim),
         };
         ui.TextIn(title, new Rectangle(panel.X, panel.Y + 20, panel.Width, 70), 52, color, bold: true);
-        ui.TextIn($"{Battle.Tick / 10.0:0.0}s  ·  you {Math.Max(0, Battle.Player.Hp)}/{Battle.Player.MaxHp} HP  ·  seed {_setup.Seed}",
+        string seed = _lab is null ? "" : $"  ·  seed {_lab.Seed}";
+        ui.TextIn($"{Battle.Tick / 10.0:0.0}s  ·  you {Math.Max(0, Battle.Player.Hp)}/{Battle.Player.MaxHp} HP{seed}",
             new Rectangle(panel.X, panel.Y + 96, panel.Width, 30), 17, Palette.TextDim);
-        if (ui.Button(AgainButton, "New seed", 18))
+        if (_lab is null)
         {
-            _setup.Seed++;
-            Game.Show(new FightScreen(Game, _setup));
+            if (ui.Button(ReplayButton, Battle.Result == BattleResult.PlayerWon ? "Continue" : "End run", 18)) Leave(Battle.Result);
         }
-        if (ui.Button(ReplayButton, "Same seed", 18)) Game.Show(new FightScreen(Game, _setup));
-        if (ui.Button(BackButton, "Back to lab", 18)) BackToLab();
+        else
+        {
+            if (ui.Button(AgainButton, "New seed", 18))
+            {
+                _lab.Seed++;
+                Game.Show(new FightScreen(Game, _lab));
+            }
+            if (ui.Button(ReplayButton, "Same seed", 18)) Game.Show(new FightScreen(Game, _lab));
+            if (ui.Button(BackButton, "Back to lab", 18)) Leave(Battle.Result);
+        }
         ui.Input.ConsumeClicks();
     }
 
-    private void BackToLab()
+    /// <summary>Leaves the fight: back to the lab, or hands the result to the run.</summary>
+    private void Leave(BattleResult result)
     {
-        _setup.Save(FightLabScreen.SavePath);
+        if (_onFinished is not null)
+        {
+            _onFinished(result);
+            return;
+        }
+        _lab!.Save(FightLabScreen.SavePath);
         Game.Show(new FightLabScreen(Game));
     }
 }
