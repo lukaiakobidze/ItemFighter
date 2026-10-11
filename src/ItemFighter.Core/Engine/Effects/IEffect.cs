@@ -4,6 +4,9 @@ namespace ItemFighter.Core.Engine.Effects;
 public interface IEffect
 {
     void Apply(EffectContext ctx);
+
+    /// <summary>A lowercase phrase for tooltips, e.g. "deal 10 damage".</summary>
+    string Describe(Content.DescribeContext ctx) => GetType().Name;
 }
 
 /// <param name="Source">The source whose ability is running.</param>

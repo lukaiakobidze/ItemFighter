@@ -7,6 +7,7 @@ using ItemFighter.Core.Engine;
 //   validate
 //   fight --items rusty_sword@0,buckler@1 --enemy goblin_scrapper [--seed 1] [--character wanderer] [--passives a,b] [--log]
 //   bulk  --enemy ember_king [--runs 1000] [--seed 1]
+//   describe [--level 1]   (prints every tooltip text)
 
 var options = ParseOptions(args.Skip(1));
 string command = args.FirstOrDefault() ?? "help";
@@ -28,8 +29,15 @@ switch (command)
         return Fight();
     case "bulk":
         return Bulk();
+    case "describe":
+        foreach (var def in content.Database.All)
+        {
+            Console.WriteLine($"{def.Id} ({def.Kind}{(def.CooldownTicks is int cd ? ", " + Words.Seconds(cd) : "")})");
+            foreach (var line in SourceDescriber.Lines(def, int.Parse(Get("level", "1")))) Console.WriteLine("    " + line);
+        }
+        return 0;
     default:
-        Console.WriteLine("usage: validate | fight --items id@slot,... --enemy id [--seed n] [--character id] [--passives a,b] [--log] | bulk --enemy id [--runs n] [--seed n]");
+        Console.WriteLine("usage: validate | fight --items id@slot,... --enemy id [--seed n] [--character id] [--passives a,b] [--log] | bulk --enemy id [--runs n] [--seed n] | describe [--level n]");
         return command == "help" ? 0 : 1;
 }
 

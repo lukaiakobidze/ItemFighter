@@ -32,6 +32,9 @@ public sealed class SourceDefinition
     public IReadOnlyList<ModifierDefinition> Modifiers { get; init; } = [];
     public string? Script { get; init; }
 
+    /// <summary>Hand-written tooltip text; replaces the generated one. "{key}" shows a level value, "\n" starts a new line.</summary>
+    public string? Description { get; init; }
+
     public int MaxHp { get; init; }
     public IReadOnlyList<string> AbilityIds { get; init; } = [];
     public IReadOnlyList<PhaseDefinition> Phases { get; init; } = [];

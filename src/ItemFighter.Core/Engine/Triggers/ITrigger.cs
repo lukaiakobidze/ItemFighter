@@ -7,4 +7,7 @@ public interface ITrigger
 
     /// <summary>Whether this trigger may react to events its own source produced.</summary>
     bool AllowSelf => false;
+
+    /// <summary>A capitalised clause for tooltips, e.g. "When you take damage".</summary>
+    string Describe(Content.DescribeContext ctx) => GetType().Name;
 }

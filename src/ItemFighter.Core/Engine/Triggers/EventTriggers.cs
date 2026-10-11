@@ -5,6 +5,8 @@ namespace ItemFighter.Core.Engine.Triggers;
 public sealed class OnFightStartTrigger : ITrigger
 {
     public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) => e is FightStarted;
+
+    public string Describe(DescribeContext ctx) => "At the start of the fight";
 }
 
 /// <summary>
@@ -44,12 +46,22 @@ public sealed class OnItemFiredTrigger : ITrigger
         if (_adjacent && !(fired.Slot is int a && owner.Slot is int b && Math.Abs(a - b) == 1)) return false;
         return _tags.All(fired.Def.HasTag);
     }
+
+    public string Describe(DescribeContext ctx)
+    {
+        if (_self) return "When this item fires";
+        string tags = string.Concat(_tags.Select(t => t + " "));
+        string whose = ctx.IsEnemy ? "its" : "your";
+        return _adjacent ? $"When {Words.Article("adjacent")} {tags}item fires" : $"When another of {whose} {tags}items fires";
+    }
 }
 
 public sealed class OnDamageTakenTrigger : ITrigger
 {
     public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
         e is DamageDealt d && d.Target == owner.Owner && d.Total > 0;
+
+    public string Describe(DescribeContext ctx) => ctx.IsEnemy ? "When it takes damage" : "When you take damage";
 }
 
 /// <summary>Reacts the first time the owner's HP drops below a percentage.</summary>
@@ -69,6 +81,8 @@ public sealed class OnHpBelowTrigger(int percent) : ITrigger
         if (c.Hp * 100 >= c.MaxHp * percent) return false;
         return owner.FiredOnce.Add(this);
     }
+
+    public string Describe(DescribeContext ctx) => $"The first time {(ctx.IsEnemy ? "its" : "your")} HP drops below {percent}%";
 }
 
 /// <summary>Reacts when a status is applied to the owner's side ("Self") or the other side ("Enemy").</summary>
@@ -88,12 +102,17 @@ public sealed class OnStatusAppliedTrigger(StatusType status, bool enemySide) : 
         if (targetSide is null) return false;
         return (targetSide != owner.Owner) == enemySide;
     }
+
+    public string Describe(DescribeContext ctx) =>
+        $"When {status} is applied to {ctx.Combatant(enemySide ? TargetSpec.Enemy : TargetSpec.Self)}";
 }
 
 public sealed class OnShieldGainedTrigger : ITrigger
 {
     public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
         e is ShieldGained g && g.Target == owner.Owner;
+
+    public string Describe(DescribeContext ctx) => ctx.IsEnemy ? "When it gains shield" : "When you gain shield";
 }
 
 /// <summary>Reacts on every n-th cooldown or click fire of the owner (reaction fires don't count).</summary>
@@ -110,4 +129,6 @@ public sealed class EveryNthUseTrigger(int n) : ITrigger
 
     public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
         e is SourceFired { Reaction: false } f && f.SourceId == owner.Id && owner.CycleCount % n == 0;
+
+    public string Describe(DescribeContext ctx) => $"Every {Words.Ordinal(n)} use";
 }

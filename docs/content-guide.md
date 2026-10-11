@@ -25,6 +25,10 @@ Active items can add `"requiresTarget": true` (the player clicks the item, then 
 
 Every number can be written directly (`"amount": 5`) or as a level value (`"amount": "{damage}"`).
 
+## Tooltip text
+
+Tooltips are written automatically from the item's triggers and effects, e.g. "Every 4s: apply 5 Burn to the enemy." To see them all, run `dotnet run --project tools/ItemFighter.Sim -- describe --level 1`. To write your own text instead, add `"description": "Hits for {damage}.\nThen smiles."`, where `{damage}` shows the level value and `\n` starts a new line. Scripted items always need one.
+
 ## Triggers: when an ability happens
 
 | trigger | meaning |

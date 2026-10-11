@@ -23,6 +23,12 @@ public sealed class DamageEffect(ValueRef amount, TargetSpec target) : IEffect
 
     public void Apply(EffectContext ctx) =>
         ctx.Battle.DealDamage(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Damage"), DamageKind.Direct, ctx.Source, ctx.Depth);
+
+    public string Describe(DescribeContext ctx)
+    {
+        string who = ctx.Combatant(target);
+        return who == "the enemy" ? $"deal {ctx.Value(amount)} damage" : $"deal {ctx.Value(amount)} damage to {(who == "you" && !ctx.IsEnemy ? "yourself" : who)}";
+    }
 }
 
 public sealed class ShieldEffect(ValueRef amount, TargetSpec target) : IEffect
@@ -32,6 +38,9 @@ public sealed class ShieldEffect(ValueRef amount, TargetSpec target) : IEffect
 
     public void Apply(EffectContext ctx) =>
         ctx.Battle.GainShield(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Shield"), ctx.Source, ctx.Depth);
+
+    public string Describe(DescribeContext ctx) =>
+        target.Kind == TargetKind.Self ? $"gain {ctx.Value(amount)} shield" : $"give {ctx.Combatant(target)} {ctx.Value(amount)} shield";
 }
 
 public sealed class HealEffect(ValueRef amount, TargetSpec target) : IEffect
@@ -41,4 +50,7 @@ public sealed class HealEffect(ValueRef amount, TargetSpec target) : IEffect
 
     public void Apply(EffectContext ctx) =>
         ctx.Battle.Heal(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Heal"), ctx.Source, ctx.Depth);
+
+    public string Describe(DescribeContext ctx) =>
+        target.Kind == TargetKind.Self ? $"heal {ctx.Value(amount)}" : $"heal {ctx.Combatant(target)} for {ctx.Value(amount)}";
 }

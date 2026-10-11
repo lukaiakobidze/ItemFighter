@@ -23,6 +23,8 @@ public sealed class ChargeEffect(ValueRef ticks, TargetSpec target) : IEffect
         foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.Charge(item, value, ctx.Source, ctx.Depth);
     }
+
+    public string Describe(DescribeContext ctx) => $"charge {ctx.Items(target)} {ctx.Seconds(ticks)}";
 }
 
 /// <summary>Finishes target items' cooldowns: actives become ready, passives fire as soon as they can.</summary>
@@ -35,6 +37,8 @@ public sealed class ResetCooldownEffect(TargetSpec target) : IEffect
         foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.ResetCooldown(item, ctx.Source, ctx.Depth);
     }
+
+    public string Describe(DescribeContext ctx) => $"finish {Words.Possessive(ctx.Items(target))} cooldown";
 }
 
 /// <summary>Permanently (for this fight) raises a target item's Damage, Shield, Heal, Burn, Poison or Chill.</summary>
@@ -56,6 +60,8 @@ public sealed class ModifyStatEffect(string stat, ValueRef amount, TargetSpec ta
         foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.ModifyStat(item, stat, value, ctx.Source, ctx.Depth);
     }
+
+    public string Describe(DescribeContext ctx) => $"+{ctx.Value(amount)} {stat} to {ctx.Items(target)} this fight";
 }
 
 /// <summary>
@@ -77,4 +83,6 @@ public sealed class CopyEffect(TargetSpec target) : IEffect
                     ctx.Battle.RunEffects(ability, item, null, ctx.Depth + 1);
         }
     }
+
+    public string Describe(DescribeContext ctx) => $"repeat {Words.Possessive(ctx.Items(target))} effects";
 }

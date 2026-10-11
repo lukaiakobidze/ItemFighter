@@ -29,4 +29,14 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
         foreach (var item in Targeting.ResolveItems(target, ctx))
             ctx.Battle.ApplyItemStatus(item, status, value, ctx.Source, ctx.Depth);
     }
+
+    public string Describe(DescribeContext ctx)
+    {
+        if (status.IsCombatantStatus())
+        {
+            string who = ctx.Combatant(target);
+            return $"apply {ctx.Value(amount)} {status} to {(who == "you" && !ctx.IsEnemy ? "yourself" : who)}";
+        }
+        return $"{status.ToString().ToLowerInvariant()} {ctx.Items(target)} for {ctx.Seconds(amount)}";
+    }
 }
