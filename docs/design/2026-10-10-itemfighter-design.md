@@ -85,12 +85,20 @@ Design rules:
 - **5 missions** per run. Each has **10 encounter picks**, then the **boss**.
 - Each pick offers **3 options** drawn from: Fight, Elite fight, Shop, Themed shop (Blacksmith: weapons; Alchemist: potions...), Event, Rest/Upgrade.
 - **Gold** is earned from fights and spent in shops. Shops can be **rerolled** for gold, with the cost rising per reroll.
-- **Losing any fight ends the run** (like Slay the Spire). Fight options show the enemy and a difficulty rating, but not its abilities: those you learn by fighting it. During a fight, ability cooldowns and intents are visible. A bestiary (later) fills in with what you've seen.
+- **Losing any fight ends the run** (like Slay the Spire). Fight options show the enemy and its rarity (how rare it is to meet, not how hard it is), but not its abilities: those you learn by fighting it. During a fight, ability cooldowns and intents are visible. A bestiary (later) fills in with what you've seen.
 - **Item offer weighting** keeps a huge pool from feeling thin:
   1. Character pool + neutral pool, with the character pool weighted up.
   2. **Build gravity:** tags you already own are slightly more likely to appear.
   3. Themed shops let you steer on purpose.
   4. Rarity weights shift upward as missions progress.
+- **Backpack and hotbar (Luka, 2026-10-11):** items you own live in a backpack with limited space. Unwanted items can be sold. Before each fight you pick which items go on the 6-slot hotbar; it starts from the previous fight's hotbar (empty on the first fight of a run).
+- **Pools:** all current content is Common and in the shared pool. Items from the played character's pool are more likely, other pools still appear. Owned tags are slightly more likely.
+- **Post-fight drop (Luka, 2026-10-11):** after each fight you pick 1 of 3, either all items or all passives.
+  - Items: one choice is the enemy's drop item (an item each enemy carries but never uses); the other two are random by rarity and tags.
+  - Passives: if the enemy has passives, the first choice is one of them (picked by rarity and tags); the rest are random by rarity and tags. An enemy with no passives offers 3 random passives.
+  - The enemy's rarity pushes the rarity of the random choices up.
+- **Rarity everywhere:** items, passives and enemies all carry a rarity (all Common for now). Enemy rarity means how rare it is to meet that enemy.
+- **Item levels:** each level slightly improves the item's main number (about +25% per level, set per item in data). Whether upgrading stays in the game is still open.
 - Expected run length: roughly 1.5 to 3 hours. **Mid-run save/quit is required.**
 
 ## 9. Meta progression and competition
