@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ItemFighter.Sim</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ItemFighter.Core\ItemFighter.Core.csproj" />
+    <ProjectReference Include="..\..\src\ItemFighter.Content\ItemFighter.Content.csproj" />
+  </ItemGroup>
+</Project>

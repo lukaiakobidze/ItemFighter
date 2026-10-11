@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>ItemFighter.Core</RootNamespace>
+  </PropertyGroup>
+</Project>
