@@ -1,10 +1,7 @@
 {
   "id": "grizzly_bear",
   "name": "Grizzly Bear",
+  "rarity": "Common",
   "maxHp": 100,
-  "difficulty": "Medium",
-  "abilityIds": [
-    "thick_skin",
-    "bear_claw"
-  ]
+  "abilityIds": ["thick_skin", "bear_claw"]
 }

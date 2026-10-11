@@ -2,21 +2,20 @@
   "id": "venom_fang",
   "name": "Venom Fang",
   "rarity": "Common",
-  "tags": [
-    "Poison"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Poison"],
+  "pools": ["neutral"],
   "cooldown": 4,
   "activation": "Passive",
+  "levels": {
+    "poison": [3, 4, 5, 6]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "ApplyStatus",
           "status": "Poison",
-          "amount": 3
+          "amount": "{poison}"
         }
       ]
     }

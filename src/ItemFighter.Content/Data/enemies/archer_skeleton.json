@@ -1,9 +1,7 @@
 {
   "id": "archer_skeleton",
   "name": "Archer Skeleton",
+  "rarity": "Common",
   "maxHp": 20,
-  "difficulty": "Easy",
-  "abilityIds": [
-    "bow_shot"
-  ]
+  "abilityIds": ["bow_shot"]
 }

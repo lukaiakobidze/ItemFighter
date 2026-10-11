@@ -2,15 +2,13 @@
   "id": "ice_bow",
   "name": "Ice Bow",
   "rarity": "Common",
-  "tags": [
-    "Weapon",
-    "Chill"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Weapon", "Chill"],
+  "pools": ["neutral"],
   "cooldown": 6,
   "activation": "Passive",
+  "levels": {
+    "damage": [4, 5, 6, 7]
+  },
   "abilities": [
     {
       "effects": [
@@ -21,7 +19,7 @@
         },
         {
           "type": "Damage",
-          "amount": 4
+          "amount": "{damage}"
         }
       ]
     }

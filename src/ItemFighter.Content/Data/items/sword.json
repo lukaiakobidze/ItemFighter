@@ -2,20 +2,19 @@
   "id": "sword",
   "name": "Sword",
   "rarity": "Common",
-  "tags": [
-    "Weapon"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Weapon"],
+  "pools": ["neutral"],
   "cooldown": 4,
   "activation": "Passive",
+  "levels": {
+    "damage": [5, 6, 8, 9]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Damage",
-          "amount": 5
+          "amount": "{damage}"
         }
       ]
     }

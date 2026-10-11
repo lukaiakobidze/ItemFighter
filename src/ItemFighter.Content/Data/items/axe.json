@@ -2,20 +2,19 @@
   "id": "axe",
   "name": "Axe",
   "rarity": "Common",
-  "tags": [
-    "Weapon"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Weapon"],
+  "pools": ["neutral"],
   "cooldown": 7,
   "activation": "Passive",
+  "levels": {
+    "damage": [10, 13, 15, 18]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Damage",
-          "amount": 10
+          "amount": "{damage}"
         }
       ]
     }

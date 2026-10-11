@@ -2,26 +2,25 @@
   "id": "molten_dagger",
   "name": "Molten Dagger",
   "rarity": "Common",
-  "tags": [
-    "Burn",
-    "Weapon"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Burn", "Weapon"],
+  "pools": ["neutral"],
   "cooldown": 8,
   "activation": "Passive",
+  "levels": {
+    "burn": [4, 5, 6, 7],
+    "damage": [4, 5, 6, 7]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "ApplyStatus",
           "status": "Burn",
-          "amount": 4
+          "amount": "{burn}"
         },
         {
           "type": "Damage",
-          "amount": 4
+          "amount": "{damage}"
         }
       ]
     }

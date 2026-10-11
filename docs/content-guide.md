@@ -37,7 +37,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `OnActivate` | player clicked it (default for Active items) |
 | `OnFightStart` | once, at the start of the fight |
 | `{ "type": "OnItemFired", "filter": [...] }` | another of your items fired. Filters: `Adjacent`, `Tag:Fire`, `Self`, `AnyOwn` |
-| `OnDamageTaken` | your side took damage (any kind: hits, burn, poison, fatigue). Add `"every": 5` for every 5th time |
+| `OnDamageTaken` | your side took damage: hits, burn ticks and poison bursts (fatigue never counts). Add `"every": 5` for every 5th time |
 | `OnDamageDealt` | your side hit the other side directly (not burn/poison). Also takes `"every"` |
 | `{ "type": "OnHpBelow", "percent": 50 }` | once, when your HP first drops below 50% |
 | `{ "type": "OnStatusApplied", "status": "Burn", "side": "Enemy" }` | burn was applied to the enemy (or `"Self"`) |
@@ -82,7 +82,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 
 Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
 
-A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, an optional `difficulty` (shown on fight previews), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a `rarity` (how rarely you meet it), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 
 ## Unique behaviour
 

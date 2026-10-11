@@ -37,8 +37,6 @@ public sealed class SourceDefinition
 
     public int MaxHp { get; init; }
 
-    /// <summary>Shown on fight previews, e.g. "Easy". Free text.</summary>
-    public string? Difficulty { get; init; }
     public IReadOnlyList<string> AbilityIds { get; init; } = [];
     public IReadOnlyList<PhaseDefinition> Phases { get; init; } = [];
     public IReadOnlyList<string> StartingItems { get; init; } = [];

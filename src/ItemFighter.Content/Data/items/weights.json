@@ -2,20 +2,19 @@
   "id": "weights",
   "name": "Weights",
   "rarity": "Common",
-  "tags": [
-    "Slow"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Slow"],
+  "pools": ["neutral"],
   "cooldown": 8,
   "activation": "Active",
+  "levels": {
+    "slow": [20, 25, 30, 35]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Slow",
-          "seconds": 2
+          "amount": "{slow}"
         }
       ]
     }

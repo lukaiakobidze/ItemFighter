@@ -2,21 +2,20 @@
   "id": "cinder",
   "name": "Cinder",
   "rarity": "Common",
-  "tags": [
-    "Fire"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Fire"],
+  "pools": ["neutral"],
   "cooldown": 5,
   "activation": "Passive",
+  "levels": {
+    "burn": [3, 4, 5, 6]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "ApplyStatus",
           "status": "Burn",
-          "amount": 3
+          "amount": "{burn}"
         }
       ]
     }

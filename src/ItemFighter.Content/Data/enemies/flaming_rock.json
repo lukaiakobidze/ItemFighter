@@ -1,10 +1,7 @@
 {
   "id": "flaming_rock",
   "name": "Flaming Rock",
+  "rarity": "Common",
   "maxHp": 50,
-  "difficulty": "Easy",
-  "abilityIds": [
-    "explosive",
-    "fiery_stone"
-  ]
+  "abilityIds": ["explosive", "fiery_stone"]
 }

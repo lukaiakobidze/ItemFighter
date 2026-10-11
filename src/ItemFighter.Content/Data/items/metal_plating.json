@@ -2,20 +2,19 @@
   "id": "metal_plating",
   "name": "Metal Plating",
   "rarity": "Common",
-  "tags": [
-    "Shield"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Shield"],
+  "pools": ["neutral"],
   "cooldown": 5,
   "activation": "Passive",
+  "levels": {
+    "shield": [4, 5, 6, 7]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Shield",
-          "amount": 4
+          "amount": "{shield}"
         }
       ]
     }

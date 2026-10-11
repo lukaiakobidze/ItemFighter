@@ -1,10 +1,7 @@
 {
   "id": "green_snake",
   "name": "Green Snake",
+  "rarity": "Common",
   "maxHp": 30,
-  "difficulty": "Easy",
-  "abilityIds": [
-    "venomous",
-    "fang_strike"
-  ]
+  "abilityIds": ["venomous", "fang_strike"]
 }

@@ -31,7 +31,7 @@ public class ComboTests
         b.Steps(80);
         b.Enqueue(new ActivateCommand(b.Tick + 1, weights.Id, null));
         b.Steps(50);
-        Assert.Equal(new[] { 50, 120 }, Fires(b, "bite"));
+        Assert.Equal(new[] { 50, 120 }, Fires(b, "bite")); // level 1 Weights adds 2s
     }
 
     [Fact]

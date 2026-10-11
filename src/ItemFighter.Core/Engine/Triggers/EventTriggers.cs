@@ -77,13 +77,13 @@ internal static class EveryCounter
     public static string Phrase(int every, string what) => every <= 1 ? $"When {what}" : $"Every {Words.Ordinal(every)} time {what}";
 }
 
-/// <summary>Reacts when the owner's side takes damage of any kind (hits, burn, poison, fatigue).</summary>
+/// <summary>Reacts when the owner's side takes damage: hits, burn ticks and poison bursts. Fatigue doesn't count.</summary>
 public sealed class OnDamageTakenTrigger(int every = 1) : ITrigger
 {
     public static OnDamageTakenTrigger Parse(ParseContext ctx) => new(EveryCounter.Read(ctx));
 
     public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
-        e is DamageDealt d && d.Target == owner.Owner && d.Total > 0 && EveryCounter.Tick(owner, this, every);
+        e is DamageDealt d && d.Kind != DamageKind.Fatigue && d.Target == owner.Owner && d.Total > 0 && EveryCounter.Tick(owner, this, every);
 
     public string Describe(DescribeContext ctx) => EveryCounter.Phrase(every, ctx.IsEnemy ? "it takes damage" : "you take damage");
 }

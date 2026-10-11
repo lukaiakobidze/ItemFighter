@@ -1,9 +1,7 @@
 {
   "id": "squire_zombie",
   "name": "Squire Zombie",
+  "rarity": "Common",
   "maxHp": 40,
-  "difficulty": "Easy",
-  "abilityIds": [
-    "bite"
-  ]
+  "abilityIds": ["bite"]
 }

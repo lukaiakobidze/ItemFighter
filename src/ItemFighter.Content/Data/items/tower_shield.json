@@ -2,20 +2,19 @@
   "id": "tower_shield",
   "name": "Tower Shield",
   "rarity": "Common",
-  "tags": [
-    "Shield"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Shield"],
+  "pools": ["neutral"],
   "cooldown": 8,
   "activation": "Passive",
+  "levels": {
+    "shield": [10, 13, 15, 18]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Shield",
-          "amount": 10
+          "amount": "{shield}"
         }
       ]
     }

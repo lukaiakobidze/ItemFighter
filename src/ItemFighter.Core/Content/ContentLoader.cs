@@ -119,7 +119,6 @@ public static class ContentLoader
             Modifiers = ParseModifiers(json),
             Script = json.TryGetProperty("script", out _) ? ctx.ReadString("script") : null,
             Description = json.TryGetProperty("description", out _) ? ctx.ReadString("description") : null,
-            Difficulty = json.TryGetProperty("difficulty", out _) ? ctx.ReadString("difficulty") : null,
             MaxHp = ctx.ReadInt("maxHp", 0),
             AbilityIds = ctx.ReadStrings("abilityIds"),
             Phases = ParsePhases(json),

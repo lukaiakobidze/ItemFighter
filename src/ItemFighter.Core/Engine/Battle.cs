@@ -17,9 +17,9 @@ public sealed class Battle
     public const int MaxChainDepth = 8;
     /// <summary>Reactions (and copied effects) allowed per tick; later ones are dropped with ChainCapped so wide boards stay fast.</summary>
     public const int MaxReactionsPerTick = 256;
-    public const int FatigueStartTick = 300;
+    public const int FatigueStartTick = 900;
     public const int FatigueInterval = 10;
-    public const int MaxTicks = 1200;
+    public const int MaxTicks = 1800;
     public const int DefaultPlayerHp = 100;
 
     private readonly List<BattleEvent> _events = [];
@@ -448,7 +448,7 @@ public sealed class Battle
     /// <summary>Removes exactly the given HP and shield, for statuses with their own shield rules.</summary>
     public void ApplyRawDamage(Side target, int hpDamage, int shieldDamage, DamageKind kind, SourceInstance? source, int depth)
     {
-        int adjust = SideModifier(target, "DamageTaken");
+        int adjust = kind == DamageKind.Fatigue ? 0 : SideModifier(target, "DamageTaken"); // fatigue ignores everything
         if (adjust < 0)
         {
             int cut = Math.Min(-adjust, hpDamage);

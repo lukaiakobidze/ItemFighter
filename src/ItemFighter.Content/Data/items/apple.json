@@ -2,21 +2,19 @@
   "id": "apple",
   "name": "Apple",
   "rarity": "Common",
-  "tags": [
-    "Heal",
-    "Charge"
-  ],
-  "pools": [
-    "neutral"
-  ],
+  "tags": ["Heal", "Charge"],
+  "pools": ["neutral"],
   "cooldown": 6,
   "activation": "Passive",
+  "levels": {
+    "heal": [5, 6, 8, 9]
+  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Heal",
-          "amount": 5
+          "amount": "{heal}"
         },
         {
           "type": "Charge",

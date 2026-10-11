@@ -77,14 +77,14 @@ public class BattleLoopTests
     }
 
     [Fact]
-    public void Fatigue_StartsAtTick300_Escalates_IgnoresShield()
+    public void Fatigue_StartsAt90s_Escalates_IgnoresShield()
     {
         var db = TestContent.Db(("enemies/dummy.json", Enemy(maxHp: 1000)));
         var b = Fight(db, "dummy");
         b.Player.Shield = 500;
-        b.Steps(320);
+        b.Steps(Battle.FatigueStartTick + 20);
         var fatigue = b.Of<DamageDealt>().Where(d => d.Kind == DamageKind.Fatigue && d.Target == Side.Enemy).ToList();
-        Assert.Equal(new[] { 300, 310, 320 }, fatigue.Select(f => f.Tick));
+        Assert.Equal(new[] { 900, 910, 920 }, fatigue.Select(f => f.Tick));
         Assert.Equal(new[] { 1, 2, 3 }, fatigue.Select(f => f.HpDamage));
         Assert.Equal(500, b.Player.Shield);
         Assert.Equal(94, b.Player.Hp);
@@ -108,7 +108,7 @@ public class BattleLoopTests
         b.Player.Hp = 1;
         b.Enemy.Hp = 1;
         Assert.Equal(BattleResult.Draw, b.RunToEnd());
-        Assert.Equal(300, b.Tick);
+        Assert.Equal(Battle.FatigueStartTick, b.Tick);
     }
 
     [Fact]
