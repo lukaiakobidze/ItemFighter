@@ -138,7 +138,7 @@ public sealed class RunState
         Phase = RunPhase.Dropping;
     }
 
-    public bool IsPassiveId(string id) => Db.TryGet(id, out var def) && (def.Kind == SourceKind.Passive || def.IsPassiveAbility);
+    public bool IsPassiveId(string? id) => id is not null && Db.TryGet(id, out var def) && (def.Kind == SourceKind.Passive || def.IsPassiveAbility);
 
     /// <summary>Takes drop choice index. False (nothing changes) when the item needs room you don't have.</summary>
     public bool TakeDrop(int index)
@@ -264,9 +264,10 @@ public sealed class RunState
         return true;
     }
 
+    /// <summary>Sells an item for SellValue. Your last item can't be sold, so there is always something to fight with.</summary>
     public bool Sell(ItemRef where)
     {
-        if (!CanManageItems || At(where) is not OwnedItem item) return false;
+        if (!CanManageItems || At(where) is not OwnedItem item || AllOwned.Count <= 1) return false;
         if (where.InHotbar) Hotbar[where.Index] = null;
         else Backpack.RemoveAt(where.Index);
         Gold += SellValue(item);

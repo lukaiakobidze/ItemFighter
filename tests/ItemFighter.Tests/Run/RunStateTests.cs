@@ -179,9 +179,9 @@ public class RunStateTests
         run.Choose(FirstFight(run));
         Assert.Equal(RunPhase.Preparing, run.Phase);
         Assert.True(run.CanFight);
-        run.Sell(new ItemRef(true, 0));
-        run.Sell(new ItemRef(true, 1));
-        Assert.False(run.CanFight);
+        run.Move(new ItemRef(true, 0), new ItemRef(false, 0));
+        run.Move(new ItemRef(true, 1), new ItemRef(false, 1));
+        Assert.False(run.CanFight); // everything is in the backpack
         Assert.Throws<InvalidOperationException>(() => run.StartFight());
     }
 

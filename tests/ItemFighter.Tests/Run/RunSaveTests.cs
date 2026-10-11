@@ -92,3 +92,57 @@ public class RunSaveTests
         public int GetHashCode(Core.Engine.BattleSetup s) => 0;
     }
 }
+
+public class RunReviewFixTests
+{
+    private static RunState? Load(string json) => RunSave.FromJson(json, RunStateTests.Content.Run, RunStateTests.Content.Database);
+
+    [Fact]
+    public void Save_NullIds_DoNotCrash()
+    {
+        var run = RunStateTests.NewRun();
+        run.Passives.Add("venomous");
+        RunStateTests.WinFight(run, new Encounter(EncounterKind.Fight, "green_snake"));
+        string json = RunSave.ToJson(run).Replace("\"venomous\"", "null");
+        var loaded = Load(json);
+        Assert.NotNull(loaded);
+        Assert.DoesNotContain(null, loaded!.Passives);
+        Assert.DoesNotContain(null, loaded.PendingDrop!.Choices);
+    }
+
+    [Fact]
+    public void Save_PhaseThatDoesNotMatchEncounter_GoesBackToChoosing()
+    {
+        var run = RunStateTests.NewRun();
+        run.Choose(new Encounter(EncounterKind.Shop, null));
+        var loaded = Load(RunSave.ToJson(run).Replace("\"phase\": \"Shopping\"", "\"phase\": \"Preparing\""))!;
+        Assert.Equal(RunPhase.ChoosingEncounter, loaded.Phase);
+    }
+
+    [Fact]
+    public void Save_UnknownPhaseNumber_IsRejected()
+    {
+        var run = RunStateTests.NewRun();
+        Assert.Null(Load(RunSave.ToJson(run).Replace("\"phase\": \"ChoosingEncounter\"", "\"phase\": 99")));
+    }
+
+    [Fact]
+    public void Save_ExtraHotbarItems_MoveToBackpack()
+    {
+        var run = RunStateTests.NewRun();
+        var small = new RunConfig { HotbarSize = 1 };
+        var loaded = RunSave.FromJson(RunSave.ToJson(run), small, RunStateTests.Content.Database)!;
+        Assert.Single(loaded.Hotbar);
+        Assert.Equal("metal_plating", Assert.Single(loaded.Backpack).ItemId);
+    }
+
+    [Fact]
+    public void Sell_LastItem_IsRefused_SoYouCanAlwaysFight()
+    {
+        var run = RunStateTests.NewRun();
+        run.Choose(new Encounter(EncounterKind.Fight, "squire_zombie"));
+        Assert.True(run.Sell(new ItemRef(true, 0)));
+        Assert.False(run.Sell(new ItemRef(true, 1)));
+        Assert.True(run.CanFight);
+    }
+}

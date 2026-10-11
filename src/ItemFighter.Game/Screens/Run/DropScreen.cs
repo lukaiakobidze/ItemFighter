@@ -46,7 +46,7 @@ public sealed class DropScreen(Game1 game, RunSession session) : RunScreen(game,
                 ui.Rect(new Rectangle(r.X + 6, r.Y + 6, r.Width - 12, 20), new Color(0, 0, 0, 150));
                 ui.Text(note, new Vector2(r.Center.X, r.Y + 8), 13, Palette.Accent, bold: true, align: Align.Center);
             }
-            bool room = passive || owned is not null || Run.HasRoom;
+            bool room = passive || owned is { Level: < ContentLoader.LevelCount } || Run.HasRoom;
             if (ui.Button(TakeRect(i, choices.Count), room ? "Take" : "No room: sell something", 16, room) && Run.TakeDrop(i))
             {
                 Session.Commit();
