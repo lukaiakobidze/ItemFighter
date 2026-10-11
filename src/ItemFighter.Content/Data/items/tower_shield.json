@@ -1,46 +1,21 @@
 {
   "id": "tower_shield",
   "name": "Tower Shield",
-  "rarity": "Rare",
+  "rarity": "Common",
   "tags": [
-    "Armor"
+    "Shield"
   ],
   "pools": [
     "neutral"
   ],
   "cooldown": 8,
   "activation": "Passive",
-  "levels": {
-    "shield": [
-      25,
-      40,
-      62,
-      100
-    ],
-    "bonus": [
-      3,
-      5,
-      8,
-      12
-    ]
-  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Shield",
-          "amount": "{shield}"
-        }
-      ]
-    },
-    {
-      "trigger": "OnFightStart",
-      "effects": [
-        {
-          "type": "ModifyStat",
-          "stat": "Shield",
-          "amount": "{bonus}",
-          "target": "AdjacentItems"
+          "amount": 10
         }
       ]
     }

@@ -1,0 +1,19 @@
+{
+  "id": "silver_knight",
+  "name": "Silver Knight",
+  "maxHp": 100,
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnDamageTaken",
+        "every": 5
+      },
+      "effects": [
+        {
+          "type": "Shield",
+          "percentOfMaxHp": 5
+        }
+      ]
+    }
+  ]
+}

@@ -36,6 +36,9 @@ public sealed class SourceDefinition
     public string? Description { get; init; }
 
     public int MaxHp { get; init; }
+
+    /// <summary>Shown on fight previews, e.g. "Easy". Free text.</summary>
+    public string? Difficulty { get; init; }
     public IReadOnlyList<string> AbilityIds { get; init; } = [];
     public IReadOnlyList<PhaseDefinition> Phases { get; init; } = [];
     public IReadOnlyList<string> StartingItems { get; init; } = [];
@@ -57,6 +60,6 @@ public sealed record ModifierDefinition(string Stat, int Amount, ModifierFilter 
     public static readonly IReadOnlySet<string> KnownStats = new HashSet<string>(StringComparer.Ordinal)
     {
         "ShieldGained", "DamageDealt", "HealGained", "BurnApplied", "PoisonApplied", "ChillApplied",
-        "PoisonThreshold", "CooldownPercent",
+        "PoisonThreshold", "CooldownPercent", "DamageTaken",
     };
 }

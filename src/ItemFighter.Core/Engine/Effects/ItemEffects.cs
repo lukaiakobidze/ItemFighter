@@ -15,7 +15,7 @@ internal static class ItemTarget
 /// <summary>Advances target items' cooldowns by an amount of ticks.</summary>
 public sealed class ChargeEffect(ValueRef ticks, TargetSpec target) : IEffect
 {
-    public static ChargeEffect Parse(ParseContext ctx) => new(ctx.ReadValue("amount"), ItemTarget.Read(ctx));
+    public static ChargeEffect Parse(ParseContext ctx) => new(ctx.ReadDuration(), ItemTarget.Read(ctx));
 
     public void Apply(EffectContext ctx)
     {
@@ -25,6 +25,26 @@ public sealed class ChargeEffect(ValueRef ticks, TargetSpec target) : IEffect
     }
 
     public string Describe(DescribeContext ctx) => $"charge {ctx.Items(target)} {ctx.Seconds(ticks)}";
+}
+
+/// <summary>Adds time to target items' current cooldowns. By default hits every enemy item or ability.</summary>
+public sealed class SlowEffect(ValueRef ticks, TargetSpec target) : IEffect
+{
+    public static SlowEffect Parse(ParseContext ctx)
+    {
+        var t = ctx.ReadTarget("target", new TargetSpec(TargetKind.AllEnemy));
+        if (t.IsCombatant) throw new ContentException($"'Slow' must target items or abilities, not {t}");
+        return new(ctx.ReadDuration(), t);
+    }
+
+    public void Apply(EffectContext ctx)
+    {
+        int value = ticks.Resolve(ctx.Source);
+        foreach (var item in Targeting.ResolveItems(target, ctx))
+            ctx.Battle.Delay(item, value, ctx.Source, ctx.Depth);
+    }
+
+    public string Describe(DescribeContext ctx) => $"add {ctx.Seconds(ticks)} to the cooldown of {ctx.Items(target)}";
 }
 
 /// <summary>Finishes target items' cooldowns: actives become ready, passives fire as soon as they can.</summary>

@@ -12,7 +12,10 @@ public static class Paths
 
     public static string Art => FindInRepo(Path.Combine("src", "ItemFighter.Game", "Content", "Art")) ?? Path.Combine(AppContext.BaseDirectory, "Content", "Art");
 
-    public static string Saves => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ItemFighter");
+    /// <summary>Automation points this elsewhere so scripted runs never touch the player's saved lab.</summary>
+    public static string? SavesOverride { get; set; }
+
+    public static string Saves => SavesOverride ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ItemFighter");
 
     private static string? FindInRepo(string relative)
     {

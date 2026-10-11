@@ -56,12 +56,50 @@ public sealed class OnItemFiredTrigger : ITrigger
     }
 }
 
-public sealed class OnDamageTakenTrigger : ITrigger
+/// <summary>Counts matching events per source; with "every": n only every n-th one triggers.</summary>
+internal static class EveryCounter
 {
-    public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
-        e is DamageDealt d && d.Target == owner.Owner && d.Total > 0;
+    public static bool Tick(SourceInstance owner, object trigger, int every)
+    {
+        if (every <= 1) return true;
+        int count = owner.Counters.GetValueOrDefault(trigger) + 1;
+        owner.Counters[trigger] = count;
+        return count % every == 0;
+    }
 
-    public string Describe(DescribeContext ctx) => ctx.IsEnemy ? "When it takes damage" : "When you take damage";
+    public static int Read(ParseContext ctx)
+    {
+        int every = ctx.ReadInt("every", 1);
+        if (every < 1) throw new ContentException("'every' must be at least 1");
+        return every;
+    }
+
+    public static string Phrase(int every, string what) => every <= 1 ? $"When {what}" : $"Every {Words.Ordinal(every)} time {what}";
+}
+
+/// <summary>Reacts when the owner's side takes damage of any kind (hits, burn, poison, fatigue).</summary>
+public sealed class OnDamageTakenTrigger(int every = 1) : ITrigger
+{
+    public static OnDamageTakenTrigger Parse(ParseContext ctx) => new(EveryCounter.Read(ctx));
+
+    public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
+        e is DamageDealt d && d.Target == owner.Owner && d.Total > 0 && EveryCounter.Tick(owner, this, every);
+
+    public string Describe(DescribeContext ctx) => EveryCounter.Phrase(every, ctx.IsEnemy ? "it takes damage" : "you take damage");
+}
+
+/// <summary>Reacts when the owner's side hits the other side directly (not burn, poison or fatigue).</summary>
+public sealed class OnDamageDealtTrigger(int every = 1) : ITrigger
+{
+    public static OnDamageDealtTrigger Parse(ParseContext ctx) => new(EveryCounter.Read(ctx));
+
+    public bool AllowSelf => true;
+
+    public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) =>
+        e is DamageDealt { Kind: DamageKind.Direct } d && d.Target != owner.Owner && d.Total > 0
+        && d.SourceId is int id && battle.FindSource(id)?.Owner == owner.Owner && EveryCounter.Tick(owner, this, every);
+
+    public string Describe(DescribeContext ctx) => EveryCounter.Phrase(every, ctx.IsEnemy ? "it deals damage" : "you deal damage");
 }
 
 /// <summary>Reacts the first time the owner's HP drops below a percentage.</summary>

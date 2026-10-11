@@ -2,64 +2,75 @@ using ItemFighter.Core.Engine;
 
 namespace ItemFighter.Tests;
 
-/// <summary>Interactions between real starter items. Numbers are placeholder balance; update when content changes.</summary>
+/// <summary>Interactions between Luka's starter content. Update the numbers when the content is rebalanced.</summary>
 public class ComboTests
 {
-    private static Battle Fight(string enemy, string[] passives, params string[] items)
+    private static Battle Fight(string enemy, string? character, params string[] items)
     {
         var content = ContentIntegrityTests.WithDummy();
         var board = items.Select((id, slot) => new BoardItem(id, slot)).ToList();
-        return new Battle(new BattleSetup(new PlayerSetup(null, board, passives), enemy, 1), content.Database, content.Scripts);
+        return new Battle(new BattleSetup(new PlayerSetup(character, board, []), enemy, 1), content.Database, content.Scripts);
     }
 
-    private static int FireCount(Battle b, string defId) =>
-        b.Events.OfType<SourceFired>().Count(f => !f.Reaction && b.FindSource(f.SourceId)!.Def.Id == defId);
+    private static List<int> Fires(Battle b, string defId) =>
+        b.Events.OfType<SourceFired>().Where(f => !f.Reaction && b.FindSource(f.SourceId)!.Def.Id == defId).Select(f => f.Tick).ToList();
 
     [Fact]
-    public void FireFlask_NextToBellows_FiresFasterThanAlone()
+    public void Apple_ChargesTheSwordOneSecond()
     {
-        var alone = Fight("test_dummy", [], "fire_flask");
-        AutoPilot.Run(alone, untilTick: 100);
-        var together = Fight("test_dummy", [], "fire_flask", "bellows");
-        AutoPilot.Run(together, untilTick: 100);
-        Assert.Equal(2, FireCount(alone, "fire_flask"));
-        Assert.True(FireCount(together, "fire_flask") >= 3);
+        var b = Fight("test_dummy", null, "sword", "apple");
+        b.Steps(90);
+        Assert.Equal(new[] { 40, 70 }, Fires(b, "sword")); // the apple at 6s takes 1s off the sword's second cooldown
     }
 
     [Fact]
-    public void Kindling_AddsOneBurnPerFireApplication()
+    public void Weights_PushesTheZombiesBiteBack()
     {
-        var b = Fight("test_dummy", ["kindling"], "fire_flask");
-        b.Steps(40);
-        Assert.Equal(3 + 1, b.Events.OfType<StatusApplied>().Single().Amount);
+        var b = Fight("squire_zombie", null, "weights");
+        var weights = b.Player.Items.Single();
+        b.Steps(80);
+        b.Enqueue(new ActivateCommand(b.Tick + 1, weights.Id, null));
+        b.Steps(50);
+        Assert.Equal(new[] { 50, 120 }, Fires(b, "bite"));
     }
 
     [Fact]
-    public void Whetstone_OnGreatAxe_Adds5Damage()
+    public void GrizzlyBear_ThickSkin_TakesOneLessFromDaggers()
     {
-        var b = Fight("test_dummy", [], "great_axe", "whetstone");
-        var axe = b.Player.Items.Single(i => i.Def.Id == "great_axe");
-        var stone = b.Player.Items.Single(i => i.Def.Id == "whetstone");
-        b.Steps(stone.CooldownTicks);
-        b.Enqueue(new ActivateCommand(b.Tick + 1, stone.Id, axe.Id));
-        b.Steps(2 * axe.CooldownTicks - b.Tick);
-        var hits = b.Events.OfType<DamageDealt>().Where(d => d.SourceId == axe.Id).Select(d => d.Total).ToList();
-        Assert.Equal(new[] { 20, 25 }, hits);
+        var b = Fight("grizzly_bear", null, "dagger");
+        b.Steps(20);
+        Assert.Equal(99, b.Enemy.Hp);
     }
 
     [Fact]
-    public void EmberKing_EntersPhase2()
+    public void GreenSnake_Venomous_PoisonsOnEachStrike()
     {
-        var b = Fight("ember_king", [], "great_axe", "rusty_sword", "twin_daggers", "fire_flask", "venom_vial", "war_drum");
-        AutoPilot.Run(b);
-        Assert.Single(b.Events.OfType<PhaseStarted>());
-        Assert.Contains(b.Enemy.Sources, s => s.Def.Id == "molten_rage");
+        var b = Fight("green_snake", null, "metal_plating");
+        b.Steps(30);
+        Assert.Equal(2, b.Player.Statuses.Poison);
     }
 
     [Fact]
-    public void SpikedMail_VsThornyHide_ChainStopsAndFightEnds()
+    public void FlamingRock_Explodes_OnEveryFifthHit()
     {
-        var b = Fight("bog_witch", [], "spiked_mail", "rusty_sword");
-        Assert.NotEqual(BattleResult.Ongoing, AutoPilot.Run(b));
+        var b = Fight("flaming_rock", null, "dagger");
+        b.Steps(100); // 5 dagger hits by 10s
+        Assert.Contains(b.Events.OfType<StatusApplied>(), s => s.Status == StatusType.Burn && s.Amount == 3 && s.TargetSide == Side.Player);
+    }
+
+    [Fact]
+    public void SilverKnight_ShieldsAfterFiveHits()
+    {
+        var b = Fight("archer_skeleton", "silver_knight", "metal_plating");
+        b.Steps(150); // the bow shot hits every 3s: 5 hits by 15s
+        Assert.Contains(b.Events.OfType<ShieldGained>(), g => g.Target == Side.Player && g.Amount == 5);
+    }
+
+    [Fact]
+    public void IceBow_ChillsTheEnemy()
+    {
+        var b = Fight("test_dummy", null, "ice_bow");
+        b.Steps(61);
+        Assert.Equal(1, b.Enemy.Statuses.Chill);
     }
 }

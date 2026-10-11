@@ -40,7 +40,7 @@ public class BulkSimTests
         {
             (BattleResult, int, int) Run()
             {
-                var b = new Battle(new BattleSetup(RandomBoard.Create(content.Database, new Rng(seed)), "ember_king", seed), content.Database, content.Scripts);
+                var b = new Battle(new BattleSetup(RandomBoard.Create(content.Database, new Rng(seed)), "grizzly_bear", seed), content.Database, content.Scripts);
                 AutoPilot.Run(b);
                 return (b.Result, b.Tick, b.Events.Count);
             }

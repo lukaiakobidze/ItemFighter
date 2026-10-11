@@ -34,6 +34,8 @@ public static class Words
         (TargetKind.RandomOwnItem, true) => "another random ability of its own",
         (TargetKind.RandomEnemyAbility, true) => "a random item of yours",
         (TargetKind.SelfItem, true) => "this ability",
+        (TargetKind.AllEnemy, true) => "all your items",
+        (TargetKind.AllEnemy, false) => "every enemy ability",
         _ => Items(t.Kind, t),
     };
 
@@ -54,7 +56,7 @@ public static class Words
     public static string Possessive(string phrase) =>
         phrase == "it" ? "its" : phrase.EndsWith('s') ? phrase + "'" : phrase + "'s";
 
-    public static string Article(string word) => "AEIOUaeiou".Contains(word[0]) ? "an " + word : "a " + word;
+    public static string Article(string word) => word.Length > 0 && "AEIOUaeiou".Contains(word[0]) ? "an " + word : "a " + word;
 
     public static string Ordinal(int n) => n + (n % 100 is 11 or 12 or 13 ? "th" : (n % 10) switch { 1 => "st", 2 => "nd", 3 => "rd", _ => "th" });
 }
@@ -77,7 +79,7 @@ public static class SourceDescriber
             string what = string.Join(", then ", ability.Effects.Select(e => e.Describe(ctx)));
             lines.Add($"{when}: {what}.");
         }
-        foreach (var m in def.Modifiers) lines.Add(Modifier(m));
+        foreach (var m in def.Modifiers) lines.Add(Modifier(m, ctx));
         return lines;
     }
 
@@ -97,8 +99,13 @@ public static class SourceDescriber
         return trigger.Describe(ctx);
     }
 
-    private static string Modifier(ModifierDefinition m)
+    private static string Modifier(ModifierDefinition m, DescribeContext ctx)
     {
+        if (m.Stat == "DamageTaken")
+        {
+            string amount = $"{Math.Abs(m.Amount)} {(m.Amount < 0 ? "less" : "more")} damage from everything";
+            return ctx.IsEnemy ? $"Takes {amount}." : $"You take {amount}.";
+        }
         string who = m.Filter switch
         {
             { Kind: SourceKind.Item, Tag: string tag } => $"Your {tag} items",

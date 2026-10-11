@@ -1,0 +1,23 @@
+{
+  "id": "dagger",
+  "name": "Dagger",
+  "rarity": "Common",
+  "tags": [
+    "Weapon"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 2,
+  "activation": "Passive",
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

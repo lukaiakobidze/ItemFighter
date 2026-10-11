@@ -1,33 +1,27 @@
 {
-  "id": "twin_daggers",
-  "name": "Twin Daggers",
+  "id": "molten_dagger",
+  "name": "Molten Dagger",
   "rarity": "Common",
   "tags": [
+    "Burn",
     "Weapon"
   ],
   "pools": [
     "neutral"
   ],
-  "cooldown": 2,
+  "cooldown": 8,
   "activation": "Passive",
-  "levels": {
-    "damage": [
-      4,
-      6,
-      10,
-      16
-    ]
-  },
   "abilities": [
     {
       "effects": [
         {
-          "type": "Damage",
-          "amount": "{damage}"
+          "type": "ApplyStatus",
+          "status": "Burn",
+          "amount": 4
         },
         {
           "type": "Damage",
-          "amount": "{damage}"
+          "amount": 4
         }
       ]
     }

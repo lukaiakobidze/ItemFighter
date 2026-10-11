@@ -90,24 +90,23 @@ public class StatusTests
         b.ApplyStatus(Side.Enemy, StatusType.Chill, 1, null, 0);
         b.Steps(10);
         b.ApplyStatus(Side.Enemy, StatusType.Chill, 1, null, 0);
-        b.Steps(25);
-        Assert.Equal(35, b.Tick);
+        b.Steps(ChillRule.Duration - 1);
         Assert.Equal(2, b.Enemy.Statuses.Chill);
-        b.Steps(6);
+        b.Steps(2);
         Assert.Equal(0, b.Enemy.Statuses.Chill);
     }
 
     [Fact]
-    public void Chill_SlowsCooldown()
+    public void Chill_AddsFivePercentOfCooldownPerStack()
     {
         var b = Dummy(("sword", 0));
         b.ApplyStatus(Side.Player, StatusType.Chill, 2, null, 0);
         b.Steps(30);
-        Assert.Equal(new[] { 25 }, FireTicks(b));
+        Assert.Equal(new[] { 22 }, FireTicks(b)); // 2s + 10%
     }
 
     [Fact]
-    public void Chill_FiveStacks_FreezesCombatant20Ticks_AndClears()
+    public void Chill_FiveStacks_FreezesCombatantOneSecond_AndClears()
     {
         var b = Dummy(("sword", 0));
         b.ApplyStatus(Side.Player, StatusType.Chill, 3, null, 0);
@@ -115,7 +114,7 @@ public class StatusTests
         Assert.Single(b.Of<ChillFroze>());
         Assert.Equal(0, b.Player.Statuses.Chill);
         b.Steps(45);
-        Assert.Equal(new[] { 40 }, FireTicks(b));
+        Assert.Equal(new[] { 30 }, FireTicks(b));
     }
 
     [Fact]
@@ -134,36 +133,6 @@ public class StatusTests
         b.ApplyItemStatus(b.Player.Items.Single(), StatusType.Haste, 20, null, 0);
         b.Steps(25);
         Assert.Equal(new[] { 10, 20 }, FireTicks(b));
-    }
-
-    [Fact]
-    public void Slow_HalvesSpeed()
-    {
-        var b = Dummy(("sword", 0));
-        b.ApplyItemStatus(b.Player.Items.Single(), StatusType.Slow, 100, null, 0);
-        b.Steps(45);
-        Assert.Equal(new[] { 40 }, FireTicks(b));
-    }
-
-    [Fact]
-    public void HasteAndSlow_Cancel()
-    {
-        var b = Dummy(("sword", 0));
-        var sword = b.Player.Items.Single();
-        b.ApplyItemStatus(sword, StatusType.Haste, 100, null, 0);
-        b.ApplyItemStatus(sword, StatusType.Slow, 100, null, 0);
-        b.Steps(25);
-        Assert.Equal(new[] { 20 }, FireTicks(b));
-    }
-
-    [Fact]
-    public void SpeedFloor_TenPercent()
-    {
-        var b = Dummy(("sword", 0));
-        b.ApplyItemStatus(b.Player.Items.Single(), StatusType.Slow, 1000, null, 0);
-        b.ApplyStatus(Side.Player, StatusType.Chill, 4, null, 0);
-        b.Steps(1);
-        Assert.Equal(10, b.Player.Items.Single().Progress);
     }
 
     [Fact]

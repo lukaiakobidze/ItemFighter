@@ -138,18 +138,21 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         if (tint is Color t) Rect(r, t);
     }
 
-    public bool Hover(Rectangle r) => r.Contains(input.Mouse);
+    /// <summary>While true (e.g. under a modal overlay) nothing reacts to the mouse.</summary>
+    public bool InputBlocked { get; set; }
+
+    public bool Hover(Rectangle r) => !InputBlocked && r.Contains(input.Mouse);
 
     public bool Clicked(Rectangle r)
     {
-        if (!input.LeftClicked || !Hover(r)) return false;
+        if (InputBlocked || !input.LeftClicked || !Hover(r)) return false;
         input.ConsumeClicks();
         return true;
     }
 
     public bool RightClicked(Rectangle r)
     {
-        if (!input.RightClicked || !Hover(r)) return false;
+        if (InputBlocked || !input.RightClicked || !Hover(r)) return false;
         input.ConsumeClicks();
         return true;
     }

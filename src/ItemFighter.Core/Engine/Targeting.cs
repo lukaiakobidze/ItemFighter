@@ -16,6 +16,7 @@ public enum TargetKind
     RandomEnemyAbility,
     Chosen,
     TriggeringItem,
+    AllEnemy,
 }
 
 /// <summary>Who an effect hits. Self/Enemy are combatants; everything else resolves to sources (items or enemy abilities).</summary>
@@ -71,6 +72,8 @@ public static class Targeting
                 return PickRandom(Targetable(battle.OpponentOf(source.Owner)).Where(i => i.HasCooldown).ToList(), battle);
             case TargetKind.Chosen:
                 return chosen is null ? [] : [chosen];
+            case TargetKind.AllEnemy:
+                return Targetable(battle.OpponentOf(source.Owner)).ToList();
             case TargetKind.TriggeringItem:
                 return ctx.Trigger is null ? [] : [ctx.Trigger];
             default:

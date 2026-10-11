@@ -1,29 +1,27 @@
 {
-  "id": "rusty_sword",
-  "name": "Rusty Sword",
+  "id": "ice_bow",
+  "name": "Ice Bow",
   "rarity": "Common",
   "tags": [
-    "Weapon"
+    "Weapon",
+    "Chill"
   ],
   "pools": [
     "neutral"
   ],
-  "cooldown": 3,
+  "cooldown": 6,
   "activation": "Passive",
-  "levels": {
-    "damage": [
-      8,
-      13,
-      20,
-      32
-    ]
-  },
   "abilities": [
     {
       "effects": [
         {
+          "type": "ApplyStatus",
+          "status": "Chill",
+          "amount": 1
+        },
+        {
           "type": "Damage",
-          "amount": "{damage}"
+          "amount": 4
         }
       ]
     }

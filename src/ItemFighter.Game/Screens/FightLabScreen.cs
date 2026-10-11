@@ -157,7 +157,8 @@ public sealed class FightLabScreen : Screen
         foreach (var enemy in Db.OfKind(SourceKind.Enemy))
         {
             var r = new Rectangle(x, (int)y, w, 34);
-            if (ui.Button(r, $"{enemy.Name}  ({enemy.MaxHp} HP)", 16, selected: _setup.EnemyId == enemy.Id)) _setup.EnemyId = enemy.Id;
+            string difficulty = enemy.Difficulty is null ? "" : $", {enemy.Difficulty}";
+            if (ui.Button(r, $"{enemy.Name}  ({enemy.MaxHp} HP{difficulty})", 16, selected: _setup.EnemyId == enemy.Id)) _setup.EnemyId = enemy.Id;
             if (ui.Hover(r))
             {
                 var (title, lines) = Tooltips.For(enemy, 1, Db);
@@ -186,6 +187,7 @@ public sealed class FightLabScreen : Screen
         y += 10;
         ui.Text("Passives", new Vector2(x, y), 20, Palette.Text, bold: true);
         y += 28;
+        if (!Db.OfKind(SourceKind.Passive).Any()) ui.Text("none yet", new Vector2(x, y), 16, Palette.TextDim);
         foreach (var p in Db.OfKind(SourceKind.Passive))
         {
             var r = new Rectangle(x, (int)y, w, 32);
@@ -212,9 +214,11 @@ public sealed class FightLabScreen : Screen
         if (ui.Button(FightButton, "FIGHT", 30, canFight)) StartFight();
     }
 
+    /// <summary>The setup is saved whenever the lab is left (fight, back, Esc, F5), so edits are never lost.</summary>
+    public override void OnLeave() => _setup.Save(SavePath);
+
     public void StartFight()
     {
-        _setup.Save(SavePath);
         Game.Show(new FightScreen(Game, _setup));
     }
 }

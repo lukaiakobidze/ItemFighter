@@ -1,8 +1,0 @@
-{
-  "id": "goblin_scrapper",
-  "name": "Goblin Scrapper",
-  "maxHp": 60,
-  "abilityIds": [
-    "scrap_stab"
-  ]
-}

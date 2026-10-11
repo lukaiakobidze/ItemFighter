@@ -22,10 +22,9 @@ public class ContentIntegrityTests
     public void Counts()
     {
         var db = GameContent.Load().Database;
-        Assert.True(db.OfKind(SourceKind.Item).Count() >= 20);
-        Assert.True(db.OfKind(SourceKind.Enemy).Count() >= 3);
+        Assert.True(db.OfKind(SourceKind.Item).Count() >= 12);
+        Assert.True(db.OfKind(SourceKind.Enemy).Count() >= 5);
         Assert.True(db.OfKind(SourceKind.Character).Any());
-        Assert.True(db.OfKind(SourceKind.Passive).Count() >= 2);
     }
 
     public static IEnumerable<object[]> ItemIds() =>
@@ -38,7 +37,7 @@ public class ContentIntegrityTests
         var content = WithDummy();
         // Targeted actives need something to aim at.
         var board = new List<BoardItem> { new(itemId, 0) };
-        if (content.Database.Get(itemId).RequiresTarget) board.Add(new BoardItem("rusty_sword", 1));
+        if (content.Database.Get(itemId).RequiresTarget) board.Add(new BoardItem("sword", 1));
         var b = new Battle(new BattleSetup(new PlayerSetup(null, board, []), "test_dummy", 1), content.Database, content.Scripts);
         AutoPilot.Run(b, untilTick: Battle.FatigueStartTick - 1);
         Assert.Contains(b.Events, e => e is SourceFired f && f.SourceId == b.Player.Items.Single(i => i.Slot == 0).Id);
@@ -50,7 +49,7 @@ public class ContentIntegrityTests
         var content = GameContent.Load();
         foreach (var enemy in content.Database.OfKind(SourceKind.Enemy))
         {
-            var b = new Battle(new BattleSetup(new PlayerSetup("wanderer", [new BoardItem("rusty_sword", 0)], []), enemy.Id, 1), content.Database, content.Scripts);
+            var b = new Battle(new BattleSetup(new PlayerSetup("silver_knight", [new BoardItem("sword", 0)], []), enemy.Id, 1), content.Database, content.Scripts);
             Assert.NotEqual(BattleResult.Ongoing, AutoPilot.Run(b));
         }
     }

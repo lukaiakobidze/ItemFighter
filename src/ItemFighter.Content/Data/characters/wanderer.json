@@ -1,9 +1,0 @@
-{
-  "id": "wanderer",
-  "name": "Wanderer",
-  "maxHp": 100,
-  "startingItems": [
-    "rusty_sword",
-    "buckler"
-  ]
-}

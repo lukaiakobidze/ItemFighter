@@ -9,5 +9,8 @@ public abstract class Screen(Game1 game)
 
     public virtual void Update(double seconds) { }
 
+    /// <summary>Called when another screen replaces this one (and before content reloads).</summary>
+    public virtual void OnLeave() { }
+
     public abstract void Draw(Ui ui);
 }

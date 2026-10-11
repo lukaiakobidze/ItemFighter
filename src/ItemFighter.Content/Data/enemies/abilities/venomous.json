@@ -1,8 +1,7 @@
 {
-  "id": "hex_poison",
+  "id": "venomous",
   "kind": "EnemyAbility",
-  "name": "Hex Poison",
-  "cooldown": 4,
+  "name": "Venomous",
   "abilities": [
     {
       "effects": [
@@ -11,7 +10,8 @@
           "status": "Poison",
           "amount": 2
         }
-      ]
+      ],
+      "trigger": "OnDamageDealt"
     }
   ]
 }

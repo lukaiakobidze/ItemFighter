@@ -37,6 +37,9 @@ public sealed record CommandRejected(int Tick, int SourceId, string Reason) : Ba
 
 public sealed record Charged(int Tick, int TargetSourceId, int Ticks, int? SourceId) : BattleEvent(Tick);
 
+/// <summary>Slow: time added to a cooldown.</summary>
+public sealed record Delayed(int Tick, int TargetSourceId, int Ticks, int? SourceId) : BattleEvent(Tick);
+
 public sealed record CooldownReset(int Tick, int TargetSourceId, int? SourceId) : BattleEvent(Tick);
 
 public sealed record StatModified(int Tick, int TargetSourceId, string Stat, int Amount, int? SourceId) : BattleEvent(Tick);

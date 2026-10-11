@@ -14,17 +14,15 @@ public class LabSetupTests
     {
         string path = TempFile();
         var setup = LabSetup.Default(Db);
-        setup.Items[5] = "great_axe";
+        setup.Items[5] = "axe";
         setup.Levels[5] = 3;
-        setup.EnemyId = "ember_king";
-        setup.Passives.Add("iron_skin");
+        setup.EnemyId = "grizzly_bear";
         setup.Seed = 42;
         setup.Save(path);
         var loaded = LabSetup.Load(path, Db);
         Assert.Equal(setup.Items, loaded.Items);
         Assert.Equal(setup.Levels, loaded.Levels);
-        Assert.Equal("ember_king", loaded.EnemyId);
-        Assert.Equal(["iron_skin"], loaded.Passives);
+        Assert.Equal("grizzly_bear", loaded.EnemyId);
         Assert.Equal(42ul, loaded.Seed);
         File.Delete(path);
     }

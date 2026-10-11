@@ -40,6 +40,8 @@ public sealed class Automation
         _options = options;
         _steps = AutomationScripts.Get(options.Script);
         Directory.CreateDirectory(options.ScreenshotDirectory);
+        Paths.SavesOverride = Path.Combine(options.ScreenshotDirectory, "saves");
+        if (Directory.Exists(Paths.SavesOverride)) Directory.Delete(Paths.SavesOverride, recursive: true);
     }
 
     public void Update(Game1 game, double dt)
@@ -48,7 +50,11 @@ public sealed class Automation
         _elapsed += dt;
         var step = _steps[_index];
         if (_elapsed < step.Wait) return;
-        if (step.Until is not null && !step.Until(game) && _elapsed < UntilTimeout) return;
+        if (step.Until is not null && !step.Until(game))
+        {
+            if (_elapsed < UntilTimeout) return;
+            Console.WriteLine($"automation: step {_index} timed out");
+        }
         step.Do?.Invoke(game);
         _pendingShot = step.Shot;
         _index++;

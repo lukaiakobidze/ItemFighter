@@ -38,4 +38,4 @@ dotnet run --project src/ItemFighter.Game
 dotnet run --project tools/ItemFighter.Sim -- help          # validate | fight | bulk | describe
 ```
 
-Headless screenshots (Linux, for automated checks): `xvfb-run -a dotnet run --project src/ItemFighter.Game -- --screenshot shots --script fight` (scripts: `menu`, `lab`, `fight`, `boss`).
+Headless screenshots (Linux, for automated checks): `xvfb-run -a dotnet run --project src/ItemFighter.Game -- --screenshot shots --script fight` (scripts: `menu`, `lab`, `fight`, `bear`).

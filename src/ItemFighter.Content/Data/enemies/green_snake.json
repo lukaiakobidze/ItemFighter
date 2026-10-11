@@ -1,0 +1,10 @@
+{
+  "id": "green_snake",
+  "name": "Green Snake",
+  "maxHp": 30,
+  "difficulty": "Easy",
+  "abilityIds": [
+    "venomous",
+    "fang_strike"
+  ]
+}

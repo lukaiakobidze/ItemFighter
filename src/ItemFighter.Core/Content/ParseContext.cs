@@ -31,6 +31,23 @@ public sealed class ParseContext
         return ParseValue(v.Value, prop);
     }
 
+    /// <summary>
+    /// A duration as ticks. "seconds" (decimals allowed, or a level value in whole seconds) is preferred;
+    /// "amount" in ticks (10 = 1s) also works.
+    /// </summary>
+    public ValueRef ReadDuration()
+    {
+        var v = Prop("seconds");
+        if (v is null) return ReadValue("amount");
+        if (v.Value.ValueKind == JsonValueKind.Number && v.Value.TryGetDecimal(out decimal seconds))
+        {
+            if (seconds <= 0 || seconds > ContentLoader.MaxCooldownSeconds) throw new ContentException("'seconds' must be above 0 and at most " + ContentLoader.MaxCooldownSeconds);
+            return ValueRef.Of(ContentLoader.SecondsToTicks(seconds));
+        }
+        var level = ParseValue(v.Value, "seconds");
+        return level with { Scale = ContentLoader.TicksPerSecond };
+    }
+
     public ValueRef ParseValue(JsonElement v, string prop)
     {
         if (v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out int n)) return ValueRef.Of(n);

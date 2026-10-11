@@ -1,0 +1,10 @@
+{
+  "id": "grizzly_bear",
+  "name": "Grizzly Bear",
+  "maxHp": 100,
+  "difficulty": "Medium",
+  "abilityIds": [
+    "thick_skin",
+    "bear_claw"
+  ]
+}

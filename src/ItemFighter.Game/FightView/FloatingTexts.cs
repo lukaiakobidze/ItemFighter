@@ -61,6 +61,9 @@ public sealed class FloatingTexts
                 case Charged c:
                     Add($"+{c.Ticks / 10.0:0.#}s", Palette.Haste, FloatAnchor.ForSource(c.TargetSourceId));
                     break;
+                case Delayed d:
+                    Add($"Slow +{d.Ticks / 10.0:0.#}s", Palette.Slow, FloatAnchor.ForSource(d.TargetSourceId));
+                    break;
                 case CooldownReset r:
                     Add("Ready!", Palette.Ready, FloatAnchor.ForSource(r.TargetSourceId));
                     break;

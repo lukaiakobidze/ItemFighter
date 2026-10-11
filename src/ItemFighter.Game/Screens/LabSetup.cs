@@ -18,8 +18,8 @@ public sealed class LabSetup
 
     public static LabSetup Default(ContentDatabase db)
     {
-        var setup = new LabSetup { CharacterId = "wanderer", EnemyId = "goblin_scrapper" };
-        string[] starter = ["rusty_sword", "buckler", "fire_flask", "whetstone"];
+        var setup = new LabSetup { CharacterId = "silver_knight", EnemyId = "squire_zombie" };
+        string[] starter = ["sword", "metal_plating", "cinder", "weights"];
         for (int i = 0; i < starter.Length; i++) setup.Items[i] = starter[i];
         setup.Sanitize(db);
         return setup;
@@ -65,7 +65,7 @@ public sealed class LabSetup
         Items = items;
         Levels = levels;
         if (EnemyId is null || !Is(db, EnemyId, SourceKind.Enemy))
-            EnemyId = Is(db, "goblin_scrapper", SourceKind.Enemy) ? "goblin_scrapper" : db.OfKind(SourceKind.Enemy).FirstOrDefault()?.Id ?? "";
+            EnemyId = Is(db, "squire_zombie", SourceKind.Enemy) ? "squire_zombie" : db.OfKind(SourceKind.Enemy).FirstOrDefault()?.Id ?? "";
         if (CharacterId is not null && !Is(db, CharacterId, SourceKind.Character)) CharacterId = null;
         Passives = (Passives ?? []).Where(p => p is not null && Is(db, p, SourceKind.Passive)).Distinct().ToList();
         if (Seed == 0) Seed = 1;

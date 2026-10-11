@@ -1,0 +1,11 @@
+{
+  "id": "thick_skin",
+  "kind": "EnemyAbility",
+  "name": "Thick Skin",
+  "modifiers": [
+    {
+      "stat": "DamageTaken",
+      "amount": -1
+    }
+  ]
+}

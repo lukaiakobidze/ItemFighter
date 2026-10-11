@@ -1,0 +1,9 @@
+{
+  "id": "squire_zombie",
+  "name": "Squire Zombie",
+  "maxHp": 40,
+  "difficulty": "Easy",
+  "abilityIds": [
+    "bite"
+  ]
+}

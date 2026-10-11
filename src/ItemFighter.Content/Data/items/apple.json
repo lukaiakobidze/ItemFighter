@@ -3,27 +3,25 @@
   "name": "Apple",
   "rarity": "Common",
   "tags": [
-    "Food"
+    "Heal",
+    "Charge"
   ],
   "pools": [
     "neutral"
   ],
-  "cooldown": 5,
+  "cooldown": 6,
   "activation": "Passive",
-  "levels": {
-    "heal": [
-      8,
-      13,
-      20,
-      32
-    ]
-  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Heal",
-          "amount": "{heal}"
+          "amount": 5
+        },
+        {
+          "type": "Charge",
+          "seconds": 1,
+          "target": "RandomOwnItem"
         }
       ]
     }

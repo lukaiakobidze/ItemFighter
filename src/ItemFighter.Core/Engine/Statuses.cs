@@ -1,10 +1,10 @@
 namespace ItemFighter.Core.Engine;
 
-public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Slow }
+public enum StatusType { Burn, Poison, Chill, Freeze, Haste }
 
 public static class StatusTypes
 {
-    /// <summary>Burn, poison and chill stack on a combatant; freeze, haste and slow are timers on one item or ability.</summary>
+    /// <summary>Burn, poison and chill stack on a combatant; freeze and haste are timers on one item or ability.</summary>
     public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill;
 }
 
@@ -75,13 +75,16 @@ public sealed class PoisonRule : IStatusRule
     public void OnTick(Battle battle, Combatant target) { }
 }
 
-/// <summary>Each stack slows all the target's cooldowns by 10%. New stacks refresh the 3s timer; 5 stacks freeze the target for 2s.</summary>
+/// <summary>
+/// Each stack makes all the target's cooldowns 5% longer while it lasts. New stacks refresh the 5s timer;
+/// 5 stacks freeze the target for 1s.
+/// </summary>
 public sealed class ChillRule : IStatusRule
 {
-    public const int Duration = 30;
-    public const int SlowPerStack = 10;
+    public const int Duration = 50;
+    public const int CooldownPercentPerStack = 5;
     public const int FreezeAt = 5;
-    public const int FreezeTicks = 20;
+    public const int FreezeTicks = 10;
 
     public StatusType Type => StatusType.Chill;
 

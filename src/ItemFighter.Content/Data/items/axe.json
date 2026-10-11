@@ -1,7 +1,7 @@
 {
-  "id": "great_axe",
-  "name": "Great Axe",
-  "rarity": "Uncommon",
+  "id": "axe",
+  "name": "Axe",
+  "rarity": "Common",
   "tags": [
     "Weapon"
   ],
@@ -10,20 +10,12 @@
   ],
   "cooldown": 7,
   "activation": "Passive",
-  "levels": {
-    "damage": [
-      20,
-      32,
-      50,
-      80
-    ]
-  },
   "abilities": [
     {
       "effects": [
         {
           "type": "Damage",
-          "amount": "{damage}"
+          "amount": 10
         }
       ]
     }

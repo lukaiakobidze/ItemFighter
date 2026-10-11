@@ -36,14 +36,14 @@ public class GoldenReplayTests
     }
 
     [Fact]
-    public void GoldenReplay_FireBuild_vs_Goblin() =>
-        Check("fire_vs_goblin", "goblin_scrapper", "wanderer", ["kindling"], ["fire_flask", "bellows", "inferno_tome", "rusty_sword"], 1);
+    public void GoldenReplay_Burn_vs_FlamingRock() =>
+        Check("burn_vs_flaming_rock", "flaming_rock", "silver_knight", [], ["cinder", "molten_dagger", "sword", "metal_plating"], 1);
 
     [Fact]
-    public void GoldenReplay_PoisonTank_vs_Witch() =>
-        Check("poison_vs_witch", "bog_witch", "wanderer", ["iron_skin"], ["venom_vial", "plague_bellows", "buckler", "spiked_mail", "ice_wall"], 2);
+    public void GoldenReplay_Poison_vs_GreenSnake() =>
+        Check("poison_vs_green_snake", "green_snake", "silver_knight", [], ["venom_fang", "fang_knife", "tower_shield", "apple", "dagger"], 2);
 
     [Fact]
-    public void GoldenReplay_Mixed_vs_EmberKing() =>
-        Check("mixed_vs_ember_king", "ember_king", "wanderer", [], ["great_axe", "whetstone", "gear_box", "overclocker", "frost_shard", "mirror_shard"], 3);
+    public void GoldenReplay_Mixed_vs_GrizzlyBear() =>
+        Check("mixed_vs_grizzly_bear", "grizzly_bear", "silver_knight", [], ["axe", "weights", "apple", "ice_bow", "tower_shield", "fang_knife"], 3);
 }

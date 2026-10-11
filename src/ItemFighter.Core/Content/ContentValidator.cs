@@ -31,6 +31,8 @@ public static class ContentValidator
                 Error("'maxHp' must be positive");
             if (def.RequiresTarget && def.Activation != Activation.Active)
                 Error("'requiresTarget' only works on Active items");
+            if (!(def.TargetFilter == "OwnItem" || (def.TargetFilter.StartsWith("OwnItemTag:", StringComparison.Ordinal) && def.TargetFilter.Length > "OwnItemTag:".Length)))
+                Error($"'targetFilter' must be \"OwnItem\" or \"OwnItemTag:<tag>\", not \"{def.TargetFilter}\"");
         }
         return errors;
     }

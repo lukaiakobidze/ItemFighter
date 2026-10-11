@@ -1,0 +1,28 @@
+{
+  "id": "fang_knife",
+  "name": "Fang Knife",
+  "rarity": "Common",
+  "tags": [
+    "Poison"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 3,
+  "activation": "Passive",
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Poison",
+          "amount": 2
+        },
+        {
+          "type": "Damage",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

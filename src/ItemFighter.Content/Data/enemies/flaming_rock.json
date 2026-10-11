@@ -1,0 +1,10 @@
+{
+  "id": "flaming_rock",
+  "name": "Flaming Rock",
+  "maxHp": 50,
+  "difficulty": "Easy",
+  "abilityIds": [
+    "explosive",
+    "fiery_stone"
+  ]
+}

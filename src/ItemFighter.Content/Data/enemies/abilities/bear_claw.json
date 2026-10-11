@@ -1,14 +1,14 @@
 {
-  "id": "royal_slash",
+  "id": "bear_claw",
   "kind": "EnemyAbility",
-  "name": "Royal Slash",
-  "cooldown": 4,
+  "name": "Bear Claw",
+  "cooldown": 6,
   "abilities": [
     {
       "effects": [
         {
           "type": "Damage",
-          "amount": 15
+          "amount": 10
         }
       ]
     }

@@ -1,20 +1,19 @@
 {
-  "id": "molten_rage",
+  "id": "fiery_stone",
   "kind": "EnemyAbility",
-  "name": "Molten Rage",
-  "cooldown": 3,
+  "name": "Fiery Stone",
+  "cooldown": 6,
   "abilities": [
     {
       "effects": [
         {
           "type": "Damage",
-          "amount": 10
+          "amount": 5
         },
         {
           "type": "ApplyStatus",
-          "status": "Haste",
-          "amount": 10,
-          "target": "AllOwn"
+          "status": "Burn",
+          "amount": 4
         }
       ]
     }

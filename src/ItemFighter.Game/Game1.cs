@@ -48,14 +48,21 @@ public sealed class Game1 : Game
     public Input Input => _input;
     public Screen? Current => _current;
 
-    public void Show(Screen screen) => _current = screen;
+    public void Show(Screen screen)
+    {
+        _current?.OnLeave();
+        _current = screen;
+    }
 
-    /// <summary>Re-reads every JSON file and PNG, so edits show up without restarting.</summary>
+    /// <summary>Re-reads every JSON file and PNG, so edits show up without restarting. The lab stays open.</summary>
     public void ReloadContent()
     {
+        bool inLab = _current is FightLabScreen;
+        _current?.OnLeave();
+        _current = null;
         Data = GameContent.Load(Paths.Data);
         Assets.ClearArt();
-        Show(Data.Errors.Count > 0 ? new ContentErrorScreen(this) : new MainMenuScreen(this));
+        Show(Data.Errors.Count > 0 ? new ContentErrorScreen(this) : inLab ? new FightLabScreen(this) : new MainMenuScreen(this));
     }
 
     protected override void LoadContent()
@@ -75,7 +82,11 @@ public sealed class Game1 : Game
             _input.Poll(_screen, new Point(Window.ClientBounds.Width, Window.ClientBounds.Height), IsActive);
         else
             _automation.Update(this, dt);
-        if (_input.KeyPressed(Keys.F5)) ReloadContent();
+        if (_input.KeyPressed(Keys.F5))
+        {
+            _input.Consume(Keys.F5); // several updates can run per drawn frame
+            ReloadContent();
+        }
         _current?.Update(dt);
         base.Update(gameTime);
     }

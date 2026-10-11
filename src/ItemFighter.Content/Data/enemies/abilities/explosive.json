@@ -1,17 +1,20 @@
 {
-  "id": "ember_aura",
+  "id": "explosive",
   "kind": "EnemyAbility",
-  "name": "Ember Aura",
-  "cooldown": 6,
+  "name": "Explosive",
   "abilities": [
     {
       "effects": [
         {
           "type": "ApplyStatus",
           "status": "Burn",
-          "amount": 4
+          "amount": 3
         }
-      ]
+      ],
+      "trigger": {
+        "type": "OnDamageTaken",
+        "every": 5
+      }
     }
   ]
 }

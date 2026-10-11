@@ -1,31 +1,22 @@
 {
-  "id": "fire_flask",
-  "name": "Fire Flask",
+  "id": "cinder",
+  "name": "Cinder",
   "rarity": "Common",
   "tags": [
-    "Fire",
-    "Potion"
+    "Fire"
   ],
   "pools": [
     "neutral"
   ],
-  "cooldown": 4,
+  "cooldown": 5,
   "activation": "Passive",
-  "levels": {
-    "burn": [
-      3,
-      5,
-      8,
-      12
-    ]
-  },
   "abilities": [
     {
       "effects": [
         {
           "type": "ApplyStatus",
           "status": "Burn",
-          "amount": "{burn}"
+          "amount": 3
         }
       ]
     }

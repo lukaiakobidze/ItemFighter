@@ -23,7 +23,7 @@ All game content lives in `src/ItemFighter.Content/Data/` as JSON, one file per 
 
 Active items can add `"requiresTarget": true` (the player clicks the item, then another of their items) and `"targetFilter": "OwnItemTag:Weapon"` to only allow certain targets.
 
-Every number can be written directly (`"amount": 5`) or as a level value (`"amount": "{damage}"`).
+Times are in seconds (`"seconds": 1.5`). Every number can be written directly (`"amount": 5`) or as a level value (`"amount": "{damage}"`).
 
 ## Tooltip text
 
@@ -37,7 +37,8 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `OnActivate` | player clicked it (default for Active items) |
 | `OnFightStart` | once, at the start of the fight |
 | `{ "type": "OnItemFired", "filter": [...] }` | another of your items fired. Filters: `Adjacent`, `Tag:Fire`, `Self`, `AnyOwn` |
-| `OnDamageTaken` | your side took damage |
+| `OnDamageTaken` | your side took damage (any kind: hits, burn, poison, fatigue). Add `"every": 5` for every 5th time |
+| `OnDamageDealt` | your side hit the other side directly (not burn/poison). Also takes `"every"` |
 | `{ "type": "OnHpBelow", "percent": 50 }` | once, when your HP first drops below 50% |
 | `{ "type": "OnStatusApplied", "status": "Burn", "side": "Enemy" }` | burn was applied to the enemy (or `"Self"`) |
 | `OnShieldGained` | your side gained shield |
@@ -48,22 +49,24 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | effect | fields | default target |
 |---|---|---|
 | `Damage` | `amount` | Enemy |
-| `Shield` | `amount` | Self |
+| `Shield` | `amount` and/or `percentOfMaxHp` | Self |
 | `Heal` | `amount` | Self |
-| `ApplyStatus` | `status`, `amount` | Enemy for Burn/Poison/Chill; items for Freeze/Haste/Slow (amount = ticks, 10 ticks = 1s) |
-| `Charge` | `amount` (ticks) | Chosen |
+| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste use `seconds` | Enemy for Burn/Poison/Chill; items for Freeze/Haste |
+| `Charge` | `seconds` | Chosen. Takes time off the current cooldown; if that passes zero the item fires and the rest carries into its next cooldown |
+| `Slow` | `seconds` | AllEnemy. Adds time to the current cooldown |
 | `ResetCooldown` | | Chosen |
 | `ModifyStat` | `stat` (Damage, Shield, Heal, Burn, Poison, Chill), `amount` | Chosen. The target gets +amount for the rest of the fight |
 | `CopyEffect` | | Chosen. The target's effects run once more |
 
-**Targets** (`"target": ...`): `Self`, `Enemy`, `SelfItem`, `AdjacentItems`, `LeftItem`, `RightItem`, `ItemsWithTag:Fire`, `AllOwn`, `RandomOwnItem`, `RandomEnemyAbility`, `Chosen` (what the player clicked), `TriggeringItem` (the item whose firing caused this reaction).
+**Targets** (`"target": ...`): `Self`, `Enemy`, `SelfItem`, `AdjacentItems`, `LeftItem`, `RightItem`, `ItemsWithTag:Fire`, `AllOwn`, `RandomOwnItem`, `RandomEnemyAbility`, `AllEnemy` (every enemy ability, or every player item when an enemy uses it), `Chosen` (what the player clicked), `TriggeringItem` (the item whose firing caused this reaction).
 
 ## Statuses
 
 - **Burn:** every 0.5s deals its stacks as damage (double against shield), then loses 1 stack.
 - **Poison:** no damage until 10 stacks, then bursts for 3 per stack (ignores shield) and resets.
-- **Chill:** each stack slows all the target's cooldowns by 10%. New stacks refresh a 3s timer. 5 stacks freeze the target for 2s.
-- **Freeze / Haste / Slow:** on single items or abilities, for a number of ticks. Haste ×2 speed, Slow ×0.5, Freeze stops. A frozen item that gets charged or reset to full waits and fires when the freeze ends.
+- **Chill:** each stack makes all the target's cooldowns 5% longer. Stacks last 5s, and each new stack refreshes the timer; when it runs out the cooldowns go back to normal. 5 stacks freeze the target for 1s.
+- **Freeze / Haste:** on single items or abilities, for some `seconds`. Haste ×2 speed, Freeze stops. A frozen item that gets charged or reset to full waits and fires when the freeze ends.
+- **Slow** is an effect, not a status: it adds seconds to the current cooldown.
 
 ## Safety limits
 
@@ -77,9 +80,9 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 { "id": "iron_skin", "modifiers": [ { "stat": "ShieldGained", "amount": 5, "filter": { "kind": "Item" } } ] }
 ```
 
-Modifier stats are `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
+Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
 
-A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, an optional `difficulty` (shown on fight previews), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 
 ## Unique behaviour
 

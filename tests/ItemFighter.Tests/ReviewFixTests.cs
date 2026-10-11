@@ -81,3 +81,20 @@ public class ReviewFixTests
         Assert.True(result.Database.TryGet("sword", out _));
     }
 }
+
+public class ScreenReviewFixTests
+{
+    [Theory]
+    [InlineData("OwnItemTag:")]
+    [InlineData("OwnItemtag:Weapon")]
+    [InlineData("Anything")]
+    public void Validator_RejectsBadTargetFilters(string filter)
+    {
+        var json = $$"""{ "id": "hone", "cooldown": 1, "activation": "Active", "requiresTarget": true, "targetFilter": "{{filter}}", "abilities": [] }""";
+        var result = TestContent.Load(("items/hone.json", json));
+        Assert.Contains(Core.Content.ContentValidator.Validate(result.Database, new ScriptRegistry()), e => e.Id == "hone" && e.Message.Contains("targetFilter"));
+    }
+
+    [Fact]
+    public void Article_OfEmptyWord_DoesNotThrow() => Assert.Equal("a ", Core.Content.Words.Article(""));
+}

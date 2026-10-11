@@ -1,14 +1,14 @@
 {
-  "id": "scrap_stab",
+  "id": "fang_strike",
   "kind": "EnemyAbility",
-  "name": "Scrap Stab",
+  "name": "Fang Strike",
   "cooldown": 3,
   "abilities": [
     {
       "effects": [
         {
           "type": "Damage",
-          "amount": 6
+          "amount": 3
         }
       ]
     }

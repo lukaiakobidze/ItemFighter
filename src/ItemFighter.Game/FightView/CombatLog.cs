@@ -41,6 +41,7 @@ public sealed class CombatLog
             PoisonBurst p => ($"Poison bursts on {Side(p.Target)} for {p.Damage}!", Palette.Poison),
             ChillFroze c => ($"{Capital(Side(c.Target))} {(c.Target == Core.Engine.Side.Player ? "are" : "is")} frozen solid!", Palette.Freeze),
             Charged c => ($"{Name(c.SourceId)} charges {Name(c.TargetSourceId)} {Words(c.Ticks)}", Palette.Haste),
+            Delayed d => ($"{Name(d.SourceId)} slows {Name(d.TargetSourceId)} by {Words(d.Ticks)}", Palette.Slow),
             CooldownReset r => ($"{Name(r.SourceId)} readies {Name(r.TargetSourceId)}", Palette.Ready),
             StatModified m => ($"{Name(m.SourceId)}: {Name(m.TargetSourceId)} +{m.Amount} {m.Stat}", Palette.Accent),
             PhaseStarted p => ($"{b.EnemyDefinition.Name} enters phase {p.Index + 2}!", Palette.Damage),

@@ -1,14 +1,14 @@
 {
-  "id": "thorny_hide",
+  "id": "bow_shot",
   "kind": "EnemyAbility",
-  "name": "Thorny Hide",
+  "name": "Bow Shot",
+  "cooldown": 3,
   "abilities": [
     {
-      "trigger": "OnDamageTaken",
       "effects": [
         {
           "type": "Damage",
-          "amount": 1
+          "amount": 4
         }
       ]
     }

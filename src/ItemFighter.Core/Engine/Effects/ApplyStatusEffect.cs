@@ -8,9 +8,9 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
     public static ApplyStatusEffect Parse(ParseContext ctx)
     {
         var status = ctx.ReadEnum<StatusType>("status");
-        var amount = ctx.ReadValue("amount");
         if (status.IsCombatantStatus())
-            return new(status, amount, CombatantTarget.Read(ctx, TargetSpec.Enemy));
+            return new(status, ctx.ReadValue("amount"), CombatantTarget.Read(ctx, TargetSpec.Enemy));
+        var amount = ctx.ReadDuration();
         var defaultTarget = status == StatusType.Haste ? TargetSpec.SelfItem : new TargetSpec(TargetKind.RandomEnemyAbility);
         var target = ctx.ReadTarget("target", defaultTarget);
         if (target.IsCombatant) throw new ContentException($"{status} must target items or abilities, not {target}");

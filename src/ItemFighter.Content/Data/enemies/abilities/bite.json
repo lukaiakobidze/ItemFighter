@@ -1,0 +1,16 @@
+{
+  "id": "bite",
+  "kind": "EnemyAbility",
+  "name": "Bite",
+  "cooldown": 5,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}

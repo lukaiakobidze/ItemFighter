@@ -135,26 +135,27 @@ public sealed class Battle
     {
         foreach (var s in AllSources.ToList())
         {
-            if (s.HasCooldown && !s.Ready && s.LastFiredTick != Tick)
+            if (s.HasCooldown && !s.Ready && s.LastFiredTick != Tick && s.Progress < s.FullProgress)
                 s.Progress = Math.Min(s.FullProgress, s.Progress + CooldownSpeed(s));
             if (s.FreezeTicks > 0) s.FreezeTicks--;
             if (s.HasteTicks > 0) s.HasteTicks--;
-            if (s.SlowTicks > 0) s.SlowTicks--;
         }
     }
 
     public const int MinSpeed = 10;
 
-    /// <summary>Progress gained this tick: 100 normally, x2 hasted, x0.5 slowed (both cancel), -10 per chill stack, at least 10; 0 when frozen.</summary>
+    /// <summary>
+    /// Progress gained this tick: 100 normally, x2 hasted; each chill stack makes the cooldown 5% longer
+    /// (rounded so a 2s cooldown with 2 chill takes exactly 2.2s); 0 when frozen.
+    /// </summary>
     public int CooldownSpeed(SourceInstance s)
     {
         var owner = Get(s.Owner);
         if (s.FreezeTicks > 0 || owner.IsFrozenAt(Tick)) return 0;
         int speed = SourceInstance.ProgressPerTick;
-        bool haste = s.HasteTicks > 0, slow = s.SlowTicks > 0;
-        if (haste && !slow) speed *= 2;
-        else if (slow && !haste) speed /= 2;
-        speed -= ChillRule.SlowPerStack * owner.Statuses.Chill;
+        if (s.HasteTicks > 0) speed *= 2;
+        int lengthen = 100 + ChillRule.CooldownPercentPerStack * owner.Statuses.Chill;
+        speed = (speed * 100 + lengthen - 1) / lengthen;
         return Math.Max(MinSpeed, speed);
     }
 
@@ -177,7 +178,7 @@ public sealed class Battle
         StatusRules[status].OnApply(this, c, amount, source, depth);
     }
 
-    /// <summary>Sets freeze, haste or slow on one item or ability for <paramref name="ticks"/> ticks (longest wins).</summary>
+    /// <summary>Sets freeze or haste on one item or ability for <paramref name="ticks"/> ticks (longest wins).</summary>
     public void ApplyItemStatus(SourceInstance target, StatusType status, int ticks, SourceInstance? source, int depth)
     {
         if (status.IsCombatantStatus()) throw new ArgumentException($"{status} goes on combatants; use ApplyStatus");
@@ -186,9 +187,18 @@ public sealed class Battle
         {
             case StatusType.Freeze: target.FreezeTicks = Math.Max(target.FreezeTicks, ticks); break;
             case StatusType.Haste: target.HasteTicks = Math.Max(target.HasteTicks, ticks); break;
-            case StatusType.Slow: target.SlowTicks = Math.Max(target.SlowTicks, ticks); break;
         }
         Emit(new StatusApplied(Tick, null, target.Id, status, ticks, source?.Id), depth, source);
+    }
+
+    /// <summary>Sums a side-wide modifier such as DamageTaken from all of that side's sources (filters don't apply).</summary>
+    public int SideModifier(Side side, string stat)
+    {
+        int total = 0;
+        foreach (var holder in Get(side).Sources)
+            foreach (var m in holder.Def.Modifiers)
+                if (m.Stat == stat) total += m.Amount;
+        return total;
     }
 
     /// <summary>Applies a modifier stat to a base value for the given producer. Filled in by the modifier pipeline.</summary>
@@ -211,7 +221,7 @@ public sealed class Battle
                 Emit(new ItemReady(Tick, due.Id), 0, due);
                 continue;
             }
-            due.Progress = 0;
+            due.Progress = Math.Max(0, due.Progress - due.FullProgress); // charge overflow carries over
             Fire(due, 0, null);
         }
     }
@@ -293,11 +303,29 @@ public sealed class Battle
         return true;
     }
 
+    /// <summary>
+    /// Takes time off the current cooldown. Past zero the item fires and the rest carries into its next
+    /// cooldown (actives just become ready).
+    /// </summary>
     public void Charge(SourceInstance target, int ticks, SourceInstance? source, int depth)
     {
         if (!target.HasCooldown || target.Ready || ticks <= 0) return;
-        target.Progress = Math.Min(target.FullProgress, target.Progress + ticks * SourceInstance.ProgressPerTick);
+        int cap = target.Def.Activation == Activation.Active ? target.FullProgress : 2 * target.FullProgress - 1;
+        target.Progress = Math.Min(cap, target.Progress + ticks * SourceInstance.ProgressPerTick);
         Emit(new Charged(Tick, target.Id, ticks, source?.Id), depth, source);
+    }
+
+    /// <summary>Slow: adds time to the current cooldown (a ready active stops being ready).</summary>
+    public void Delay(SourceInstance target, int ticks, SourceInstance? source, int depth)
+    {
+        if (!target.HasCooldown || ticks <= 0) return;
+        if (target.Ready)
+        {
+            target.Ready = false;
+            target.Progress = target.FullProgress;
+        }
+        target.Progress -= ticks * SourceInstance.ProgressPerTick;
+        Emit(new Delayed(Tick, target.Id, ticks, source?.Id), depth, source);
     }
 
     public void ResetCooldown(SourceInstance target, SourceInstance? source, int depth)
@@ -420,6 +448,14 @@ public sealed class Battle
     /// <summary>Removes exactly the given HP and shield, for statuses with their own shield rules.</summary>
     public void ApplyRawDamage(Side target, int hpDamage, int shieldDamage, DamageKind kind, SourceInstance? source, int depth)
     {
+        int adjust = SideModifier(target, "DamageTaken");
+        if (adjust < 0)
+        {
+            int cut = Math.Min(-adjust, hpDamage);
+            hpDamage -= cut;
+            shieldDamage = Math.Max(0, shieldDamage - (-adjust - cut));
+        }
+        else if (adjust > 0 && hpDamage + shieldDamage > 0) hpDamage += adjust;
         if (hpDamage <= 0 && shieldDamage <= 0) return;
         var c = Get(target);
         c.Shield -= shieldDamage;

@@ -61,6 +61,9 @@ public sealed class FightScreen : Screen
                 _firedAt[f.SourceId] = _time;
                 _revealed.Add(f.SourceId);
             }
+            // Always-on passives (like Thick Skin) never fire; they show themselves the first time their side is hit.
+            if (e is DamageDealt { Target: Side.Enemy })
+                foreach (var s in Battle.Enemy.Sources.Where(s => s.Def.Abilities.Count == 0 && s.Def.Modifiers.Count > 0)) _revealed.Add(s.Id);
             int? by = e switch { DamageDealt d => d.SourceId, ShieldGained g => g.SourceId, StatusApplied a => a.SourceId, _ => null };
             if (by is int id) _revealed.Add(id);
         }
@@ -73,12 +76,15 @@ public sealed class FightScreen : Screen
 
     public override void Draw(Ui ui)
     {
+        bool showingResult = _endedAt >= 0 && _time - _endedAt > 0.8;
         HandleKeys(ui);
+        ui.InputBlocked = showingResult; // the result overlay is modal
         DrawEnemy(ui);
         DrawPlayer(ui);
         DrawSidebar(ui);
         DrawFloats(ui);
-        if (_endedAt >= 0 && _time - _endedAt > 0.8) DrawResult(ui);
+        ui.InputBlocked = false;
+        if (showingResult) DrawResult(ui);
         else if (ui.Input.LeftClicked && _targeting.Selecting is not null)
         {
             _targeting.Cancel(); // a click that hit nothing cancels the selection
@@ -135,7 +141,7 @@ public sealed class FightScreen : Screen
         }
         else
         {
-            ui.Text("reacts", new Vector2(bar.X, row.Y + 5), 15, Palette.TextDim);
+            ui.Text("passive", new Vector2(bar.X, row.Y + 5), 15, Palette.TextDim);
         }
         if (ui.Hover(row))
             ui.Tooltip(known ? a.Def.Name : "Unknown ability", known ? Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines : ["You'll learn what this does when it happens."], Palette.Damage);
@@ -237,7 +243,6 @@ public sealed class FightScreen : Screen
         }
         if (s.FreezeTicks > 0) Chip("FROZEN", Palette.Freeze, s.FreezeTicks);
         if (s.HasteTicks > 0) Chip("HASTE", Palette.Haste, s.HasteTicks);
-        if (s.SlowTicks > 0) Chip("SLOW", Palette.Slow, s.SlowTicks);
     }
 
     private void DrawHint(Ui ui)
@@ -308,7 +313,7 @@ public sealed class FightScreen : Screen
         if (s.Poison > 0) Chip($"Poison {s.Poison}/{PoisonRule.DefaultThreshold}", Palette.Poison, "Poison", $"At {PoisonRule.DefaultThreshold} stacks it bursts for {PoisonRule.BurstPerStack} damage per stack, ignoring shield, then resets.");
         if (s.Chill > 0)
             Chip($"Chill {s.Chill}/{ChillRule.FreezeAt}  {Math.Max(0, s.ChillExpiresAtTick - Battle.Tick) / 10.0:0.0}s", Palette.Chill, "Chill",
-                $"Each stack slows every cooldown by {ChillRule.SlowPerStack}%. New stacks refresh the timer. At {ChillRule.FreezeAt} stacks: frozen for {ChillRule.FreezeTicks / 10}s.");
+                $"Each stack makes every cooldown {ChillRule.CooldownPercentPerStack}% longer. Stacks last {ChillRule.Duration / 10}s, refreshed by each new stack. At {ChillRule.FreezeAt} stacks: frozen for {ChillRule.FreezeTicks / 10.0:0.#}s.");
         if (c.IsFrozenAt(Battle.Tick)) Chip($"FROZEN {(s.FrozenUntilTick - Battle.Tick + 1) / 10.0:0.0}s", Palette.Freeze, "Frozen", "Nothing charges or fires until it thaws.");
     }
 

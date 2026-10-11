@@ -1,0 +1,23 @@
+{
+  "id": "weights",
+  "name": "Weights",
+  "rarity": "Common",
+  "tags": [
+    "Slow"
+  ],
+  "pools": [
+    "neutral"
+  ],
+  "cooldown": 8,
+  "activation": "Active",
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Slow",
+          "seconds": 2
+        }
+      ]
+    }
+  ]
+}

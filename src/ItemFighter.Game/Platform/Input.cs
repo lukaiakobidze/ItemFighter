@@ -20,6 +20,8 @@ public sealed class Input
 
     public bool KeyPressed(Keys key) => _pressed.Contains(key);
 
+    public void Consume(Keys key) => _pressed.Remove(key);
+
     public void Poll(VirtualScreen screen, Point windowSize, bool windowActive)
     {
         var mouse = Microsoft.Xna.Framework.Input.Mouse.GetState();

@@ -1,9 +1,0 @@
-{
-  "id": "bog_witch",
-  "name": "Bog Witch",
-  "maxHp": 90,
-  "abilityIds": [
-    "hex_poison",
-    "thorny_hide"
-  ]
-}

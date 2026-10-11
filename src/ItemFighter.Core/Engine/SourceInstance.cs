@@ -50,6 +50,9 @@ public sealed class SourceInstance
 
     /// <summary>Once-per-battle triggers that have already gone off for this source.</summary>
     public HashSet<object> FiredOnce { get; } = new(ReferenceEqualityComparer.Instance);
+
+    /// <summary>Per-trigger counters for "every n-th time" triggers.</summary>
+    public Dictionary<object, int> Counters { get; } = new(ReferenceEqualityComparer.Instance);
     internal int LastFiredTick { get; set; } = -1;
 
     public bool IsItem => Slot is not null;
@@ -65,7 +68,6 @@ public sealed class SourceInstance
 
     public int FreezeTicks { get; set; }
     public int HasteTicks { get; set; }
-    public int SlowTicks { get; set; }
 
     public override string ToString() => $"{Def.Id}#{Id}";
 }
