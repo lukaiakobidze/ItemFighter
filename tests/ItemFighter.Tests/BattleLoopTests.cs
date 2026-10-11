@@ -77,17 +77,14 @@ public class BattleLoopTests
     }
 
     [Fact]
-    public void Fatigue_StartsAt90s_Escalates_IgnoresShield()
+    public void NoFatigue_TimeAloneNeverDealsDamage()
     {
         var db = TestContent.Db(("enemies/dummy.json", Enemy(maxHp: 1000)));
         var b = Fight(db, "dummy");
-        b.Player.Shield = 500;
-        b.Steps(Battle.FatigueStartTick + 20);
-        var fatigue = b.Of<DamageDealt>().Where(d => d.Kind == DamageKind.Fatigue && d.Target == Side.Enemy).ToList();
-        Assert.Equal(new[] { 900, 910, 920 }, fatigue.Select(f => f.Tick));
-        Assert.Equal(new[] { 1, 2, 3 }, fatigue.Select(f => f.HpDamage));
-        Assert.Equal(500, b.Player.Shield);
-        Assert.Equal(94, b.Player.Hp);
+        b.RunToEnd();
+        Assert.Empty(b.Of<DamageDealt>());
+        Assert.Equal(100, b.Player.Hp);
+        Assert.Equal(1000, b.Enemy.Hp);
     }
 
     [Fact]
@@ -101,17 +98,6 @@ public class BattleLoopTests
     }
 
     [Fact]
-    public void SimultaneousDeath_IsDraw()
-    {
-        var db = TestContent.Db(("enemies/dummy.json", Enemy(maxHp: 1000)));
-        var b = Fight(db, "dummy");
-        b.Player.Hp = 1;
-        b.Enemy.Hp = 1;
-        Assert.Equal(BattleResult.Draw, b.RunToEnd());
-        Assert.Equal(Battle.FatigueStartTick, b.Tick);
-    }
-
-    [Fact]
     public void BothDieFromItems_SameTick_IsDraw()
     {
         var db = TestContent.Db(("items/sword.json", Sword), ("enemies/dummy.json", Enemy(maxHp: 10, abilityIds: "\"stab\"")),
@@ -121,13 +107,29 @@ public class BattleLoopTests
     }
 
     [Fact]
-    public void HardCap_1200Ticks_IsDraw()
+    public void TimeLimit_2Minutes_CountsAsLoss()
     {
         var db = TestContent.Db(("items/apple.json", Item("apple", 0.1m, """{ "type": "Heal", "amount": 1000 }""")),
             ("enemies/dummy.json", Enemy(maxHp: 1_000_000)));
         var b = Fight(db, "dummy", ("apple", 0));
-        Assert.Equal(BattleResult.Draw, b.RunToEnd());
-        Assert.Equal(Battle.MaxTicks, b.Tick);
+        Assert.Equal(BattleResult.EnemyWon, b.RunToEnd());
+        Assert.True(b.TimedOut);
+        Assert.Equal(1200, Battle.TimeLimitTicks);
+        Assert.Equal(Battle.TimeLimitTicks, b.Tick);
+        Assert.Equal(BattleResult.EnemyWon, b.Of<BattleEnded>().Single().Result);
+    }
+
+    [Fact]
+    public void KillingBlowOnLastTick_StillWins()
+    {
+        var db = TestContent.Db(("items/sword.json", Sword), ("enemies/dummy.json", Enemy(maxHp: 1000)));
+        var b = Fight(db, "dummy", ("sword", 0));
+        b.Steps(Battle.TimeLimitTicks - 1);
+        b.Enemy.Hp = 1;
+        b.Enemy.Shield = 0;
+        // Sword fires every 20 ticks, so its last hit lands on tick 1200.
+        Assert.Equal(BattleResult.PlayerWon, b.RunToEnd());
+        Assert.False(b.TimedOut);
     }
 
     [Fact]

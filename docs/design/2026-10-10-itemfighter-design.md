@@ -26,7 +26,7 @@ Between runs: unlock characters and items, leaderboards
 - **Passive items** fire as soon as their cooldown finishes. If several finish on the same tick, the tie is broken by board position (left to right), and the order is the same every time.
 - **Active items** have their own cooldown. When ready, the player clicks to fire them. Some actives are **targeted**: click the item, then click another item (or the enemy) to apply the effect, for example "make that item stronger", "reset its cooldown" or "copy its effect".
 - **No pausing** during fights (timing is a skill). A slow-motion accessibility option may come later.
-- **Fatigue:** after about 30s, both sides take growing damage each second, so stall builds can't go on forever.
+- **Time limit (Luka, 2026-10-11):** no fatigue. A fight not won within 2 minutes counts as a loss. Fights can be paused.
 - **Deterministic:** each fight has a seed. The same seed plus the same player inputs (tick-stamped commands) always gives the same result. This powers replays, tests, save/load, bug reproduction and verified leaderboard scores.
 
 ## 4. The effect engine (heart of the game)

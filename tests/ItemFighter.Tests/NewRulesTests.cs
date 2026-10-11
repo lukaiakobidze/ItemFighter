@@ -100,28 +100,6 @@ public class NewRulesTests
     }
 
     [Fact]
-    public void Fatigue_StartsAt90s_AndDrawCapIsLater()
-    {
-        Assert.Equal(900, Battle.FatigueStartTick);
-        Assert.True(Battle.MaxTicks > Battle.FatigueStartTick + 300);
-    }
-
-    [Fact]
-    public void Fatigue_DoesNotCountAsTakingDamage_NorGetReducedByThickSkin()
-    {
-        var db = TestContent.Db(("items/rock.json", Item("rock", 600, """{ "type": "Shield", "amount": 1 }""")),
-            ("enemies/bear.json", Enemy("bear", maxHp: 10_000, abilityIds: "\"thick_skin\", \"angry\"")),
-            ("enemies/thick_skin.json", """{ "id": "thick_skin", "kind": "EnemyAbility", "modifiers": [ { "stat": "DamageTaken", "amount": -1 } ] }"""),
-            ("enemies/angry.json", EnemyAbility("angry", null, """{ "type": "Shield", "amount": 1 }""", "\"OnDamageTaken\"")));
-        var b = Fight(db, "bear", ("rock", 0));
-        b.Steps(Battle.FatigueStartTick + 1);
-        var fatigue = Assert.Single(b.Of<DamageDealt>(), d => d.Target == Side.Enemy);
-        Assert.Equal(DamageKind.Fatigue, fatigue.Kind);
-        Assert.Equal(1, fatigue.Total);
-        Assert.Equal(0, b.Enemy.Shield);
-    }
-
-    [Fact]
     public void PoisonBurst_CountsAsTakingDamage()
     {
         var db = TestContent.Db(("enemies/rock.json", Enemy("rock", abilityIds: "\"explosive\"")),

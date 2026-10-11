@@ -50,7 +50,6 @@ public static class Palette
     {
         DamageKind.Burn => Burn,
         DamageKind.Poison => Poison,
-        DamageKind.Fatigue => TextDim,
         _ => Damage,
     };
 

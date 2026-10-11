@@ -39,7 +39,7 @@ public class ContentIntegrityTests
         var board = new List<BoardItem> { new(itemId, 0) };
         if (content.Database.Get(itemId).RequiresTarget) board.Add(new BoardItem("sword", 1));
         var b = new Battle(new BattleSetup(new PlayerSetup(null, board, []), "test_dummy", 1), content.Database, content.Scripts);
-        AutoPilot.Run(b, untilTick: Battle.FatigueStartTick - 1);
+        AutoPilot.Run(b, untilTick: 300);
         Assert.Contains(b.Events, e => e is SourceFired f && f.SourceId == b.Player.Items.Single(i => i.Slot == 0).Id);
     }
 

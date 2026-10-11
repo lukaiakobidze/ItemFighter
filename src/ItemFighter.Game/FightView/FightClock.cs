@@ -12,12 +12,15 @@ public sealed class FightClock(Battle battle)
 
     public int Speed { get; set; } = 1;
 
+    /// <summary>While paused no ticks are played and no time is banked.</summary>
+    public bool Paused { get; set; }
+
     /// <summary>How far (0..1) the clock is towards the next tick, for smooth bars.</summary>
     public double Fraction => battle.Result == BattleResult.Ongoing ? _pending : 0;
 
     public int Advance(double seconds)
     {
-        if (battle.Result != BattleResult.Ongoing) return 0;
+        if (battle.Result != BattleResult.Ongoing || Paused) return 0;
         _pending += seconds * 10 * Speed;
         int steps = (int)(_pending + 1e-9);
         _pending -= steps;

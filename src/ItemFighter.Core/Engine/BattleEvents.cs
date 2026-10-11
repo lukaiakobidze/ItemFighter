@@ -1,6 +1,6 @@
 namespace ItemFighter.Core.Engine;
 
-public enum DamageKind { Direct, Burn, Poison, Fatigue }
+public enum DamageKind { Direct, Burn, Poison }
 
 /// <summary>Something that happened during a battle. The frontend animates from these, in order.</summary>
 public abstract record BattleEvent(int Tick);

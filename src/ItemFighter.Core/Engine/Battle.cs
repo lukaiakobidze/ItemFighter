@@ -17,10 +17,12 @@ public sealed class Battle
     public const int MaxChainDepth = 8;
     /// <summary>Reactions (and copied effects) allowed per tick; later ones are dropped with ChainCapped so wide boards stay fast.</summary>
     public const int MaxReactionsPerTick = 256;
-    public const int FatigueStartTick = 900;
-    public const int FatigueInterval = 10;
-    public const int MaxTicks = 1800;
+    /// <summary>A fight still going after this many ticks (2 minutes) is a loss for the player.</summary>
+    public const int TimeLimitTicks = 1200;
     public const int DefaultPlayerHp = 100;
+
+    /// <summary>True when the fight ended because time ran out (counted as a loss).</summary>
+    public bool TimedOut { get; private set; }
 
     private readonly List<BattleEvent> _events = [];
     private readonly ContentDatabase _db;
@@ -119,7 +121,6 @@ public sealed class Battle
         TickStatuses();
         AdvanceCooldowns();
         FireCompletedSources();
-        ApplyFatigue();
         CheckPhases();
         ResolveResult();
     }
@@ -341,14 +342,6 @@ public sealed class Battle
         Emit(new StatModified(Tick, target.Id, stat, amount, source?.Id), depth, source);
     }
 
-    private void ApplyFatigue()
-    {
-        if (Tick < FatigueStartTick || (Tick - FatigueStartTick) % FatigueInterval != 0) return;
-        int amount = (Tick - FatigueStartTick) / FatigueInterval + 1;
-        DealDamage(Side.Player, amount, DamageKind.Fatigue, null, 0, ignoreShield: true);
-        DealDamage(Side.Enemy, amount, DamageKind.Fatigue, null, 0, ignoreShield: true);
-    }
-
     private readonly HashSet<int> _phasesStarted = [];
 
     private void CheckPhases()
@@ -373,7 +366,11 @@ public sealed class Battle
         if (Player.IsDead && Enemy.IsDead) Result = BattleResult.Draw;
         else if (Enemy.IsDead) Result = BattleResult.PlayerWon;
         else if (Player.IsDead) Result = BattleResult.EnemyWon;
-        else if (Tick >= MaxTicks) Result = BattleResult.Draw;
+        else if (Tick >= TimeLimitTicks)
+        {
+            Result = BattleResult.EnemyWon;
+            TimedOut = true;
+        }
         if (Result != BattleResult.Ongoing) Emit(new BattleEnded(Tick, Result), 0, null);
     }
 
@@ -448,7 +445,7 @@ public sealed class Battle
     /// <summary>Removes exactly the given HP and shield, for statuses with their own shield rules.</summary>
     public void ApplyRawDamage(Side target, int hpDamage, int shieldDamage, DamageKind kind, SourceInstance? source, int depth)
     {
-        int adjust = kind == DamageKind.Fatigue ? 0 : SideModifier(target, "DamageTaken"); // fatigue ignores everything
+        int adjust = SideModifier(target, "DamageTaken");
         if (adjust < 0)
         {
             int cut = Math.Min(-adjust, hpDamage);

@@ -45,6 +45,22 @@ public class FightLogicTests
     }
 
     [Fact]
+    public void Clock_Paused_DoesNotStep_AndDoesNotCatchUpAfter()
+    {
+        var b = NewFight();
+        var clock = new FightClock(b);
+        clock.Advance(0.55);
+        Assert.Equal(5, b.Tick);
+        clock.Paused = true;
+        clock.Advance(10);
+        Assert.Equal(5, b.Tick);
+        Assert.Equal(0.5, clock.Fraction, 3); // bars hold where they were
+        clock.Paused = false;
+        clock.Advance(0.05);
+        Assert.Equal(6, b.Tick);
+    }
+
+    [Fact]
     public void Clock_StopsWhenBattleEnds()
     {
         var b = NewFight(enemyHp: 5);

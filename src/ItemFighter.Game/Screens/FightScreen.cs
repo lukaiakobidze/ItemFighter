@@ -27,6 +27,7 @@ public sealed class FightScreen : Screen
     private readonly HashSet<int> _revealed = [];
     private double _time;
     private double _endedAt = -1;
+    private bool _wasActive;
 
     public FightScreen(Game1 game, LabSetup setup) : base(game)
     {
@@ -34,10 +35,17 @@ public sealed class FightScreen : Screen
         Battle = new Battle(setup.ToBattleSetup(), game.Data.Database, game.Data.Scripts);
         _clock = new FightClock(Battle);
         _cursor = new EventCursor(Battle);
+        _wasActive = game.IsActive;
     }
 
     public Battle Battle { get; }
     public TargetingState Targeting => _targeting;
+
+    public bool Paused
+    {
+        get => _clock.Paused;
+        set => _clock.Paused = value;
+    }
 
     public int Speed
     {
@@ -51,6 +59,9 @@ public sealed class FightScreen : Screen
 
     public override void Update(double seconds)
     {
+        if (_wasActive && !Game.IsActive && Battle.Result == BattleResult.Ongoing) Paused = true; // alt-tab pauses the fight
+        _wasActive = Game.IsActive;
+        if (Paused && Battle.Result == BattleResult.Ongoing) seconds = 0; // freeze floating numbers and flashes too
         _time += seconds;
         _clock.Advance(seconds);
         var events = _cursor.TakeNew();
@@ -83,6 +94,7 @@ public sealed class FightScreen : Screen
         DrawPlayer(ui);
         DrawSidebar(ui);
         DrawFloats(ui);
+        if (Paused && Battle.Result == BattleResult.Ongoing) DrawPausedBanner(ui);
         ui.InputBlocked = false;
         if (showingResult) DrawResult(ui);
         else if (ui.Input.LeftClicked && _targeting.Selecting is not null)
@@ -100,6 +112,7 @@ public sealed class FightScreen : Screen
             else if (ui.Input.KeyPressed(Keys.Escape) && Battle.Result != BattleResult.Ongoing) BackToLab();
             ui.Input.ConsumeClicks();
         }
+        if ((ui.Input.KeyPressed(Keys.Space) || ui.Input.KeyPressed(Keys.P)) && Battle.Result == BattleResult.Ongoing) Paused = !Paused;
         if (ui.Input.KeyPressed(Keys.D1)) Speed = 1;
         if (ui.Input.KeyPressed(Keys.D2)) Speed = 2;
         if (ui.Input.KeyPressed(Keys.D3)) Speed = 4;
@@ -122,7 +135,7 @@ public sealed class FightScreen : Screen
 
         var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility).ToList();
         for (int i = 0; i < abilities.Count && i < 5; i++) DrawAbility(ui, abilities[i], AbilityRow(i));
-        DrawFatigue(ui, new Vector2(32, 200));
+        DrawTimer(ui, new Vector2(32, 200));
     }
 
     private void DrawAbility(Ui ui, SourceInstance a, Rectangle row)
@@ -147,15 +160,20 @@ public sealed class FightScreen : Screen
             ui.Tooltip(known ? a.Def.Name : "Unknown ability", known ? Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines : ["You'll learn what this does when it happens."], Palette.Damage);
     }
 
-    private void DrawFatigue(Ui ui, Vector2 pos)
+    private static void DrawPausedBanner(Ui ui)
     {
-        int ticksLeft = Battle.FatigueStartTick - Battle.Tick;
-        if (ticksLeft > 0)
-            ui.Text($"Fatigue in {ticksLeft / 10.0:0}s", pos, 15, Palette.TextDim);
-        else
-            ui.Text("Fatigue: both sides take", pos, 15, Palette.Damage);
-        if (ticksLeft <= 0) ui.Text("growing damage", pos + new Vector2(0, 18), 15, Palette.Damage);
-        ui.Text($"Time {Battle.Tick / 10.0:0.0}s", pos + new Vector2(0, 44), 15, Palette.TextDim);
+        var r = new Rectangle(287, 304, 336, 48);
+        ui.Panel(r, new Color(20, 22, 32) * 0.92f, Palette.Accent);
+        ui.TextIn("PAUSED  ·  Space to resume", r, 18, Palette.Accent, bold: true);
+    }
+
+    private void DrawTimer(Ui ui, Vector2 pos)
+    {
+        int ticksLeft = Math.Max(0, Battle.TimeLimitTicks - Battle.Tick);
+        int secondsLeft = (ticksLeft + 9) / 10;
+        var color = secondsLeft <= 15 ? Palette.Damage : Palette.TextDim;
+        ui.Text($"Time left {secondsLeft / 60}:{secondsLeft % 60:00}", pos, 17, color, bold: secondsLeft <= 15);
+        ui.Text("Out of time = defeat", pos + new Vector2(0, 22), 14, Palette.TextDim);
     }
 
     // ---- player ------------------------------------------------------------------------------------------------
@@ -364,7 +382,8 @@ public sealed class FightScreen : Screen
     {
         for (int i = 0; i < Speeds.Length; i++)
             if (ui.Button(SpeedButton(i), $"{Speeds[i]}×", 18, selected: Speed == Speeds[i])) Speed = Speeds[i];
-        if (ui.Button(new Rectangle(1150, 14, 114, 38), "Give up", 16, Battle.Result == BattleResult.Ongoing)) BackToLab();
+        if (ui.Button(PauseButton, Paused ? "Resume" : "Pause", 16, Battle.Result == BattleResult.Ongoing, selected: Paused)) Paused = !Paused;
+        if (ui.Button(new Rectangle(1172, 14, 92, 38), "Give up", 16, Battle.Result == BattleResult.Ongoing)) BackToLab();
 
         ui.Panel(LogPanel);
         ui.Text("Combat log", new Vector2(LogPanel.X + 10, LogPanel.Y + 8), 16, Palette.TextDim, bold: true);
@@ -380,7 +399,8 @@ public sealed class FightScreen : Screen
         }
     }
 
-    public static Rectangle SpeedButton(int index) => new(906 + index * 76, 14, 70, 38);
+    public static Rectangle SpeedButton(int index) => new(906 + index * 60, 14, 54, 38);
+    public static readonly Rectangle PauseButton = new(1086, 14, 80, 38);
 
     public static readonly Rectangle AgainButton = new(390, 400, 160, 48);
     public static readonly Rectangle ReplayButton = new(560, 400, 160, 48);
@@ -394,6 +414,7 @@ public sealed class FightScreen : Screen
         (string title, Color color) = Battle.Result switch
         {
             BattleResult.PlayerWon => ("Victory!", Palette.Heal),
+            BattleResult.EnemyWon when Battle.TimedOut => ("Out of time", Palette.Damage),
             BattleResult.EnemyWon => ("Defeat", Palette.Damage),
             _ => ("Draw", Palette.TextDim),
         };

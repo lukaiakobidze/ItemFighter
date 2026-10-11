@@ -37,7 +37,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `OnActivate` | player clicked it (default for Active items) |
 | `OnFightStart` | once, at the start of the fight |
 | `{ "type": "OnItemFired", "filter": [...] }` | another of your items fired. Filters: `Adjacent`, `Tag:Fire`, `Self`, `AnyOwn` |
-| `OnDamageTaken` | your side took damage: hits, burn ticks and poison bursts (fatigue never counts). Add `"every": 5` for every 5th time |
+| `OnDamageTaken` | your side took damage: hits, burn ticks and poison bursts. Add `"every": 5` for every 5th time |
 | `OnDamageDealt` | your side hit the other side directly (not burn/poison). Also takes `"every"` |
 | `{ "type": "OnHpBelow", "percent": 50 }` | once, when your HP first drops below 50% |
 | `{ "type": "OnStatusApplied", "status": "Burn", "side": "Enemy" }` | burn was applied to the enemy (or `"Self"`) |

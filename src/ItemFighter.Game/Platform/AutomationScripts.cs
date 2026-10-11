@@ -40,6 +40,17 @@ public static class AutomationScripts
             Do: Automation.Hover(FightScreen.CardRect(3)), Shot: "fight-ready"),
         new(Wait: 0.1, Do: Automation.Click(FightScreen.CardRect(3))),
         new(Wait: 0.4, Do: Automation.Hover(FightScreen.CardRect(0)), Shot: "fight-mid"),
+        new(Do: Automation.Key(Keys.Space)),
+        new(Wait: 0.5, Shot: "fight-paused", Do: g =>
+        {
+            if (!FightOf(g).Paused) throw new InvalidOperationException("Space did not pause the fight");
+        }),
+        new(Do: Automation.Click(FightScreen.PauseButton)),
+        // Several updates can run before the next draw, so wait for the click to be drawn and handled.
+        new(Until: g => !FightOf(g).Paused, Do: g =>
+        {
+            if (FightOf(g).Paused) throw new InvalidOperationException("the Resume button did not resume the fight");
+        }),
         new(Do: g => FightOf(g).Speed = 8),
         new(Until: g => g.Current is FightScreen f && f.Battle.Result != Core.Engine.BattleResult.Ongoing),
         new(Wait: 1.2, Do: g => g.Input.Inject(new Vector2(640, 600)), Shot: "fight-end"),
