@@ -18,7 +18,6 @@ public sealed class SourceDefinition
     public string File { get; init; } = "";
     public Rarity Rarity { get; init; } = Rarity.Common;
     public IReadOnlyList<string> Tags { get; init; } = [];
-    public IReadOnlyList<string> Pools { get; init; } = [];
 
     /// <summary>Cooldown in ticks, or null when the source never fires on its own.</summary>
     public int? CooldownTicks { get; init; }
@@ -44,8 +43,8 @@ public sealed class SourceDefinition
     /// <summary>Enemies only, never shown: 1 to 10. Harder enemies are met later in a run.</summary>
     public int Difficulty { get; init; } = 1;
 
-    /// <summary>Enemies only: the item this enemy offers as a drop (it never uses it).</summary>
-    public string? DropItemId { get; init; }
+    /// <summary>Items only: gold earned for each fight won with this item on the board (run loop, not the fight).</summary>
+    public ValueRef? GoldOnWin { get; init; }
 
     /// <summary>An enemy ability with no cooldown (always on or reacting), which the player can also take as a passive.</summary>
     public bool IsPassiveAbility => Kind == SourceKind.EnemyAbility && CooldownTicks is null;

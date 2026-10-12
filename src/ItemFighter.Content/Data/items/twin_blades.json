@@ -1,0 +1,29 @@
+{
+  "id": "twin_blades",
+  "name": "Twin Blades",
+  "rarity": "Rare",
+  "tags": [
+    "Weapon"
+  ],
+  "cooldown": 6,
+  "activation": "Passive",
+  "levels": {
+    "damage": [
+      6,
+      8,
+      9,
+      11
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}",
+          "hits": 2
+        }
+      ]
+    }
+  ]
+}

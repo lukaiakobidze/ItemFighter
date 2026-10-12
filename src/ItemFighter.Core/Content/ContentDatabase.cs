@@ -7,6 +7,9 @@ public sealed class ContentDatabase
     private readonly Dictionary<string, SourceDefinition> _byId = new(StringComparer.Ordinal);
     private readonly List<SourceDefinition> _all = [];
 
+    /// <summary>The fight's status and time-limit numbers (Data/rules.json, or the defaults).</summary>
+    public Engine.CombatRules Rules { get; set; } = new();
+
     /// <summary>All definitions, sorted by id (ordinal), so iteration order never depends on file order.</summary>
     public IReadOnlyList<SourceDefinition> All => _all;
 

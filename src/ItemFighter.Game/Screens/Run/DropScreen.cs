@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 
 namespace ItemFighter.Screens.Run;
 
-/// <summary>After a win: take 1 of 3 items or passives, or skip.</summary>
+/// <summary>After a win: take 1 of 3 items, or skip.</summary>
 public sealed class DropScreen(Game1 game, RunSession session) : RunScreen(game, session)
 {
     public static readonly Rectangle SkipButton = new(908, 566, 340, 56);
@@ -33,20 +33,17 @@ public sealed class DropScreen(Game1 game, RunSession session) : RunScreen(game,
         for (int i = 0; i < choices.Count; i++)
         {
             if (!Db.TryGet(choices[i], out var def)) continue;
-            bool passive = Run.IsPassiveId(def.Id);
             var owned = Run.AllOwned.FirstOrDefault(o => o.ItemId == def.Id);
             int level = owned is null ? 1 : owned.Level + 1;
             var r = ChoiceRect(i, choices.Count);
             DrawCard(ui, def, r, level);
-            string note = passive ? (def.Kind == SourceKind.EnemyAbility ? "the enemy's passive" : "passive")
-                : i == 0 && drop!.Kind == DropKind.Items && Db.TryGet(Run.Current?.EnemyId ?? "", out var e) && e.DropItemId == def.Id ? "the enemy's drop"
-                : owned is not null ? $"merges: level {level}" : "";
+            string note = owned is not null ? $"merges: level {level}" : "";
             if (note.Length > 0)
             {
                 ui.Rect(new Rectangle(r.X + 6, r.Y + 6, r.Width - 12, 20), new Color(0, 0, 0, 150));
                 ui.Text(note, new Vector2(r.Center.X, r.Y + 8), 13, Palette.Accent, bold: true, align: Align.Center);
             }
-            bool room = passive || owned is { Level: < ContentLoader.LevelCount } || Run.HasRoom;
+            bool room = owned is { Level: < ContentLoader.LevelCount } || Run.HasRoom;
             if (ui.Button(TakeRect(i, choices.Count), room ? "Take" : "No room: sell something", 16, room) && Run.TakeDrop(i))
             {
                 Session.Commit();

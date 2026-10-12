@@ -28,7 +28,7 @@ public class BulkSimTests
             var player = RandomBoard.Create(content.Database, new Rng(seed));
             var b = new Battle(new BattleSetup(player, enemy.Id, seed), content.Database, content.Scripts);
             Assert.NotEqual(BattleResult.Ongoing, AutoPilot.Run(b));
-            Assert.InRange(b.Tick, 1, Battle.TimeLimitTicks);
+            Assert.InRange(b.Tick, 1, b.TimeLimitTicks);
         }
     }
 

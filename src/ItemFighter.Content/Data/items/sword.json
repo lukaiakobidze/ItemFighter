@@ -3,7 +3,6 @@
   "name": "Sword",
   "rarity": "Common",
   "tags": ["Weapon"],
-  "pools": ["neutral"],
   "cooldown": 4,
   "activation": "Passive",
   "levels": {

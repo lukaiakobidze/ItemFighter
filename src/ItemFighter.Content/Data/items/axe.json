@@ -3,7 +3,6 @@
   "name": "Axe",
   "rarity": "Common",
   "tags": ["Weapon"],
-  "pools": ["neutral"],
   "cooldown": 7,
   "activation": "Passive",
   "levels": {

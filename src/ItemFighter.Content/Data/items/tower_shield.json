@@ -3,7 +3,6 @@
   "name": "Tower Shield",
   "rarity": "Common",
   "tags": ["Shield"],
-  "pools": ["neutral"],
   "cooldown": 8,
   "activation": "Passive",
   "levels": {

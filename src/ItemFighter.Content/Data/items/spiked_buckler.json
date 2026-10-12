@@ -1,0 +1,29 @@
+{
+  "id": "spiked_buckler",
+  "name": "Spiked Buckler",
+  "rarity": "Rare",
+  "tags": [
+    "Weapon",
+    "Shield"
+  ],
+  "cooldown": 6,
+  "activation": "Passive",
+  "levels": {
+    "shieldPercent": [
+      100,
+      125,
+      150,
+      175
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "percentOfShield": "{shieldPercent}"
+        }
+      ]
+    }
+  ]
+}

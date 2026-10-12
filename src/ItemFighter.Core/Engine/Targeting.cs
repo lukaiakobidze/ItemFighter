@@ -47,6 +47,18 @@ public static class Targeting
     public static IEnumerable<SourceInstance> Targetable(Combatant c) =>
         c.Side == Side.Player ? c.Items : c.Sources.Where(s => s.HasCooldown);
 
+    /// <summary>
+    /// 1-based slot: a board item's slot, or for an enemy the position of the ability among its cooldown abilities
+    /// (its first attack is "slot 1"). Null for sources with no slot (characters, passives).
+    /// </summary>
+    public static int? SlotNumber(Battle battle, SourceInstance source)
+    {
+        if (source.Slot is int slot) return slot + 1;
+        if (source.Owner != Side.Enemy || !source.HasCooldown) return null;
+        int index = Targetable(battle.Enemy).ToList().IndexOf(source);
+        return index < 0 ? null : index + 1;
+    }
+
     /// <summary>Resolves an item target to sources, in canonical order. Random picks use the battle's combat rng.</summary>
     public static IReadOnlyList<SourceInstance> ResolveItems(TargetSpec spec, Effects.EffectContext ctx)
     {

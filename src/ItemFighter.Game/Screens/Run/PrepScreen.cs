@@ -21,10 +21,10 @@ public sealed class PrepScreen(Game1 game, RunSession session) : RunScreen(game,
         float x = 312, y = 70;
         string kind = e.Kind == EncounterKind.Boss ? "Mission boss" : "Fight";
         ui.Text($"{kind}: {enemy.Name}", new Vector2(x, y), 26, e.Kind == EncounterKind.Boss ? Palette.Damage : Palette.Text, bold: true);
-        ui.Text($"{enemy.Rarity} enemy  ·  {hp} HP", new Vector2(x, y + 40), 18, Palette.TextDim);
+        ui.Text($"{hp} HP", new Vector2(x, y + 40), 18, Palette.TextDim);
         ui.Text("You learn its abilities by fighting it.", new Vector2(x, y + 72), 17, Palette.TextDim);
         ui.Wrapped("Put the items you want to fight with on the hotbar. Everything in the backpack sits this fight out. " +
-            $"You have {Core.Engine.Battle.TimeLimitTicks / 10} seconds to win; running out of time loses the run.",
+            $"You have {Session.Run.Db.Rules.FightTimeLimitSeconds:0.#} seconds to win; running out of time loses the run.",
             new Vector2(x, y + 120), 540, 17, Palette.Text);
     }
 

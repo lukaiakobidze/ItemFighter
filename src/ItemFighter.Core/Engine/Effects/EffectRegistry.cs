@@ -22,6 +22,7 @@ public sealed class EffectRegistry
         r.Register("Charge", ChargeEffect.Parse);
         r.Register("Slow", SlowEffect.Parse);
         r.Register("ResetCooldown", ResetCooldownEffect.Parse);
+        r.Register("ReduceCooldown", ReduceCooldownEffect.Parse);
         r.Register("ModifyStat", ModifyStatEffect.Parse);
         r.Register("CopyEffect", CopyEffect.Parse);
         return r;

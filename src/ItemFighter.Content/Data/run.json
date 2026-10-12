@@ -6,8 +6,7 @@
   "backpackSize": 12,
 
   "startingGold": 10,
-  "fightGold": [5, 6, 7, 8, 9],
-  "rarityGoldPercent": { "Common": 100, "Uncommon": 150, "Rare": 200, "Epic": 300, "Legendary": 400 },
+  "fightGold": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
   "bossGold": 15,
   "prices": { "Common": 4, "Uncommon": 7, "Rare": 12, "Epic": 18, "Legendary": 25 },
   "sellPercent": 50,
@@ -20,7 +19,7 @@
     { "id": "shop", "name": "Shop", "tags": [] }
   ],
   "daysPerDifficulty": 5,
-  "difficultyWindow": 3,
+  "difficultySpread": 1,
   "bosses": [
     { "enemy": "flaming_rock" },
     { "enemy": "green_snake" },
@@ -28,14 +27,18 @@
     { "enemy": "flaming_rock" },
     { "enemy": "grizzly_bear" }
   ],
-  "enemyRarityWeights": { "Common": 100, "Uncommon": 50, "Rare": 20, "Epic": 8, "Legendary": 3 },
-  "dropRarityWeights": {
-    "Common":    [100, 20,  5,  1,  0],
-    "Uncommon":  [ 60, 40, 15,  4,  1],
-    "Rare":      [ 30, 40, 25, 10,  3],
-    "Epic":      [ 15, 30, 30, 20,  8],
-    "Legendary": [  5, 20, 30, 30, 15]
-  },
+  "dropRarityWeights": [
+    [100, 15,  3,  0,  0],
+    [ 90, 20,  5,  1,  0],
+    [ 80, 30,  8,  2,  0],
+    [ 70, 35, 12,  3,  1],
+    [ 60, 40, 15,  5,  1],
+    [ 50, 40, 20,  8,  2],
+    [ 40, 40, 25, 10,  3],
+    [ 30, 40, 30, 15,  5],
+    [ 25, 35, 30, 20,  8],
+    [ 20, 30, 30, 25, 12]
+  ],
   "shopRarityWeights": [
     [100, 15,  3,  0,  0],
     [ 80, 30,  8,  2,  0],
@@ -43,7 +46,5 @@
     [ 45, 40, 25, 10,  3],
     [ 30, 40, 30, 15,  5]
   ],
-  "characterPoolMultiplier": 3,
-  "tagBonusPercent": 15,
-  "itemDropChancePercent": 50
+  "tagBonusPercent": 15
 }

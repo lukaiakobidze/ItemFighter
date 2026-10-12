@@ -3,7 +3,6 @@
   "name": "Cinder",
   "rarity": "Common",
   "tags": ["Fire"],
-  "pools": ["neutral"],
   "cooldown": 5,
   "activation": "Passive",
   "levels": {

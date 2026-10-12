@@ -3,7 +3,6 @@
   "name": "Weights",
   "rarity": "Common",
   "tags": ["Slow"],
-  "pools": ["neutral"],
   "cooldown": 8,
   "activation": "Active",
   "levels": {

@@ -1,0 +1,28 @@
+{
+  "id": "sledgehammer",
+  "name": "Sledgehammer",
+  "rarity": "Rare",
+  "tags": [
+    "Weapon"
+  ],
+  "cooldown": 8,
+  "activation": "Passive",
+  "levels": {
+    "damage": [
+      25,
+      31,
+      38,
+      44
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}"
+        }
+      ]
+    }
+  ]
+}

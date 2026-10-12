@@ -1,0 +1,34 @@
+{
+  "id": "ice_shield",
+  "name": "Ice Shield",
+  "rarity": "Rare",
+  "tags": [
+    "Shield",
+    "Chill"
+  ],
+  "cooldown": 4,
+  "activation": "Passive",
+  "levels": {
+    "shield": [
+      8,
+      10,
+      12,
+      14
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Chill",
+          "amount": 1
+        },
+        {
+          "type": "Shield",
+          "amount": "{shield}"
+        }
+      ]
+    }
+  ]
+}

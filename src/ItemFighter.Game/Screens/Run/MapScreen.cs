@@ -65,9 +65,11 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
             ui.Art("Enemies", enemy.Id, enemy.Name, art);
             ui.TextIn(enemy.Name, new Rectangle(r.X, r.Y + 198, r.Width, 26), 19, Palette.Text, bold: true);
             int hp = enemy.MaxHp;
-            ui.TextIn($"{enemy.Rarity} enemy  ·  {hp} HP", new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.For(enemy.Rarity));
-            ui.TextIn($"Win: +{Run.GoldFor(e)} gold", new Rectangle(r.X, r.Y + 250, r.Width, 22), 15, Palette.Accent);
-            if (hover) ui.Tooltip(enemy.Name, [$"{enemy.Rarity} enemy  ·  {hp} HP", "You learn its abilities by fighting it."], color);
+            ui.TextIn($"{hp} HP", new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.Hp);
+            int itemGold = Run.GoldFromItems;
+            string win = itemGold > 0 ? $"Win: +{Run.GoldFor(e)} gold (+{itemGold} from items)" : $"Win: +{Run.GoldFor(e)} gold";
+            ui.TextIn(win, new Rectangle(r.X, r.Y + 250, r.Width, 22), 15, Palette.Accent);
+            if (hover) ui.Tooltip(enemy.Name, [$"{hp} HP", "You learn its abilities by fighting it."], color);
         }
         ui.Text("click to choose", new Vector2(r.Center.X, r.Bottom - 28), 13, hover ? Palette.Text : Palette.TextDim, align: Align.Center);
         ui.Border(r, hover ? color : Palette.Border, hover ? 3 : 1);

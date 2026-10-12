@@ -1,9 +1,7 @@
 {
   "id": "grizzly_bear",
   "name": "Grizzly Bear",
-  "rarity": "Common",
   "difficulty": 2,
   "maxHp": 100,
-  "dropItem": "tower_shield",
   "abilityIds": ["thick_skin", "bear_claw"]
 }

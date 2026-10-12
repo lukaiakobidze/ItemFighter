@@ -1,0 +1,18 @@
+{
+  "fightTimeLimitSeconds": 120,
+
+  "burnTickSeconds": 0.5,
+  "burnLossPerTick": 1,
+  "burnShieldMultiplier": 2,
+
+  "poisonThreshold": 10,
+  "poisonBurstPerStack": 3,
+
+  "chillSeconds": 5,
+  "chillCooldownPercentPerStack": 5,
+  "chillFreezeAtStacks": 5,
+  "freezeSeconds": 1,
+
+  "minCooldownSeconds": 0.5,
+  "slowestCooldownSpeedPercent": 10
+}

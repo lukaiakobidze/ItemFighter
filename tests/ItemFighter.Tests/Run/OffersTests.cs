@@ -8,17 +8,18 @@ namespace ItemFighter.Tests.Run;
 
 public class OffersTests
 {
-    private static string ItemJson(string id, string tags = "\"Weapon\"", string rarity = "Common", string pools = "\"neutral\"") =>
-        Item(id, 2, """{ "type": "Damage", "amount": 1 }""", extra: $"\"tags\": [{tags}], \"rarity\": \"{rarity}\", \"pools\": [{pools}],");
+    private static string ItemJson(string id, string tags = "\"Weapon\"", string rarity = "Common") =>
+        Item(id, 2, """{ "type": "Damage", "amount": 1 }""", extra: $"\"tags\": [{tags}], \"rarity\": \"{rarity}\",");
 
     private static ContentDatabase SmallDb() => TestContent.Db(
         ("items/a.json", ItemJson("a")),
         ("items/b.json", ItemJson("b", "\"Fire\"")),
-        ("items/c.json", ItemJson("c", "\"Shield\"", pools: "\"knight\"")),
+        ("items/c.json", ItemJson("c", "\"Shield\"")),
         ("items/d.json", ItemJson("d", "\"Fire\"", rarity: "Rare")),
         ("characters/knight.json", """{ "id": "knight", "maxHp": 100 }"""),
-        ("enemies/zombie.json", """{ "id": "zombie", "maxHp": 10, "dropItem": "a" }"""),
-        ("enemies/snake.json", """{ "id": "snake", "maxHp": 10, "dropItem": "b", "abilityIds": ["venomous"] }"""),
+        ("enemies/zombie.json", """{ "id": "zombie", "maxHp": 10 }"""),
+        ("enemies/snake.json", """{ "id": "snake", "maxHp": 10, "abilityIds": ["venomous"] }"""),
+        ("enemies/dragon.json", """{ "id": "dragon", "maxHp": 10, "difficulty": 10 }"""),
         ("enemies/venomous.json", Item("venomous", null, """{ "type": "ApplyStatus", "status": "Poison", "amount": 2 }""", "\"OnDamageDealt\"",
             extra: "\"kind\": \"EnemyAbility\",")));
 
@@ -28,11 +29,10 @@ public class OffersTests
     private static readonly int[] Flat = [100, 100, 100, 100, 100];
 
     [Fact]
-    public void ItemWeight_CharacterPool_Triples()
+    public void ItemWeight_OnePool_CharacterMakesNoDifference()
     {
         var db = SmallDb();
-        Assert.Equal(3 * Offers.Weight(db.Get("a"), Flat, View(db, character: "knight")),
-            Offers.Weight(db.Get("c"), Flat, View(db, character: "knight")));
+        Assert.Equal(Offers.Weight(db.Get("c"), Flat, View(db)), Offers.Weight(db.Get("c"), Flat, View(db, character: "knight")));
         Assert.Equal(Offers.Weight(db.Get("a"), Flat, View(db)), Offers.Weight(db.Get("c"), Flat, View(db)));
     }
 
@@ -66,53 +66,34 @@ public class OffersTests
             Assert.DoesNotContain("a", picks);
             Assert.Equal(picks.Count, picks.Distinct().Count());
         }
-        // The zombie normally drops "a", but a maxed "a" can't be offered, so the item slots are all random.
-        var drop = Offers.Drop(new Rng(1), "zombie", view with { Config = new RunConfig { ItemDropChancePercent = 100 } });
-        Assert.DoesNotContain("a", drop.Choices);
+        for (ulong seed = 1; seed < 50; seed++)
+            Assert.DoesNotContain("a", Offers.Drop(new Rng(seed), "zombie", view).Choices);
     }
 
     [Fact]
-    public void Drop_Items_FirstIsEnemyDropItem_ThenTwoDistinctOthers()
+    public void Drop_IsAlwaysThreeDistinctItems_NeverPassives()
     {
         var db = SmallDb();
-        var view = View(db, new RunConfig { ItemDropChancePercent = 100 });
-        for (ulong seed = 1; seed < 50; seed++)
+        for (ulong seed = 1; seed < 100; seed++)
         {
-            var drop = Offers.Drop(new Rng(seed), "snake", view);
-            Assert.Equal(DropKind.Items, drop.Kind);
+            var drop = Offers.Drop(new Rng(seed), "snake", View(db));
             Assert.Equal(3, drop.Choices.Count);
-            Assert.Equal("b", drop.Choices[0]);
             Assert.Equal(3, drop.Choices.Distinct().Count());
+            Assert.All(drop.Choices, id => Assert.Equal(SourceKind.Item, db.Get(id).Kind));
         }
     }
 
     [Fact]
-    public void Drop_Passives_FirstIsEnemyPassive()
+    public void Drop_HarderEnemy_OffersRarerItems()
     {
         var db = SmallDb();
-        var drop = Offers.Drop(new Rng(1), "snake", View(db, new RunConfig { ItemDropChancePercent = 0 }));
-        Assert.Equal(DropKind.Passives, drop.Kind);
-        Assert.Equal("venomous", drop.Choices[0]);
-        Assert.Equal(3, drop.Choices.Count); // no other passives exist, so items fill the rest
-        Assert.All(drop.Choices.Skip(1), id => Assert.Equal(SourceKind.Item, db.Get(id).Kind));
-    }
-
-    [Fact]
-    public void Drop_NoPassivesAnywhere_IsItems()
-    {
-        var db = SmallDb();
-        var drop = Offers.Drop(new Rng(1), "zombie", View(db, new RunConfig { ItemDropChancePercent = 0 }));
-        Assert.Equal(DropKind.Items, drop.Kind);
-        Assert.Equal("a", drop.Choices[0]);
-    }
-
-    [Fact]
-    public void Drop_OwnedEnemyPassive_IsNotOfferedAgain()
-    {
-        var db = SmallDb();
-        var view = View(db, new RunConfig { ItemDropChancePercent = 0 }) with { PassiveIds = ["venomous"] };
-        var drop = Offers.Drop(new Rng(1), "snake", view);
-        Assert.DoesNotContain("venomous", drop.Choices);
+        int easy = 0, hard = 0;
+        for (ulong seed = 1; seed <= 1000; seed++)
+        {
+            if (Offers.Drop(new Rng(seed), "zombie", View(db)).Choices.Contains("d")) easy++;
+            if (Offers.Drop(new Rng(seed), "dragon", View(db)).Choices.Contains("d")) hard++;
+        }
+        Assert.True(hard > easy * 2, $"rare item offered {easy} times at difficulty 1, {hard} at difficulty 10");
     }
 
     [Fact]
@@ -126,23 +107,17 @@ public class OffersTests
     }
 
     [Fact]
-    public void Encounters_RarerEnemiesAppearLessOften()
+    public void Encounters_EnemiesInRange_AreEquallyLikely()
     {
         var db = TestContent.Db(
-            ("enemies/common.json", """{ "id": "common", "maxHp": 10, "rarity": "Common" }"""),
-            ("enemies/rare.json", """{ "id": "rare", "maxHp": 10, "rarity": "Rare" }"""));
+            ("enemies/one.json", """{ "id": "one", "maxHp": 10, "difficulty": 1 }"""),
+            ("enemies/two.json", """{ "id": "two", "maxHp": 10, "difficulty": 2 }"""));
         var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
-        var counts = new Dictionary<string, int> { ["common"] = 0, ["rare"] = 0 };
+        var counts = new Dictionary<string, int> { ["one"] = 0, ["two"] = 0 };
         for (ulong seed = 1; seed <= 2000; seed++)
-        {
-            // Only the first choice: later ones avoid repeats, which skews a 2-enemy pool.
-            var e = Offers.EncounterChoices(new Rng(seed), View(db, config), maxDifficulty: 1)[0];
-            Assert.Equal(EncounterKind.Fight, e.Kind);
-            counts[e.EnemyId!]++;
-        }
-        // Common 100 vs Rare 20 by default: about 5 to 1.
-        double ratio = (double)counts["common"] / counts["rare"];
-        Assert.InRange(ratio, 3.5, 7.0);
+            counts[Offers.EncounterChoices(new Rng(seed), View(db, config), runDifficulty: 1)[0].EnemyId!]++;
+        double ratio = (double)counts["one"] / counts["two"];
+        Assert.InRange(ratio, 0.8, 1.25);
     }
 
     [Fact]

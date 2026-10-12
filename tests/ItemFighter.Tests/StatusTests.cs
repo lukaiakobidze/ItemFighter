@@ -90,7 +90,7 @@ public class StatusTests
         b.ApplyStatus(Side.Enemy, StatusType.Chill, 1, null, 0);
         b.Steps(10);
         b.ApplyStatus(Side.Enemy, StatusType.Chill, 1, null, 0);
-        b.Steps(ChillRule.Duration - 1);
+        b.Steps(b.Rules.ChillTicks - 1);
         Assert.Equal(2, b.Enemy.Statuses.Chill);
         b.Steps(2);
         Assert.Equal(0, b.Enemy.Statuses.Chill);

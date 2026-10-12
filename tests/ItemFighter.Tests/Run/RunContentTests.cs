@@ -6,38 +6,10 @@ using static ItemFighter.Tests.BattleHelpers;
 
 namespace ItemFighter.Tests.Run;
 
-/// <summary>Content the run loop needs: enemy drop items, run.json, enemy passives for the player, HP scaling.</summary>
+/// <summary>Content the run loop needs: run.json, enemy passives for the player, HP scaling.</summary>
 public class RunContentTests
 {
     private static readonly string Sword = Item("sword", 2, """{ "type": "Damage", "amount": 10 }""");
-
-    [Fact]
-    public void Enemy_DropItem_Loads_AndMustBeAnItem()
-    {
-        var db = TestContent.Db(("items/sword.json", Sword),
-            ("enemies/zombie.json", """{ "id": "zombie", "maxHp": 10, "dropItem": "sword" }"""));
-        Assert.Equal("sword", db.Get("zombie").DropItemId);
-
-        var bad = TestContent.Load(("items/sword.json", Sword),
-            ("enemies/zombie.json", """{ "id": "zombie", "maxHp": 10, "dropItem": "zombie" }"""));
-        var errors = ContentValidator.Validate(bad.Database, new ScriptRegistry());
-        Assert.Contains(errors, e => e.Message.Contains("dropItem"));
-        var missing = TestContent.Load(("enemies/zombie.json", """{ "id": "zombie", "maxHp": 10, "dropItem": "nope" }"""));
-        Assert.Contains(ContentValidator.Validate(missing.Database, new ScriptRegistry()), e => e.Message.Contains("dropItem"));
-    }
-
-    [Theory]
-    [InlineData("squire_zombie", "sword")]
-    [InlineData("archer_skeleton", "ice_bow")]
-    [InlineData("green_snake", "venom_fang")]
-    [InlineData("flaming_rock", "cinder")]
-    [InlineData("grizzly_bear", "tower_shield")]
-    public void AllShippedEnemies_HaveDropItems_MatchingLuka(string enemy, string item)
-    {
-        var content = GameContent.Load();
-        Assert.Empty(content.Errors);
-        Assert.Equal(item, content.Database.Get(enemy).DropItemId);
-    }
 
     [Fact]
     public void SilverKnight_StartsWithSwordAndMetalPlating()
@@ -86,7 +58,6 @@ public class RunContentTests
         Assert.Equal(10, run.EncountersPerMission);
         Assert.Equal(12, run.BackpackSize);
         Assert.Equal(50, run.SellPercent);
-        Assert.Equal(3, run.CharacterPoolMultiplier);
         Assert.Equal(15, run.TagBonusPercent);
         Assert.Equal(5, run.Bosses.Count);
     }
@@ -99,7 +70,7 @@ public class RunContentTests
         Assert.Empty(errors);
         Assert.Equal(8, config.BackpackSize);
         Assert.Equal(6, config.HotbarSize);
-        Assert.Equal(50, config.ItemDropChancePercent);
+        Assert.Equal(1, config.DifficultySpread);
     }
 
     [Fact]

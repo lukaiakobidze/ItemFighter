@@ -1,0 +1,23 @@
+{
+  "id": "fast_reload",
+  "kind": "EnemyAbility",
+  "name": "Fast Reload",
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnItemFired",
+        "filter": [
+          "Slot:1",
+          "Tag:Weapon"
+        ]
+      },
+      "effects": [
+        {
+          "type": "ReduceCooldown",
+          "percent": 5,
+          "target": "TriggeringItem"
+        }
+      ]
+    }
+  ]
+}

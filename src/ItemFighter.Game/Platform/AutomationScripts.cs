@@ -17,6 +17,7 @@ public static class AutomationScripts
         "lab" => [.. ToLab(), new(Wait: 0.2, Do: Automation.Hover(FightLabScreen.GridCell(3)), Shot: "lab")],
         "fight" => Fight(),
         "bear" => Bear(),
+        "blur" => Blur(),
         "run" => RunLoop(),
         _ => throw new ArgumentException($"unknown automation script '{name}'"),
     };
@@ -82,6 +83,24 @@ public static class AutomationScripts
         new(Do: g => FightOf(g).Speed = 8),
         new(Until: g => FightOf(g).Battle.Result != Core.Engine.BattleResult.Ongoing),
         new(Wait: 1.2, Shot: "bear-end"),
+    ];
+
+    /// <summary>Luka's 2026-10-12 rares against the Blur, whose rifle speeds up with every shot.</summary>
+    private static Step[] Blur() =>
+    [
+        .. ToLab("whetstone_blade", "shield_bash", "spiked_buckler", "war_banner", "twin_blades", "gold_pouch"),
+        new(Wait: 0.1, Do: g =>
+        {
+            var lab = (FightLabScreen)g.Current!;
+            lab.Setup.EnemyId = "the_blur";
+            lab.StartFight();
+        }),
+        new(Do: g => FightOf(g).Speed = 4),
+        new(Wait: 3, Do: g => FightOf(g).Speed = 1),
+        new(Wait: 0.4, Do: Automation.Hover(FightScreen.CardRect(2)), Shot: "blur-mid"),
+        new(Do: g => FightOf(g).Speed = 8),
+        new(Until: g => FightOf(g).Battle.Result != Core.Engine.BattleResult.Ongoing),
+        new(Wait: 1.2, Shot: "blur-end"),
     ];
 
     private static RunSession SessionOf(Game1 g) => ((RunScreen)g.Current!).Session;

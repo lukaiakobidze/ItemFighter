@@ -29,11 +29,7 @@ public static class ContentValidator
 
             if (def.Difficulty is < 1 or > 10) Error($"'difficulty' must be 1 to 10, not {def.Difficulty}");
 
-            if (def.DropItemId is string drop)
-            {
-                if (!db.TryGet(drop, out var item)) Error($"unknown dropItem '{drop}'");
-                else if (item.Kind != SourceKind.Item) Error($"dropItem '{drop}' is not an Item");
-            }
+            if (def.GoldOnWin is not null && def.Kind != SourceKind.Item) Error("'goldOnWin' only works on items");
 
             if (def.Kind is SourceKind.Enemy or SourceKind.Character && def.MaxHp <= 0)
                 Error("'maxHp' must be positive");

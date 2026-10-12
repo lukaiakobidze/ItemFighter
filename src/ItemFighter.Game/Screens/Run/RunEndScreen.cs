@@ -24,7 +24,7 @@ public sealed class RunEndScreen : Screen
         ui.TextIn(won ? "Run won!" : "Run over", new Rectangle(0, 150, 1280, 90), 72, won ? Palette.Heal : Palette.Damage, bold: true);
         string reached = won ? $"You beat all {run.Config.Missions} missions." : $"You fell in mission {run.Mission}, encounter {Math.Min(run.Encounter + 1, run.Config.EncountersPerMission + 1)}.";
         ui.TextIn(reached, new Rectangle(0, 270, 1280, 36), 24, Palette.Text);
-        ui.TextIn($"Fights won: {run.FightsWon}  ·  Gold left: {run.Gold}  ·  Items: {run.AllOwned.Count}  ·  Passives: {run.Passives.Count}",
+        ui.TextIn($"Fights won: {run.FightsWon}  ·  Gold left: {run.Gold}  ·  Items: {run.AllOwned.Count}{(run.Passives.Count > 0 ? $"  ·  Passives: {run.Passives.Count}" : "")}",
             new Rectangle(0, 320, 1280, 30), 18, Palette.TextDim);
         if (ui.Button(MenuButton, "Main menu", 26) || ui.Input.KeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape))
             Game.Show(new MainMenuScreen(Game));

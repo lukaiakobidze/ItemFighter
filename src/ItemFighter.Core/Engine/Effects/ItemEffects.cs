@@ -47,6 +47,21 @@ public sealed class SlowEffect(ValueRef ticks, TargetSpec target) : IEffect
     public string Describe(DescribeContext ctx) => $"add {ctx.Seconds(ticks)} to the cooldown of {ctx.Items(target)}";
 }
 
+/// <summary>Permanently (for this fight) shortens target items' cooldowns by a percent of what they are now, down to the minimum cooldown.</summary>
+public sealed class ReduceCooldownEffect(ValueRef percent, TargetSpec target) : IEffect
+{
+    public static ReduceCooldownEffect Parse(ParseContext ctx) => new(ctx.ReadValue("percent"), ItemTarget.Read(ctx));
+
+    public void Apply(EffectContext ctx)
+    {
+        int value = percent.Resolve(ctx.Source);
+        foreach (var item in Targeting.ResolveItems(target, ctx))
+            ctx.Battle.ReduceCooldown(item, value, ctx.Source, ctx.Depth);
+    }
+
+    public string Describe(DescribeContext ctx) => $"make {Words.Possessive(ctx.Items(target))} cooldown {ctx.Value(percent)}% shorter this fight";
+}
+
 /// <summary>Finishes target items' cooldowns: actives become ready, passives fire as soon as they can.</summary>
 public sealed class ResetCooldownEffect(TargetSpec target) : IEffect
 {

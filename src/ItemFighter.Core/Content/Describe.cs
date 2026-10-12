@@ -80,6 +80,7 @@ public static class SourceDescriber
             lines.Add($"{when}: {what}.");
         }
         foreach (var m in def.Modifiers) lines.Add(Modifier(m, ctx));
+        if (def.GoldOnWin is ValueRef gold) lines.Add($"Win a fight with this on your board: +{ctx.Value(gold)} gold.");
         return lines;
     }
 

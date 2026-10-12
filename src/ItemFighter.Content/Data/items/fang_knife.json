@@ -3,7 +3,6 @@
   "name": "Fang Knife",
   "rarity": "Common",
   "tags": ["Poison"],
-  "pools": ["neutral"],
   "cooldown": 3,
   "activation": "Passive",
   "levels": {

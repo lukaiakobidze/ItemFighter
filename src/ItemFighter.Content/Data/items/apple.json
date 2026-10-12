@@ -3,7 +3,6 @@
   "name": "Apple",
   "rarity": "Common",
   "tags": ["Heal", "Charge"],
-  "pools": ["neutral"],
   "cooldown": 6,
   "activation": "Passive",
   "levels": {

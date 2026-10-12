@@ -108,8 +108,7 @@ public static class RunSave
         if (run.Phase == RunPhase.Shopping) run.ShopStock = (run.ShopStock ?? []).Where(IsItem).ToList();
         if (run.Phase == RunPhase.Dropping)
         {
-            var choices = (run.PendingDrop?.Choices ?? []).Where(id => id is not null && (IsItem(id) || run.IsPassiveId(id))).ToList();
-            run.PendingDrop = new DropOffer(run.PendingDrop?.Kind ?? DropKind.Items, choices);
+            run.PendingDrop = new DropOffer((run.PendingDrop?.Choices ?? []).Where(id => id is not null && IsItem(id)).ToList());
         }
         if (run.Phase == RunPhase.ChoosingEncounter)
         {

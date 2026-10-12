@@ -44,6 +44,7 @@ public sealed class CombatLog
             Delayed d => ($"{Name(d.SourceId)} slows {Name(d.TargetSourceId)} by {Words(d.Ticks)}", Palette.Slow),
             CooldownReset r => ($"{Name(r.SourceId)} readies {Name(r.TargetSourceId)}", Palette.Ready),
             StatModified m => ($"{Name(m.SourceId)}: {Name(m.TargetSourceId)} +{m.Amount} {m.Stat}", Palette.Accent),
+            CooldownChanged c => ($"{Name(c.SourceId)}: {Name(c.TargetSourceId)} cooldown {c.FromTicks / 10.0:0.#}s -> {c.ToTicks / 10.0:0.#}s", Palette.Haste),
             PhaseStarted p => ($"{b.EnemyDefinition.Name} enters phase {p.Index + 2}!", Palette.Damage),
             SourceAdded a when a.Owner == Core.Engine.Side.Enemy => ($"{b.EnemyDefinition.Name} gains {Name(a.SourceId)}", Palette.Damage),
             BattleEnded end => (end.Result switch

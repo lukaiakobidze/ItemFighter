@@ -3,7 +3,6 @@
   "name": "Dagger",
   "rarity": "Common",
   "tags": ["Weapon"],
-  "pools": ["neutral"],
   "cooldown": 2,
   "activation": "Passive",
   "levels": {

@@ -58,10 +58,10 @@ public class ModifierTests
     }
 
     [Fact]
-    public void CooldownPercent_NeverBelowOneTick()
+    public void CooldownPercent_NeverBelowTheMinimumCooldown()
     {
         var b = Setup(null, ["ultra"], ("fast", 0));
-        Assert.Equal(1, b.Player.Items.Single().CooldownTicks);
+        Assert.Equal(new CombatRules().MinCooldownTicks, b.Player.Items.Single().CooldownTicks);
     }
 
     [Fact]

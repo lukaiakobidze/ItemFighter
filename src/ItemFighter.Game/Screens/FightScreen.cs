@@ -225,7 +225,7 @@ public sealed class FightScreen : Screen
         if (fired) ui.Rect(art, Color.White * 0.3f);
 
         ui.TextIn(def.Name, new Rectangle(r.X, r.Y + 118, r.Width, 22), 14, Palette.Text, bold: true);
-        string status = !item.HasCooldown ? "reacts" : item.Ready ? "READY" : Battle.CooldownSpeed(item) == 0 ? "frozen" : $"{SecondsLeft(item):0.0}s";
+        string status = !item.HasCooldown ? (item.Def.Abilities.Count == 0 ? "after the fight" : "reacts") : item.Ready ? "READY" : Battle.CooldownSpeed(item) == 0 ? "frozen" : $"{SecondsLeft(item):0.0}s";
         var statusColor = item.Ready ? Palette.Ready : status == "frozen" ? Palette.Freeze : Palette.TextDim;
         ui.TextIn(status, new Rectangle(r.X, r.Y + 140, r.Width, 20), 15, statusColor, bold: item.Ready);
         if (item.HasCooldown)
@@ -338,11 +338,12 @@ public sealed class FightScreen : Screen
             x += r.Width + 8;
         }
         var s = c.Statuses;
-        if (s.Burn > 0) Chip($"Burn {s.Burn}", Palette.Burn, "Burn", "Every 0.5s deals its stacks as damage (double against shield), then loses 1 stack.");
-        if (s.Poison > 0) Chip($"Poison {s.Poison}/{PoisonRule.DefaultThreshold}", Palette.Poison, "Poison", $"At {PoisonRule.DefaultThreshold} stacks it bursts for {PoisonRule.BurstPerStack} damage per stack, ignoring shield, then resets.");
+        var rules = Battle.Rules;
+        if (s.Burn > 0) Chip($"Burn {s.Burn}", Palette.Burn, "Burn", $"Every {rules.BurnTickSeconds:0.##}s deals its stacks as damage (x{rules.BurnShieldMultiplier} against shield), then loses {rules.BurnLossPerTick} {(rules.BurnLossPerTick == 1 ? "stack" : "stacks")}.");
+        if (s.Poison > 0) Chip($"Poison {s.Poison}/{rules.PoisonThreshold}", Palette.Poison, "Poison", $"At {rules.PoisonThreshold} stacks it bursts for {rules.PoisonBurstPerStack} damage per stack, ignoring shield, then resets.");
         if (s.Chill > 0)
-            Chip($"Chill {s.Chill}/{ChillRule.FreezeAt}  {Math.Max(0, s.ChillExpiresAtTick - Battle.Tick) / 10.0:0.0}s", Palette.Chill, "Chill",
-                $"Each stack makes every cooldown {ChillRule.CooldownPercentPerStack}% longer. Stacks last {ChillRule.Duration / 10}s, refreshed by each new stack. At {ChillRule.FreezeAt} stacks: frozen for {ChillRule.FreezeTicks / 10.0:0.#}s.");
+            Chip($"Chill {s.Chill}/{rules.ChillFreezeAtStacks}  {Math.Max(0, s.ChillExpiresAtTick - Battle.Tick) / 10.0:0.0}s", Palette.Chill, "Chill",
+                $"Each stack makes every cooldown {rules.ChillCooldownPercentPerStack}% longer. Stacks last {rules.ChillSeconds:0.#}s, refreshed by each new stack. At {rules.ChillFreezeAtStacks} stacks: frozen for {rules.FreezeSeconds:0.#}s.");
         if (c.IsFrozenAt(Battle.Tick)) Chip($"FROZEN {(s.FrozenUntilTick - Battle.Tick + 1) / 10.0:0.0}s", Palette.Freeze, "Frozen", "Nothing charges or fires until it thaws.");
     }
 

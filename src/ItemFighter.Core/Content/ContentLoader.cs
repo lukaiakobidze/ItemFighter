@@ -109,7 +109,6 @@ public static class ContentLoader
             File = path,
             Rarity = ctx.ReadEnum("rarity", Rarity.Common),
             Tags = ctx.ReadStrings("tags"),
-            Pools = ctx.ReadStrings("pools"),
             CooldownTicks = cooldown,
             Activation = activation,
             RequiresTarget = json.TryGetProperty("requiresTarget", out var rt) && rt.ValueKind == JsonValueKind.True,
@@ -123,7 +122,7 @@ public static class ContentLoader
             AbilityIds = ctx.ReadStrings("abilityIds"),
             Phases = ParsePhases(json),
             StartingItems = ctx.ReadStrings("startingItems"),
-            DropItemId = json.TryGetProperty("dropItem", out _) ? ctx.ReadString("dropItem") : null,
+            GoldOnWin = ctx.Has("goldOnWin") ? ctx.ReadValue("goldOnWin") : null,
             Difficulty = ctx.ReadInt("difficulty", 1),
         };
     }

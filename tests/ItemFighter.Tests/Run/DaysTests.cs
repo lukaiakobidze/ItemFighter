@@ -36,25 +36,43 @@ public class DaysTests
     [InlineData(2, 0, 3)]
     [InlineData(5, 9, 10)]
     [InlineData(5, 10, 10)]
-    public void MaxDifficulty_RisesEveryFiveDays(int mission, int encounter, int expected) =>
-        Assert.Equal(expected, new RunConfig().MaxDifficulty(mission, encounter));
+    public void RunDifficulty_RisesEveryFiveDays(int mission, int encounter, int expected) =>
+        Assert.Equal(expected, new RunConfig().RunDifficulty(mission, encounter));
+
+    /// <summary>Luka 2026-10-12: the run's difficulty d offers enemies of d-1, d and d+1 (second half of mission 1 → 1 to 3).</summary>
+    [Theory]
+    [InlineData(1, 1, 2)]
+    [InlineData(2, 1, 3)]
+    [InlineData(5, 4, 6)]
+    [InlineData(10, 9, 10)]
+    public void FightDay_OffersEnemiesWithinOneOfTheRunDifficulty(int runDifficulty, int low, int high)
+    {
+        var enemies = Enumerable.Range(1, 10).SelectMany(d => new[] { ($"x{d}", d, "Common"), ($"y{d}", d, "Common") }).ToArray();
+        var db = Db(enemies);
+        var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
+        var seen = new HashSet<int>();
+        for (ulong seed = 1; seed <= 300; seed++)
+            foreach (var c in Offers.EncounterChoices(new Rng(seed), View(db, config), runDifficulty))
+                seen.Add(db.Get(c.EnemyId!).Difficulty);
+        Assert.Equal(Enumerable.Range(low, high - low + 1), seen.Order());
+    }
 
     [Fact]
-    public void Grizzly_OnlyFromTheSecondHalfOfMissionOne()
+    public void Grizzly_CanShowUpInMissionOne_ButNeverDifficultyFourOrMore()
     {
-        bool seenLate = false;
+        bool seenBear = false;
         for (ulong seed = 1; seed <= 200; seed++)
         {
             var run = RunState.New(seed, "silver_knight", Content.Run, Content.Database);
             for (int e = 0; e < 10; e++)
             {
                 run.Encounter = e;
-                bool bear = run.EncounterChoices().Any(c => c.EnemyId == "grizzly_bear");
-                if (e < 5) Assert.False(bear, $"seed {seed} day {e + 1}");
-                else seenLate |= bear;
+                var choices = run.EncounterChoices();
+                seenBear |= choices.Any(c => c.EnemyId == "grizzly_bear");
+                Assert.All(choices.Where(c => c.EnemyId is not null), c => Assert.InRange(Content.Database.Get(c.EnemyId!).Difficulty, 1, 3));
             }
         }
-        Assert.True(seenLate);
+        Assert.True(seenBear);
     }
 
     [Fact]
@@ -86,23 +104,24 @@ public class DaysTests
     {
         var db = Db(("a1", 1, "Common"), ("b1", 1, "Common"), ("c1", 1, "Common"), ("bear", 4, "Common"));
         var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
-        var choices = Offers.EncounterChoices(new Rng(1), View(db, config), maxDifficulty: 6);
+        var choices = Offers.EncounterChoices(new Rng(1), View(db, config), runDifficulty: 6);
         Assert.Equal(3, choices.Count);
         Assert.Contains(choices, c => c.EnemyId == "bear");
-        var early = Offers.EncounterChoices(new Rng(1), View(db, config), maxDifficulty: 1);
+        var early = Offers.EncounterChoices(new Rng(1), View(db, config), runDifficulty: 1);
         Assert.DoesNotContain(early, c => c.EnemyId == "bear");
     }
 
     [Fact]
-    public void RarerEnemy_GivesMoreGold()
+    public void HarderEnemy_GivesMoreGold()
     {
-        var db = Db(("common", 1, "Common"), ("rare", 1, "Rare"));
+        var db = Db(("easy", 1, "Common"), ("hard", 3, "Common"));
         var run = RunState.New(1, null, new RunConfig(), db);
+        Assert.True(run.GoldFor(new Encounter(EncounterKind.Fight, "hard")) > run.GoldFor(new Encounter(EncounterKind.Fight, "easy")));
         run.AddItem("a");
-        run.Choose(new Encounter(EncounterKind.Fight, "rare"));
+        run.Choose(new Encounter(EncounterKind.Fight, "hard"));
         run.StartFight();
         run.FinishFight(true);
-        Assert.Equal(10 + 5 * 200 / 100, run.Gold);
+        Assert.Equal(10 + 7, run.Gold);
     }
 
     [Fact]

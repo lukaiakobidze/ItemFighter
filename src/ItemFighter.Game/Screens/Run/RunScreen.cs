@@ -61,9 +61,12 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         }
         ui.Text($"Gold: {Run.Gold}", new Vector2(x, y), 24, Palette.Accent, bold: true);
         y += 40;
-        ui.Text("Passives", new Vector2(x, y), 18, Palette.Text, bold: true);
-        y += 26;
-        if (Run.Passives.Count == 0) ui.Text("none yet", new Vector2(x, y), 15, Palette.TextDim);
+        // Passives come from passive shops (not built yet), so the list only shows once there are some.
+        if (Run.Passives.Count > 0)
+        {
+            ui.Text("Passives", new Vector2(x, y), 18, Palette.Text, bold: true);
+            y += 26;
+        }
         foreach (string id in Run.Passives)
         {
             if (!Db.TryGet(id, out var def)) continue;
@@ -76,7 +79,6 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
             }
             y += 22;
         }
-        if (Run.Passives.Count == 0) y += 22;
         DrawSideExtras(ui, y + 16);
         if (ui.Button(MenuButton, "Save and quit to menu", 18)) ToMenu();
     }
@@ -96,9 +98,9 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         ui.Art(kind, def.Id, def.Name, new Rectangle(r.X + 6, r.Y + 6, r.Width - 12, r.Height - 70));
         ui.TextIn(def.Name, new Rectangle(r.X, r.Bottom - 62, r.Width, 24), 17, Palette.Text, bold: true);
         string sub = def.Kind == SourceKind.Item ? $"{def.Rarity} item" + (def.Tags.Count > 0 ? " · " + string.Join(", ", def.Tags) : "")
-            : def.Kind == SourceKind.Enemy ? $"{def.Rarity} enemy" : $"{def.Rarity} passive";
+            : def.Kind == SourceKind.Enemy ? $"{def.MaxHp} HP" : $"{def.Rarity} passive";
         ui.TextIn(sub, new Rectangle(r.X, r.Bottom - 38, r.Width, 20), 13, Palette.TextDim);
-        ui.Rect(new Rectangle(r.X, r.Bottom - 4, r.Width, 4), Palette.For(def.Rarity));
+        ui.Rect(new Rectangle(r.X, r.Bottom - 4, r.Width, 4), def.Kind == SourceKind.Enemy ? Palette.Border : Palette.For(def.Rarity));
         ui.Border(r, highlight ? Palette.Accent : hover ? Palette.Text : Palette.Border, highlight ? 3 : 1);
         if (hover && def.Kind != SourceKind.Enemy)
         {

@@ -31,11 +31,9 @@ public interface IStatusRule
     void OnTick(Battle battle, Combatant target);
 }
 
-/// <summary>Fast and anti-armour: ticks every 0.5s for its stacks, loses a stack each tick, double damage to shield.</summary>
+/// <summary>Fast and anti-armour: ticks every 0.5s for its stacks, loses a stack each tick, double damage to shield (numbers in rules.json).</summary>
 public sealed class BurnRule : IStatusRule
 {
-    public const int Interval = 5;
-
     public StatusType Type => StatusType.Burn;
 
     public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth) =>
@@ -43,30 +41,29 @@ public sealed class BurnRule : IStatusRule
 
     public void OnTick(Battle battle, Combatant target)
     {
+        var rules = battle.Rules;
         int burn = target.Statuses.Burn;
-        if (burn <= 0 || battle.Tick % Interval != 0) return;
-        int shieldDamage = Math.Min(target.Shield, 2 * burn);
-        int burnSpentOnShield = (shieldDamage + 1) / 2;
+        if (burn <= 0 || battle.Tick % rules.BurnTickInterval != 0) return;
+        int multiplier = rules.BurnShieldMultiplier;
+        int shieldDamage = Math.Min(target.Shield, multiplier * burn);
+        int burnSpentOnShield = (shieldDamage + multiplier - 1) / multiplier;
         int hpDamage = burn - burnSpentOnShield;
-        target.Statuses.Burn = burn - 1;
+        target.Statuses.Burn = Math.Max(0, burn - rules.BurnLossPerTick);
         battle.ApplyRawDamage(target.Side, hpDamage, shieldDamage, DamageKind.Burn, null, 0);
     }
 }
 
-/// <summary>Builds up silently; at the threshold it bursts for 3 per stack, ignoring shield, and resets.</summary>
+/// <summary>Builds up silently; at the threshold it bursts for 3 per stack, ignoring shield, and resets (numbers in rules.json).</summary>
 public sealed class PoisonRule : IStatusRule
 {
-    public const int DefaultThreshold = 10;
-    public const int BurstPerStack = 3;
-
     public StatusType Type => StatusType.Poison;
 
     public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth)
     {
         target.Statuses.Poison += amount;
-        int threshold = Math.Max(1, battle.Modify("PoisonThreshold", DefaultThreshold, source));
+        int threshold = Math.Max(1, battle.Modify("PoisonThreshold", battle.Rules.PoisonThreshold, source));
         if (target.Statuses.Poison < threshold) return;
-        int damage = target.Statuses.Poison * BurstPerStack;
+        int damage = target.Statuses.Poison * battle.Rules.PoisonBurstPerStack;
         target.Statuses.Poison = 0;
         battle.Emit(new PoisonBurst(battle.Tick, target.Side, damage), depth, source);
         battle.ApplyRawDamage(target.Side, damage, 0, DamageKind.Poison, source, depth);
@@ -77,24 +74,20 @@ public sealed class PoisonRule : IStatusRule
 
 /// <summary>
 /// Each stack makes all the target's cooldowns 5% longer while it lasts. New stacks refresh the 5s timer;
-/// 5 stacks freeze the target for 1s.
+/// 5 stacks freeze the target for 1s (numbers in rules.json).
 /// </summary>
 public sealed class ChillRule : IStatusRule
 {
-    public const int Duration = 50;
-    public const int CooldownPercentPerStack = 5;
-    public const int FreezeAt = 5;
-    public const int FreezeTicks = 10;
-
     public StatusType Type => StatusType.Chill;
 
     public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth)
     {
+        var rules = battle.Rules;
         target.Statuses.Chill += amount;
-        target.Statuses.ChillExpiresAtTick = battle.Tick + Duration;
-        if (target.Statuses.Chill < FreezeAt) return;
+        target.Statuses.ChillExpiresAtTick = battle.Tick + rules.ChillTicks;
+        if (target.Statuses.Chill < rules.ChillFreezeAtStacks) return;
         target.Statuses.Chill = 0;
-        target.Statuses.FrozenUntilTick = battle.Tick + FreezeTicks;
+        target.Statuses.FrozenUntilTick = battle.Tick + rules.FreezeTicks;
         battle.Emit(new ChillFroze(battle.Tick, target.Side), depth, source);
     }
 

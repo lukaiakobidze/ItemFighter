@@ -17,8 +17,6 @@ public sealed class Battle
     public const int MaxChainDepth = 8;
     /// <summary>Reactions (and copied effects) allowed per tick; later ones are dropped with ChainCapped so wide boards stay fast.</summary>
     public const int MaxReactionsPerTick = 256;
-    /// <summary>A fight still going after this many ticks (2 minutes) is a loss for the player.</summary>
-    public const int TimeLimitTicks = 1200;
     public const int DefaultPlayerHp = 100;
 
     /// <summary>True when the fight ended because time ran out (counted as a loss).</summary>
@@ -32,6 +30,7 @@ public sealed class Battle
     public Battle(BattleSetup setup, ContentDatabase db, ScriptRegistry? scripts = null)
     {
         _db = db;
+        Rules = db.Rules;
         Scripts = scripts ?? new ScriptRegistry();
         Rng = new Rng(setup.Seed).Fork("combat");
 
@@ -65,8 +64,9 @@ public sealed class Battle
 
     private void ApplyCooldownModifier(SourceInstance s)
     {
-        if (s.HasCooldown)
-            s.CooldownTicks = ModifierPipeline.ModifiedCooldown(s.Def.CooldownTicks!.Value, ModifierPipeline.Sum(this, "CooldownPercent", s));
+        if (!s.HasCooldown) return;
+        int baseTicks = s.Def.CooldownTicks!.Value;
+        s.CooldownTicks = Rules.FloorCooldown(baseTicks, ModifierPipeline.ModifiedCooldown(baseTicks, ModifierPipeline.Sum(this, "CooldownPercent", s)));
     }
 
     public int Tick { get; private set; }
@@ -76,6 +76,12 @@ public sealed class Battle
     public SourceDefinition EnemyDefinition { get; }
     public IReadOnlyList<BattleEvent> Events => _events;
     public Rng Rng { get; }
+
+    /// <summary>Status and time-limit numbers (Data/rules.json).</summary>
+    public CombatRules Rules { get; }
+
+    /// <summary>A fight still going after this many ticks (2 minutes by default) is a loss for the player.</summary>
+    public int TimeLimitTicks => Rules.TimeLimitTicks;
     public ScriptRegistry Scripts { get; }
 
     public Combatant Get(Side side) => side == Side.Player ? Player : Enemy;
@@ -152,8 +158,6 @@ public sealed class Battle
         }
     }
 
-    public const int MinSpeed = 10;
-
     /// <summary>
     /// Progress gained this tick: 100 normally, x2 hasted; each chill stack makes the cooldown 5% longer
     /// (rounded so a 2s cooldown with 2 chill takes exactly 2.2s); 0 when frozen.
@@ -164,9 +168,9 @@ public sealed class Battle
         if (s.FreezeTicks > 0 || owner.IsFrozenAt(Tick)) return 0;
         int speed = SourceInstance.ProgressPerTick;
         if (s.HasteTicks > 0) speed *= 2;
-        int lengthen = 100 + ChillRule.CooldownPercentPerStack * owner.Statuses.Chill;
+        int lengthen = 100 + Rules.ChillCooldownPercentPerStack * owner.Statuses.Chill;
         speed = (speed * 100 + lengthen - 1) / lengthen;
-        return Math.Max(MinSpeed, speed);
+        return Math.Max(Rules.SlowestCooldownSpeedPercent * SourceInstance.ProgressPerTick / 100, speed);
     }
 
     /// <summary>Burn, poison and chill rules, in a fixed order.</summary>
@@ -343,6 +347,19 @@ public sealed class Battle
         if (!target.HasCooldown || target.Ready) return;
         target.Progress = target.FullProgress;
         Emit(new CooldownReset(Tick, target.Id, source?.Id), depth, source);
+    }
+
+    /// <summary>Shortens a cooldown for the rest of the fight by a percent of its current length, floored by the rules.</summary>
+    public void ReduceCooldown(SourceInstance target, int percent, SourceInstance? source, int depth)
+    {
+        if (!target.HasCooldown || percent <= 0) return;
+        int before = target.CooldownTicks;
+        int after = Rules.FloorCooldown(target.Def.CooldownTicks ?? before, before * (100 - Math.Min(percent, 100)) / 100);
+        if (after >= before) return;
+        // Keep the same fraction of the cooldown done, so a cut never hands out a free fire.
+        target.Progress = (int)((long)target.Progress * after / before);
+        target.CooldownTicks = after;
+        Emit(new CooldownChanged(Tick, target.Id, before, after, source?.Id), depth, source);
     }
 
     public void ModifyStat(SourceInstance target, string stat, int amount, SourceInstance? source, int depth)

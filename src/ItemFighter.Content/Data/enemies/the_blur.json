@@ -1,0 +1,10 @@
+{
+  "id": "the_blur",
+  "name": "The Blur",
+  "difficulty": 2,
+  "maxHp": 60,
+  "abilityIds": [
+    "fast_reload",
+    "rifle_shot"
+  ]
+}

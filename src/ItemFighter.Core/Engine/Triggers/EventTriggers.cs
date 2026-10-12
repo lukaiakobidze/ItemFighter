@@ -10,7 +10,8 @@ public sealed class OnFightStartTrigger : ITrigger
 }
 
 /// <summary>
-/// Reacts when one of the owner's sources fires. Filters (all must match): Self, Adjacent, Tag:&lt;tag&gt;, AnyOwn.
+/// Reacts when one of the owner's sources fires. Filters (all must match): Self, Adjacent, Tag:&lt;tag&gt;, Slot:&lt;n&gt;
+/// (1-based; an enemy's first attack is slot 1), AnyOwn.
 /// Without Self, the owner's own fires are ignored.
 /// </summary>
 public sealed class OnItemFiredTrigger : ITrigger
@@ -18,6 +19,7 @@ public sealed class OnItemFiredTrigger : ITrigger
     private readonly bool _self;
     private readonly bool _adjacent;
     private readonly IReadOnlyList<string> _tags;
+    private readonly int? _slot;
 
     public OnItemFiredTrigger(IReadOnlyList<string> filters)
     {
@@ -27,6 +29,7 @@ public sealed class OnItemFiredTrigger : ITrigger
             if (f == "Self") _self = true;
             else if (f == "Adjacent") _adjacent = true;
             else if (f.StartsWith("Tag:", StringComparison.Ordinal) && f.Length > 4) tags.Add(f[4..]);
+            else if (f.StartsWith("Slot:", StringComparison.Ordinal) && int.TryParse(f[5..], out int slot) && slot >= 1) _slot = slot;
             else if (f != "AnyOwn") throw new ContentException($"unknown OnItemFired filter '{f}'");
         }
         _tags = tags;
@@ -44,6 +47,7 @@ public sealed class OnItemFiredTrigger : ITrigger
         if (_self != (fired == owner)) return false;
         if (fired == owner && f.Reaction) return false; // never react to your own reaction
         if (_adjacent && !(fired.Slot is int a && owner.Slot is int b && Math.Abs(a - b) == 1)) return false;
+        if (_slot is int n && Targeting.SlotNumber(battle, fired) != n) return false;
         return _tags.All(fired.Def.HasTag);
     }
 
@@ -52,6 +56,11 @@ public sealed class OnItemFiredTrigger : ITrigger
         if (_self) return "When this item fires";
         string tags = string.Concat(_tags.Select(t => t + " "));
         string whose = ctx.IsEnemy ? "its" : "your";
+        if (_slot is int n)
+        {
+            string what = _tags.Count == 0 ? "" : $", if it is {Words.Article(string.Join(" ", _tags))}";
+            return ctx.IsEnemy ? $"When its {Words.Ordinal(n)} attack fires{what}" : $"When the item in slot {n} fires{what}";
+        }
         return _adjacent ? $"When {Words.Article("adjacent")} {tags}item fires" : $"When another of {whose} {tags}items fires";
     }
 }

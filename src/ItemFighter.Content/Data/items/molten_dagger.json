@@ -3,7 +3,6 @@
   "name": "Molten Dagger",
   "rarity": "Common",
   "tags": ["Burn", "Weapon"],
-  "pools": ["neutral"],
   "cooldown": 8,
   "activation": "Passive",
   "levels": {

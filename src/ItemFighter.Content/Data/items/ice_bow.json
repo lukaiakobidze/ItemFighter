@@ -3,7 +3,6 @@
   "name": "Ice Bow",
   "rarity": "Common",
   "tags": ["Weapon", "Chill"],
-  "pools": ["neutral"],
   "cooldown": 6,
   "activation": "Passive",
   "levels": {

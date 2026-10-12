@@ -114,8 +114,8 @@ public class BattleLoopTests
         var b = Fight(db, "dummy", ("apple", 0));
         Assert.Equal(BattleResult.EnemyWon, b.RunToEnd());
         Assert.True(b.TimedOut);
-        Assert.Equal(1200, Battle.TimeLimitTicks);
-        Assert.Equal(Battle.TimeLimitTicks, b.Tick);
+        Assert.Equal(1200, b.TimeLimitTicks);
+        Assert.Equal(b.TimeLimitTicks, b.Tick);
         Assert.Equal(BattleResult.EnemyWon, b.Of<BattleEnded>().Single().Result);
     }
 
@@ -124,7 +124,7 @@ public class BattleLoopTests
     {
         var db = TestContent.Db(("items/sword.json", Sword), ("enemies/dummy.json", Enemy(maxHp: 1000)));
         var b = Fight(db, "dummy", ("sword", 0));
-        b.Steps(Battle.TimeLimitTicks - 1);
+        b.Steps(b.TimeLimitTicks - 1);
         b.Enemy.Hp = 1;
         b.Enemy.Shield = 0;
         // Sword fires every 20 ticks, so its last hit lands on tick 1200.

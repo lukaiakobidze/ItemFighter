@@ -16,7 +16,7 @@ public sealed record ItemRef(bool InHotbar, int Index);
 /// </summary>
 public sealed class RunState
 {
-    public const int SaveVersion = 1;
+    public const int SaveVersion = 2;
 
     public int Version { get; set; } = SaveVersion;
     public ulong Seed { get; set; }
@@ -68,7 +68,7 @@ public sealed class RunState
     // ---- encounters -------------------------------------------------------------------------------------------
 
     public IReadOnlyList<Encounter> EncounterChoices() =>
-        IsBossNext ? [Boss(Mission)] : Offers.EncounterChoices(RngFor($"enc:{Mission}:{Encounter}"), View, Config.MaxDifficulty(Mission, Encounter));
+        IsBossNext ? [Boss(Mission)] : Offers.EncounterChoices(RngFor($"enc:{Mission}:{Encounter}"), View, Config.RunDifficulty(Mission, Encounter));
 
     /// <summary>The mission's boss from run.json, or the enemy with the most HP when none is listed.</summary>
     public Encounter Boss(int mission)
@@ -96,10 +96,14 @@ public sealed class RunState
 
     [JsonIgnore] public bool CanFight => Hotbar.Any(h => h is not null);
 
-    /// <summary>Gold for winning an encounter: the boss pays BossGold, other fights pay more for rarer enemies.</summary>
+    /// <summary>Gold for winning an encounter: the boss pays BossGold, other fights pay more for harder enemies.</summary>
     public int GoldFor(Encounter encounter) =>
         encounter.Kind == EncounterKind.Boss ? Config.BossGold
-        : Config.GoldForFight(Mission, Db.TryGet(encounter.EnemyId ?? "", out var e) ? e.Rarity : Rarity.Common);
+        : Config.GoldForFight(Db.TryGet(encounter.EnemyId ?? "", out var e) ? e.Difficulty : 1);
+
+    /// <summary>Extra gold per win from items on the hotbar ("goldOnWin", e.g. Gold Pouch).</summary>
+    [JsonIgnore] public int GoldFromItems => Hotbar.OfType<OwnedItem>()
+        .Sum(i => Db.TryGet(i.ItemId, out var def) && def.GoldOnWin is ValueRef g ? Math.Max(0, g.ResolveAt(def, i.Level)) : 0);
 
     /// <summary>The fight for the current encounter. Same run + same encounter = same fight, so a restart replays it.</summary>
     public BattleSetup StartFight()
@@ -125,7 +129,7 @@ public sealed class RunState
             return;
         }
         FightsWon++;
-        Gold += GoldFor(encounter);
+        Gold += GoldFor(encounter) + GoldFromItems;
         PendingDrop = Offers.Drop(RngFor($"drop:{Mission}:{Encounter}"), encounter.EnemyId!, View);
         Phase = RunPhase.Dropping;
     }
@@ -138,12 +142,7 @@ public sealed class RunState
         Require(RunPhase.Dropping);
         var choices = PendingDrop?.Choices ?? [];
         if (index < 0 || index >= choices.Count) return false;
-        string id = choices[index];
-        if (IsPassiveId(id))
-        {
-            if (!Passives.Contains(id)) Passives.Add(id);
-        }
-        else if (!AddItem(id)) return false;
+        if (!AddItem(choices[index])) return false;
         Advance();
         return true;
     }

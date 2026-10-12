@@ -65,12 +65,12 @@ Design rules:
 - **Level** (1 to 4, bronze → silver → gold → diamond): buying a duplicate levels the item up. Every item can grow, so early favourites stay viable.
 - **Evolution:** some items transform when a condition is met (e.g. "after 50 burns, becomes Inferno Core").
 - **Enchantments** (later): modifiers attached to a single item from events or shops.
-- **Pools:** each item belongs to the **neutral pool** or one or more **character pools**.
+- **Pools:** for now every item is in one shared pool (Luka, 2026-10-12). Character pools may come back later.
 
 ## 6. Characters
 
 - Picked before a run, unlocked through play. **Sidegrades, never stronger** than the starting ones.
-- Each has a starting passive or rule change, a starting board, and a character item pool that shops lean toward.
+- Each has a starting passive or rule change, and a starting board.
 - Examples: *Pyromancer* (burn stacks never decay); *Tinkerer* (5 slots, but items charge each other on fire); *Duelist* (active items have −30% cooldown, passives +30%).
 
 ## 7. Enemies and bosses
@@ -85,21 +85,18 @@ Design rules:
 - **5 missions** per run. Each has **10 encounter picks**, then the **boss**.
 - Each pick offers **3 options** drawn from: Fight, Elite fight, Shop, Themed shop (Blacksmith: weapons; Alchemist: potions...), Event, Rest/Upgrade.
 - **Gold** is earned from fights and spent in shops. Shops can be **rerolled** for gold, with the cost rising per reroll.
-- **Losing any fight ends the run** (like Slay the Spire). Fight options show the enemy and its rarity (how rare it is to meet, not how hard it is), but not its abilities: those you learn by fighting it. During a fight, ability cooldowns and intents are visible. A bestiary (later) fills in with what you've seen.
+- **Losing any fight ends the run** (like Slay the Spire). Fight options show the enemy and its HP, but not its abilities: those you learn by fighting it. During a fight, ability cooldowns and intents are visible. A bestiary (later) fills in with what you've seen.
 - **Item offer weighting** keeps a huge pool from feeling thin:
-  1. Character pool + neutral pool, with the character pool weighted up.
+  1. One shared pool of all items (Luka, 2026-10-12: no character pools for now), weighted by rarity.
   2. **Build gravity:** tags you already own are slightly more likely to appear.
   3. Themed shops let you steer on purpose.
   4. Rarity weights shift upward as missions progress.
 - **Backpack and hotbar (Luka, 2026-10-11):** items you own live in a backpack with limited space. Unwanted items can be sold. Before each fight you pick which items go on the 6-slot hotbar; it starts from the previous fight's hotbar (empty on the first fight of a run).
-- **Pools:** all current content is Common and in the shared pool. Items from the played character's pool are more likely, other pools still appear. Owned tags are slightly more likely.
-- **Post-fight drop (Luka, 2026-10-11):** after each fight you pick 1 of 3, either all items or all passives.
-  - Items: one choice is the enemy's drop item (an item each enemy carries but never uses); the other two are random by rarity and tags.
-  - Passives: if the enemy has passives, the first choice is one of them (picked by rarity and tags); the rest are random by rarity and tags. An enemy with no passives offers 3 random passives.
-  - The enemy's rarity pushes the rarity of the random choices up.
-- **Days (Luka, 2026-10-11):** each encounter is a day. A fight day offers only fights, against different enemies; a rarer enemy pays more gold. A shop day offers the shops (one for now, more later). More kinds of day later. No elites.
-- **Enemy difficulty (Luka, 2026-10-11):** enemies never grow; they keep their base stats. Each has a hidden difficulty 1 to 10, and harder enemies show up further into the run (difficulty 2 from the second half of mission 1, reaching 10 by mission 5). All starter enemies are 1 except the Grizzly Bear (2).
-- **Rarity everywhere:** items, passives and enemies all carry a rarity (all Common for now). Enemy rarity means how rare it is to meet that enemy.
+- **Post-fight reward (Luka, 2026-10-12):** after each win you pick 1 of 3 items, random by rarity and owned tags. A harder enemy (higher difficulty) makes rarer items more likely. Enemies no longer carry a drop item, and wins never offer passives.
+- **Passives (Luka, 2026-10-12):** come from passive shops (to be added), not from fights.
+- **Days (Luka, 2026-10-11):** each encounter is a day. A fight day offers only fights, against different enemies; a harder enemy pays more gold. A shop day offers the shops (one for now, more later). More kinds of day later. No elites.
+- **Enemy difficulty (Luka, 2026-10-11, revised 2026-10-12):** enemies never grow; they keep their base stats. Enemies have no rarity, only a hidden difficulty 1 to 10. The run is split into 10 halves of missions, and each half has a run difficulty (1 for the first half of mission 1, 2 for the second half, … 10 for the second half of mission 5). A fight day offers enemies of that difficulty or one above or below it (second half of mission 1 → 1 to 3). Grizzly Bear and the Blur are 2; the other starter enemies are 1.
+- **Rarity:** items and passives carry a rarity; enemies don't.
 - **Item levels:** each level slightly improves the item's main number (about +25% per level, set per item in data). Whether upgrading stays in the game is still open.
 - Expected run length: roughly 1.5 to 3 hours. **Mid-run save/quit is required.**
 
@@ -148,7 +145,6 @@ The current `ItemFighter` project becomes `ItemFighter.Game`. Its screen manager
   "name": "Fire Flask",
   "rarity": "Common",
   "tags": ["Fire", "Potion"],
-  "pools": ["neutral"],
   "cooldown": 4.0,
   "activation": "Passive",
   "levels": { "burn": [3, 5, 8, 12] },

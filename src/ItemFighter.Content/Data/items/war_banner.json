@@ -1,0 +1,30 @@
+{
+  "id": "war_banner",
+  "name": "War Banner",
+  "rarity": "Rare",
+  "tags": [
+    "Weapon"
+  ],
+  "cooldown": 5,
+  "activation": "Passive",
+  "levels": {
+    "damage": [
+      5,
+      6,
+      8,
+      9
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}",
+          "perItem": 3,
+          "perItemTag": "Weapon"
+        }
+      ]
+    }
+  ]
+}

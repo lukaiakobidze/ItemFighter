@@ -3,7 +3,6 @@
   "name": "Venom Fang",
   "rarity": "Common",
   "tags": ["Poison"],
-  "pools": ["neutral"],
   "cooldown": 4,
   "activation": "Passive",
   "levels": {

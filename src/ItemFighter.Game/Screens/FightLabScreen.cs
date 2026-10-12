@@ -157,7 +157,7 @@ public sealed class FightLabScreen : Screen
         foreach (var enemy in Db.OfKind(SourceKind.Enemy))
         {
             var r = new Rectangle(x, (int)y, w, 34);
-            if (ui.Button(r, $"{enemy.Name}  ({enemy.MaxHp} HP, {enemy.Rarity})", 16, selected: _setup.EnemyId == enemy.Id)) _setup.EnemyId = enemy.Id;
+            if (ui.Button(r, $"{enemy.Name}  ({enemy.MaxHp} HP, difficulty {enemy.Difficulty})", 16, selected: _setup.EnemyId == enemy.Id)) _setup.EnemyId = enemy.Id;
             if (ui.Hover(r))
             {
                 var (title, lines) = Tooltips.For(enemy, 1, Db);

@@ -1,0 +1,39 @@
+{
+  "id": "shield_bash",
+  "name": "Shield Bash",
+  "rarity": "Rare",
+  "tags": [
+    "Weapon",
+    "Shield"
+  ],
+  "cooldown": 6,
+  "activation": "Passive",
+  "levels": {
+    "damage": [
+      7,
+      9,
+      11,
+      13
+    ],
+    "shield": [
+      7,
+      9,
+      11,
+      13
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}"
+        },
+        {
+          "type": "Shield",
+          "amount": "{shield}"
+        }
+      ]
+    }
+  ]
+}

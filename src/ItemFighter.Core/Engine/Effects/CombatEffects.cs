@@ -16,18 +16,49 @@ internal static class CombatantTarget
         t.Kind == TargetKind.Self ? source.Owner : source.Owner == Side.Player ? Side.Enemy : Side.Player;
 }
 
-public sealed class DamageEffect(ValueRef amount, TargetSpec target) : IEffect
+/// <summary>
+/// Deals "amount" damage, plus "percentOfShield" of the owner's current shield, plus "perItem" for each of the owner's
+/// board items with tag "perItemTag" (this item included). "hits" repeats it as separate hits.
+/// </summary>
+public sealed class DamageEffect(ValueRef amount, TargetSpec target, ValueRef hits, ValueRef percentOfShield, ValueRef perItem, string? perItemTag) : IEffect
 {
-    public static DamageEffect Parse(ParseContext ctx) =>
-        new(ctx.ReadValue("amount"), CombatantTarget.Read(ctx, TargetSpec.Enemy));
+    public static DamageEffect Parse(ParseContext ctx)
+    {
+        string? tag = ctx.Has("perItemTag") ? ctx.ReadString("perItemTag") : null;
+        if ((tag is null) != !ctx.Has("perItem")) throw new ContentException("'perItem' and 'perItemTag' go together");
+        if (!ctx.Has("amount") && !ctx.Has("percentOfShield") && tag is null)
+            throw new ContentException("'Damage' needs 'amount', 'percentOfShield' or 'perItem'");
+        var hits = ctx.ReadValue("hits", 1);
+        if (hits.Literal is < 1) throw new ContentException("'hits' must be at least 1");
+        return new(ctx.ReadValue("amount", 0), CombatantTarget.Read(ctx, TargetSpec.Enemy), hits,
+            ctx.ReadValue("percentOfShield", 0), ctx.ReadValue("perItem", 0), tag);
+    }
 
-    public void Apply(EffectContext ctx) =>
-        ctx.Battle.DealDamage(CombatantTarget.Resolve(target, ctx.Source), amount.Resolve(ctx.Source) + ctx.Source.BonusFor("Damage"), DamageKind.Direct, ctx.Source, ctx.Depth);
+    public void Apply(EffectContext ctx)
+    {
+        var (battle, source) = (ctx.Battle, ctx.Source);
+        int value = amount.Resolve(source) + source.BonusFor("Damage");
+        int percent = percentOfShield.Resolve(source);
+        if (percent != 0) value += (int)Math.Round(battle.Get(source.Owner).Shield * percent / 100.0, MidpointRounding.AwayFromZero);
+        if (perItemTag is not null)
+            value += perItem.Resolve(source) * Targeting.Targetable(battle.Get(source.Owner)).Count(i => i.Def.HasTag(perItemTag));
+        var side = CombatantTarget.Resolve(target, source);
+        for (int i = hits.Resolve(source); i > 0; i--)
+            battle.DealDamage(side, value, DamageKind.Direct, source, ctx.Depth);
+    }
 
     public string Describe(DescribeContext ctx)
     {
+        int flat = ctx.Value(amount), percent = ctx.Value(percentOfShield), per = ctx.Value(perItem), times = ctx.Value(hits);
+        string your = ctx.IsEnemy ? "its" : "your";
+        string shield = percent == 100 ? $"{your} shield" : $"{percent}% of {your} shield";
+        string how = flat == 0 && percent != 0 && perItemTag is null ? $"damage equal to {shield}"
+            : $"{flat} damage" + (percent != 0 ? $" plus {shield}" : "")
+              + (perItemTag is not null ? $" plus {per} for each {perItemTag} item {(ctx.IsEnemy ? "it has" : "on your board")}" : "");
         string who = ctx.Combatant(target);
-        return who == "the enemy" ? $"deal {ctx.Value(amount)} damage" : $"deal {ctx.Value(amount)} damage to {(who == "you" && !ctx.IsEnemy ? "yourself" : who)}";
+        string whom = who == "the enemy" ? "" : $" to {(who == "you" && !ctx.IsEnemy ? "yourself" : who)}";
+        string repeat = times switch { 1 => "", 2 => " twice", _ => $" {times} times" };
+        return $"deal {how}{whom}{repeat}";
     }
 }
 

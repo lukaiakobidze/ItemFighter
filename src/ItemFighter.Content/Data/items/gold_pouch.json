@@ -1,0 +1,17 @@
+{
+  "id": "gold_pouch",
+  "name": "Gold Pouch",
+  "rarity": "Rare",
+  "tags": [
+    "Gold"
+  ],
+  "levels": {
+    "gold": [
+      5,
+      6,
+      8,
+      9
+    ]
+  },
+  "goldOnWin": "{gold}"
+}

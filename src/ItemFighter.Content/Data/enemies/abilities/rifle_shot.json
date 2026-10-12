@@ -1,0 +1,19 @@
+{
+  "id": "rifle_shot",
+  "kind": "EnemyAbility",
+  "name": "Rifle Shot",
+  "tags": [
+    "Weapon"
+  ],
+  "cooldown": 6,
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 8
+        }
+      ]
+    }
+  ]
+}

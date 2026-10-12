@@ -70,6 +70,9 @@ public sealed class FloatingTexts
                 case StatModified m:
                     Add($"+{m.Amount} {m.Stat}", Palette.Accent, FloatAnchor.ForSource(m.TargetSourceId));
                     break;
+                case CooldownChanged cd:
+                    Add($"Cooldown {cd.ToTicks / 10.0:0.#}s", Palette.Haste, FloatAnchor.ForSource(cd.TargetSourceId));
+                    break;
             }
         }
     }
