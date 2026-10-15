@@ -1,0 +1,29 @@
+{
+  "id": "aggravating_potion",
+  "name": "Aggravating Potion",
+  "rarity": "Rare",
+  "tags": [
+    "Poison"
+  ],
+  "cooldown": 7,
+  "activation": "Passive",
+  "levels": {
+    "copyPercent": [
+      100,
+      125,
+      150,
+      175
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Poison",
+          "percentOfCurrent": "{copyPercent}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "flammable_toxins",
+  "name": "Flammable Toxins",
+  "rarity": "Rare",
+  "tags": [
+    "Poison",
+    "Burn"
+  ],
+  "cooldown": 8,
+  "activation": "Passive",
+  "levels": {
+    "poison": [
+      5,
+      6,
+      8,
+      9
+    ],
+    "burn": [
+      5,
+      6,
+      8,
+      9
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Poison",
+          "amount": "{poison}"
+        },
+        {
+          "type": "ApplyStatus",
+          "status": "Burn",
+          "amount": "{burn}"
+        }
+      ]
+    }
+  ]
+}

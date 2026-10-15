@@ -28,6 +28,7 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 | `chillCooldownPercentPerStack` | 5 | Each chill stack makes every cooldown this % longer |
 | `chillFreezeAtStacks` | 5 | Chill stacks that freeze the target |
 | `freezeSeconds` | 1 | How long that freeze lasts |
+| `nailDamage` | 4 | Damage per Nail when Uproot pulls them out (passives with `NailDamage` add to it) |
 | `minCooldownSeconds` | 0.5 | Cooldown cuts during a fight (Fast Reload, faster-cooldown passives) stop here |
 | `slowestCooldownSpeedPercent` | 10 | However chilled, cooldowns never run slower than this % of normal speed |
 

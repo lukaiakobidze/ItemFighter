@@ -1,0 +1,19 @@
+{
+  "id": "magnetized_glove",
+  "name": "Magnetized Glove",
+  "rarity": "Rare",
+  "tags": [
+    "Nail"
+  ],
+  "cooldown": 4,
+  "activation": "Active",
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Uproot"
+        }
+      ]
+    }
+  ]
+}

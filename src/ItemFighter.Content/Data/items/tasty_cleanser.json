@@ -1,0 +1,23 @@
+{
+  "id": "tasty_cleanser",
+  "name": "Tasty Cleanser",
+  "rarity": "Rare",
+  "tags": [
+    "Heal"
+  ],
+  "cooldown": 7,
+  "activation": "Passive",
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "RemoveStatus",
+          "statuses": [
+            "Poison",
+            "Burn"
+          ]
+        }
+      ]
+    }
+  ]
+}

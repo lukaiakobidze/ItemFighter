@@ -344,6 +344,8 @@ public sealed class FightScreen : Screen
         if (s.Chill > 0)
             Chip($"Chill {s.Chill}/{rules.ChillFreezeAtStacks}  {Math.Max(0, s.ChillExpiresAtTick - Battle.Tick) / 10.0:0.0}s", Palette.Chill, "Chill",
                 $"Each stack makes every cooldown {rules.ChillCooldownPercentPerStack}% longer. Stacks last {rules.ChillSeconds:0.#}s, refreshed by each new stack. At {rules.ChillFreezeAtStacks} stacks: frozen for {rules.FreezeSeconds:0.#}s.");
+        if (s.Pain > 0) Chip($"Pain {s.Pain}", Palette.Pain, "Pain", $"Each time one of {(c.Side == Side.Player ? "your items" : "its abilities")} fires, {(c.Side == Side.Player ? "you take" : "it takes")} {s.Pain} damage. Lasts all fight.");
+        if (s.Nail > 0) Chip($"Nail {s.Nail}", Palette.Nail, "Nail", $"Does nothing alone. Uproot pulls every Nail out for {rules.NailDamage} damage each (more with bonuses).");
         if (c.IsFrozenAt(Battle.Tick)) Chip($"FROZEN {(s.FrozenUntilTick - Battle.Tick + 1) / 10.0:0.0}s", Palette.Freeze, "Frozen", "Nothing charges or fires until it thaws.");
     }
 

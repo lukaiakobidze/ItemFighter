@@ -20,6 +20,8 @@ public static class Palette
     public static readonly Color Damage = new(255, 90, 80);
     public static readonly Color Burn = new(255, 140, 40);
     public static readonly Color Poison = new(176, 96, 230);
+    public static readonly Color Pain = new(232, 70, 130);
+    public static readonly Color Nail = new(170, 180, 195);
     public static readonly Color Chill = new(110, 220, 240);
     public static readonly Color Freeze = new(170, 230, 255);
     public static readonly Color Haste = new(130, 240, 130);
@@ -43,6 +45,8 @@ public static class Palette
         StatusType.Chill => Chill,
         StatusType.Freeze => Freeze,
         StatusType.Haste => Haste,
+        StatusType.Pain => Pain,
+        StatusType.Nail => Nail,
         _ => Slow,
     };
 
@@ -50,6 +54,7 @@ public static class Palette
     {
         DamageKind.Burn => Burn,
         DamageKind.Poison => Poison,
+        DamageKind.Pain => Pain,
         _ => Damage,
     };
 

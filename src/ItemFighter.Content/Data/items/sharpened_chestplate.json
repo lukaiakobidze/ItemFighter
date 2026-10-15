@@ -1,0 +1,34 @@
+{
+  "id": "sharpened_chestplate",
+  "name": "Sharpened Chestplate",
+  "rarity": "Rare",
+  "tags": [
+    "Shield",
+    "Pain"
+  ],
+  "cooldown": 7,
+  "activation": "Passive",
+  "levels": {
+    "shield": [
+      10,
+      13,
+      15,
+      18
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Shield",
+          "amount": "{shield}"
+        },
+        {
+          "type": "ApplyStatus",
+          "status": "Pain",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

@@ -103,3 +103,42 @@ public sealed class HealEffect(ValueRef amount, TargetSpec target) : IEffect
     public string Describe(DescribeContext ctx) =>
         target.Kind == TargetKind.Self ? $"heal {ctx.Value(amount)}" : $"heal {ctx.Combatant(target)} for {ctx.Value(amount)}";
 }
+
+/// <summary>Removes every stack of the listed combatant statuses (default target: Self).</summary>
+public sealed class RemoveStatusEffect(IReadOnlyList<StatusType> statuses, TargetSpec target) : IEffect
+{
+    public static RemoveStatusEffect Parse(ParseContext ctx)
+    {
+        var names = ctx.ReadStrings("statuses");
+        if (names.Count == 0) throw new ContentException("'RemoveStatus' needs 'statuses', e.g. [\"Poison\", \"Burn\"]");
+        var list = new List<StatusType>();
+        foreach (string n in names)
+        {
+            if (!Enum.TryParse<StatusType>(n, out var s) || !Enum.IsDefined(s) || !s.IsCombatantStatus())
+                throw new ContentException($"'{n}' is not a status that sits on a fighter (Burn, Poison, Chill, Pain, Nail)");
+            list.Add(s);
+        }
+        return new(list, CombatantTarget.Read(ctx, TargetSpec.Self));
+    }
+
+    public void Apply(EffectContext ctx) =>
+        ctx.Battle.RemoveStatuses(CombatantTarget.Resolve(target, ctx.Source), statuses, ctx.Source, ctx.Depth);
+
+    public string Describe(DescribeContext ctx)
+    {
+        string list = statuses.Count == 1 ? statuses[0].ToString()
+            : string.Join(", ", statuses.Take(statuses.Count - 1)) + " and " + statuses[^1];
+        string who = ctx.Combatant(target);
+        return $"remove all {list} from {(who == "you" && !ctx.IsEnemy ? "yourself" : who)}";
+    }
+}
+
+/// <summary>Pulls out every nail on the target (default: Enemy) for nailDamage each, as one hit.</summary>
+public sealed class UprootEffect(TargetSpec target) : IEffect
+{
+    public static UprootEffect Parse(ParseContext ctx) => new(CombatantTarget.Read(ctx, TargetSpec.Enemy));
+
+    public void Apply(EffectContext ctx) => ctx.Battle.Uproot(CombatantTarget.Resolve(target, ctx.Source), ctx.Source, ctx.Depth);
+
+    public string Describe(DescribeContext ctx) => $"uproot every Nail on {ctx.Combatant(target)} (damage for each Nail)";
+}

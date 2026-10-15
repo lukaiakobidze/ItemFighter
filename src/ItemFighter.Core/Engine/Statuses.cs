@@ -1,11 +1,11 @@
 namespace ItemFighter.Core.Engine;
 
-public enum StatusType { Burn, Poison, Chill, Freeze, Haste }
+public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail }
 
 public static class StatusTypes
 {
-    /// <summary>Burn, poison and chill stack on a combatant; freeze and haste are timers on one item or ability.</summary>
-    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill;
+    /// <summary>Burn, poison, chill, pain and nail stack on a combatant; freeze and haste are timers on one item or ability.</summary>
+    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail;
 }
 
 /// <summary>Stacking statuses on a combatant.</summary>
@@ -15,6 +15,32 @@ public sealed class StatusSet
     public int Poison { get; set; }
     public int Chill { get; set; }
     public int ChillExpiresAtTick { get; set; }
+    public int Pain { get; set; }
+    public int Nail { get; set; }
+
+    /// <summary>Stacks of a combatant status.</summary>
+    public int Get(StatusType s) => s switch
+    {
+        StatusType.Burn => Burn,
+        StatusType.Poison => Poison,
+        StatusType.Chill => Chill,
+        StatusType.Pain => Pain,
+        StatusType.Nail => Nail,
+        _ => 0,
+    };
+
+    /// <summary>Removes every stack of a combatant status.</summary>
+    public void Clear(StatusType s)
+    {
+        switch (s)
+        {
+            case StatusType.Burn: Burn = 0; break;
+            case StatusType.Poison: Poison = 0; break;
+            case StatusType.Chill: Chill = 0; break;
+            case StatusType.Pain: Pain = 0; break;
+            case StatusType.Nail: Nail = 0; break;
+        }
+    }
 
     /// <summary>The whole combatant is frozen through this tick (from 5 chill).</summary>
     public int FrozenUntilTick { get; set; } = -1;
@@ -96,4 +122,26 @@ public sealed class ChillRule : IStatusRule
         if (target.Statuses.Chill > 0 && battle.Tick >= target.Statuses.ChillExpiresAtTick)
             target.Statuses.Chill = 0;
     }
+}
+
+/// <summary>Stays all fight. Each time the target's item or ability fires on its own or by click, the target takes damage equal to its pain.</summary>
+public sealed class PainRule : IStatusRule
+{
+    public StatusType Type => StatusType.Pain;
+
+    public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth) =>
+        target.Statuses.Pain += amount;
+
+    public void OnTick(Battle battle, Combatant target) { }
+}
+
+/// <summary>Does nothing on its own. Uproot pulls every nail out for nailDamage each (rules.json), plus NailDamage modifiers.</summary>
+public sealed class NailRule : IStatusRule
+{
+    public StatusType Type => StatusType.Nail;
+
+    public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth) =>
+        target.Statuses.Nail += amount;
+
+    public void OnTick(Battle battle, Combatant target) { }
 }

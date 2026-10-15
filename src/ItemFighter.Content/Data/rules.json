@@ -13,6 +13,8 @@
   "chillFreezeAtStacks": 5,
   "freezeSeconds": 1,
 
+  "nailDamage": 4,
+
   "minCooldownSeconds": 0.5,
   "slowestCooldownSpeedPercent": 10
 }

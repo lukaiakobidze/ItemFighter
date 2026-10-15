@@ -1,0 +1,40 @@
+{
+  "id": "flaming_heart",
+  "name": "Flaming Heart",
+  "rarity": "Rare",
+  "tags": [
+    "Burn",
+    "Heal"
+  ],
+  "cooldown": 6,
+  "activation": "Passive",
+  "levels": {
+    "burn": [
+      5,
+      6,
+      8,
+      9
+    ],
+    "heal": [
+      5,
+      6,
+      8,
+      9
+    ]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Burn",
+          "amount": "{burn}"
+        },
+        {
+          "type": "Heal",
+          "amount": "{heal}"
+        }
+      ]
+    }
+  ]
+}

@@ -179,6 +179,8 @@ public sealed class Battle
         [StatusType.Burn] = new BurnRule(),
         [StatusType.Poison] = new PoisonRule(),
         [StatusType.Chill] = new ChillRule(),
+        [StatusType.Pain] = new PainRule(),
+        [StatusType.Nail] = new NailRule(),
     };
 
     /// <summary>Adds burn, poison or chill stacks to a combatant.</summary>
@@ -412,6 +414,33 @@ public sealed class Battle
             if (ability.Trigger is OnCooldownTrigger or OnActivateTrigger)
                 RunEffects(ability, source, chosenTarget, depth);
         Dispatch(fired, depth, source);
+        int pain = Get(source.Owner).Statuses.Pain;
+        if (pain > 0) DealDamage(source.Owner, pain, DamageKind.Pain, null, depth);
+    }
+
+    /// <summary>Removes every stack of the given statuses from a combatant.</summary>
+    public void RemoveStatuses(Side target, IReadOnlyList<StatusType> statuses, SourceInstance? source, int depth)
+    {
+        var c = Get(target);
+        foreach (var status in statuses)
+        {
+            int had = c.Statuses.Get(status);
+            if (had <= 0) continue;
+            c.Statuses.Clear(status);
+            Emit(new StatusRemoved(Tick, target, status, had, source?.Id), depth, source);
+        }
+    }
+
+    /// <summary>Pulls out every nail on a combatant: one hit of nails × (rules nailDamage + NailDamage modifiers).</summary>
+    public void Uproot(Side target, SourceInstance? source, int depth)
+    {
+        var c = Get(target);
+        int nails = c.Statuses.Nail;
+        if (nails <= 0) return;
+        c.Statuses.Nail = 0;
+        int each = Math.Max(0, Modify("NailDamage", Rules.NailDamage, source));
+        Emit(new NailsUprooted(Tick, target, nails, nails * each, source?.Id), depth, source);
+        DealDamage(target, nails * each, DamageKind.Direct, source, depth);
     }
 
     /// <summary>Runs one ability because its trigger matched. Counts as a use and lets others react in turn.</summary>

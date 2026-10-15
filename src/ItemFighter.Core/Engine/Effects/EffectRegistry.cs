@@ -19,6 +19,8 @@ public sealed class EffectRegistry
         r.Register("Shield", ShieldEffect.Parse);
         r.Register("Heal", HealEffect.Parse);
         r.Register("ApplyStatus", ApplyStatusEffect.Parse);
+        r.Register("RemoveStatus", RemoveStatusEffect.Parse);
+        r.Register("Uproot", UprootEffect.Parse);
         r.Register("Charge", ChargeEffect.Parse);
         r.Register("Slow", SlowEffect.Parse);
         r.Register("ResetCooldown", ResetCooldownEffect.Parse);

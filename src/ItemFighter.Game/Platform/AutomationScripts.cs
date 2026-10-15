@@ -18,6 +18,7 @@ public static class AutomationScripts
         "fight" => Fight(),
         "bear" => Bear(),
         "blur" => Blur(),
+        "nails" => Nails(),
         "run" => RunLoop(),
         _ => throw new ArgumentException($"unknown automation script '{name}'"),
     };
@@ -101,6 +102,28 @@ public static class AutomationScripts
         new(Do: g => FightOf(g).Speed = 8),
         new(Until: g => FightOf(g).Battle.Result != Core.Engine.BattleResult.Ongoing),
         new(Wait: 1.2, Shot: "blur-end"),
+    ];
+
+    /// <summary>Luka's 2026-10-15 rares: Pain and Nails, with the Magnetized Glove clicked once it has nails to pull.</summary>
+    private static Step[] Nails() =>
+    [
+        .. ToLab("hurling_hammer", "magnetized_glove", "spiky_club", "sharpened_chestplate", "aggravating_potion", "flammable_toxins"),
+        new(Wait: 0.1, Do: g =>
+        {
+            var lab = (FightLabScreen)g.Current!;
+            lab.Setup.EnemyId = "grizzly_bear";
+            lab.StartFight();
+        }),
+        new(Do: g => FightOf(g).Speed = 4),
+        new(Until: g => FightOf(g).Battle.Enemy.Statuses.Nail >= 3
+            && FightOf(g).Targeting.CanActivate(FightOf(g).Battle.Player.Items.Single(i => i.Slot == 1), FightOf(g).Battle),
+            Do: g => FightOf(g).Speed = 1),
+        new(Wait: 0.2, Shot: "nails-before"),
+        new(Do: Automation.Click(FightScreen.CardRect(1))),
+        new(Wait: 0.3, Shot: "nails-uprooted"),
+        new(Do: g => FightOf(g).Speed = 8),
+        new(Until: g => FightOf(g).Battle.Result != Core.Engine.BattleResult.Ongoing),
+        new(Wait: 1.2, Shot: "nails-end"),
     ];
 
     private static RunSession SessionOf(Game1 g) => ((RunScreen)g.Current!).Session;

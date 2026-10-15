@@ -52,6 +52,12 @@ public sealed class FloatingTexts
                 case StatusApplied { TargetSourceId: int id } s:
                     Add(s.Status == StatusType.Freeze ? "Frozen" : s.Status.ToString(), Palette.For(s.Status), FloatAnchor.ForSource(id));
                     break;
+                case StatusRemoved r:
+                    Add($"-{r.Status}", Palette.For(r.Status), FloatAnchor.ForSide(r.Target));
+                    break;
+                case NailsUprooted n:
+                    Add($"Uprooted {n.Nails}!", Palette.Nail, FloatAnchor.ForSide(n.Target));
+                    break;
                 case PoisonBurst p:
                     Add("Poison burst!", Palette.Poison, FloatAnchor.ForSide(p.Target));
                     break;

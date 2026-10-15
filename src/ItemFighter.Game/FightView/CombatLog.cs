@@ -38,6 +38,8 @@ public sealed class CombatLog
             Healed h => ($"{Name(h.SourceId)}: {(h.Target == Core.Engine.Side.Player ? "you heal" : Side(h.Target) + " heals")} {h.Amount}", Palette.Heal),
             StatusApplied { TargetSide: Side side } s => ($"{Name(s.SourceId)}: {s.Amount} {s.Status} on {Side(side)}", Palette.For(s.Status)),
             StatusApplied { TargetSourceId: int id } s => ($"{Name(s.SourceId)}: {s.Status} on {Name(id)} for {Words(s.Amount)}", Palette.For(s.Status)),
+            StatusRemoved r => ($"{Name(r.SourceId)}: removes {r.Amount} {r.Status} from {Side(r.Target)}", Palette.For(r.Status)),
+            NailsUprooted n => ($"{Name(n.SourceId)} uproots {n.Nails} Nail{(n.Nails == 1 ? "" : "s")} from {Side(n.Target)}!", Palette.Nail),
             PoisonBurst p => ($"Poison bursts on {Side(p.Target)} for {p.Damage}!", Palette.Poison),
             ChillFroze c => ($"{Capital(Side(c.Target))} {(c.Target == Core.Engine.Side.Player ? "are" : "is")} frozen solid!", Palette.Freeze),
             Charged c => ($"{Name(c.SourceId)} charges {Name(c.TargetSourceId)} {Words(c.Ticks)}", Palette.Haste),
