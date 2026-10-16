@@ -77,4 +77,15 @@ public class DescribeTests
                 $"{def.Id}: {string.Join(" | ", lines)}");
         }
     }
+
+    [Theory]
+    [InlineData("shield_mastery", "Your Shield items: +5 shield gained.")]
+    [InlineData("cold_hands", "Your Chill items: 1s faster cooldowns.")]
+    [InlineData("vanguard", "Your Weapon item in slot 1: +1 damage dealt for each Weapon item on your board.")]
+    [InlineData("parry", "When one of your Weapon items fires: gain 2 shield.")]
+    [InlineData("frozen_roots", "For every 2 Nails you uproot: apply 1 Chill to the enemy.")]
+    [InlineData("toxic_roots", "For each Nail you uproot: apply 1 Poison to the enemy.")]
+    [InlineData("battle_hardened", "Win a fight: +5 max HP for the rest of the run.")]
+    [InlineData("momentum", "When the item in slot 1 fires, if it is a Weapon: +1 Damage to it this fight.")]
+    public void NewPassives_ReadPlainly(string id, string expected) => Assert.Equal(expected, Text(id));
 }

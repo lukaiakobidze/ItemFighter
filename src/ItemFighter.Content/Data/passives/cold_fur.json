@@ -2,11 +2,22 @@
   "id": "cold_fur",
   "kind": "Passive",
   "name": "Cold Fur",
+  "rarity": "Common",
+  "tags": [
+    "Chill"
+  ],
   "abilities": [
     {
-      "trigger": { "type": "OnDamageTaken", "every": 3 },
+      "trigger": {
+        "type": "OnDamageTaken",
+        "every": 3
+      },
       "effects": [
-        { "type": "ApplyStatus", "status": "Chill", "amount": 1 }
+        {
+          "type": "ApplyStatus",
+          "status": "Chill",
+          "amount": 1
+        }
       ]
     }
   ]

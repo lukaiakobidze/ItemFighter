@@ -2,6 +2,10 @@
   "id": "thick_skin",
   "kind": "Passive",
   "name": "Thick Skin",
+  "rarity": "Rare",
+  "tags": [
+    "Shield"
+  ],
   "modifiers": [
     {
       "stat": "DamageTaken",

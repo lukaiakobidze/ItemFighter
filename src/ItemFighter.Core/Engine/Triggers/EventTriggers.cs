@@ -43,7 +43,7 @@ public sealed class OnItemFiredTrigger : ITrigger
     {
         if (e is not SourceFired f || f.Owner != owner.Owner) return false;
         var fired = battle.FindSource(f.SourceId);
-        if (fired is null) return false;
+        if (fired is null || fired.Def.Kind is not (SourceKind.Item or SourceKind.EnemyAbility)) return false; // passives aren't items
         if (_self != (fired == owner)) return false;
         if (fired == owner && f.Reaction) return false; // never react to your own reaction
         if (_adjacent && !(fired.Slot is int a && owner.Slot is int b && Math.Abs(a - b) == 1)) return false;
@@ -61,7 +61,8 @@ public sealed class OnItemFiredTrigger : ITrigger
             string what = _tags.Count == 0 ? "" : $", if it is {Words.Article(string.Join(" ", _tags))}";
             return ctx.IsEnemy ? $"When its {Words.Ordinal(n)} attack fires{what}" : $"When the item in slot {n} fires{what}";
         }
-        return _adjacent ? $"When {Words.Article("adjacent")} {tags}item fires" : $"When another of {whose} {tags}items fires";
+        if (_adjacent) return $"When {Words.Article("adjacent")} {tags}item fires";
+        return ctx.Def.Kind is SourceKind.Item or SourceKind.EnemyAbility ? $"When another of {whose} {tags}items fires" : $"When one of {whose} {tags}items fires";
     }
 }
 
@@ -178,4 +179,27 @@ public sealed class EveryNthUseTrigger(int n) : ITrigger
         e is SourceFired { Reaction: false } f && f.SourceId == owner.Id && owner.CycleCount % n == 0;
 
     public string Describe(DescribeContext ctx) => $"Every {Words.Ordinal(n)} use";
+}
+
+/// <summary>
+/// Reacts when the owner's side uproots Nails from the other side, once for every "per" Nails (rounded down).
+/// </summary>
+public sealed class OnNailsUprootedTrigger(int per) : ITrigger
+{
+    public static OnNailsUprootedTrigger Parse(ParseContext ctx)
+    {
+        int per = ctx.ReadInt("per", 1);
+        if (per < 1) throw new ContentException("'per' must be at least 1");
+        return new(per);
+    }
+
+    public bool Matches(BattleEvent e, SourceInstance owner, Battle battle) => e is NailsUprooted u && u.Target != owner.Owner && u.Nails >= per;
+
+    public int Repeats(BattleEvent e) => e is NailsUprooted u ? u.Nails / per : 0;
+
+    public string Describe(DescribeContext ctx)
+    {
+        string who = ctx.IsEnemy ? "it uproots" : "you uproot";
+        return per == 1 ? $"For each Nail {who}" : $"For every {per} Nails {who}";
+    }
 }

@@ -25,6 +25,7 @@ public sealed class TriggerRegistry
         r.Register("OnStatusApplied", OnStatusAppliedTrigger.Parse);
         r.Register("OnShieldGained", _ => new OnShieldGainedTrigger());
         r.Register("EveryNthUse", EveryNthUseTrigger.Parse);
+        r.Register("OnNailsUprooted", OnNailsUprootedTrigger.Parse);
         return r;
     }
 }

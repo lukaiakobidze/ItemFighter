@@ -2,6 +2,10 @@
   "id": "venomous",
   "kind": "Passive",
   "name": "Venomous",
+  "rarity": "Common",
+  "tags": [
+    "Poison"
+  ],
   "abilities": [
     {
       "effects": [

@@ -84,6 +84,7 @@ public static class SourceDescriber
         }
         foreach (var m in def.Modifiers) lines.Add(Modifier(m, ctx));
         if (def.GoldOnWin is ValueRef gold) lines.Add($"Win a fight with this on your board: +{ctx.Value(gold)} gold.");
+        if (def.MaxHpPerWin != 0) lines.Add($"Win a fight: +{def.MaxHpPerWin} max HP for the rest of the run.");
         return lines;
     }
 
@@ -112,6 +113,8 @@ public static class SourceDescriber
         }
         string who = m.Filter switch
         {
+            { Slot: int slot, Tag: string tag } => $"Your {tag} item in slot {slot}",
+            { Slot: int slot } => $"Your item in slot {slot}",
             { Kind: SourceKind.Item, Tag: string tag } => $"Your {tag} items",
             { Kind: SourceKind.Item } => "Your items",
             { Tag: string tag } => $"Your {tag} items",
@@ -134,8 +137,10 @@ public static class SourceDescriber
             "NailDamage" => $"{sign}{abs} damage per Nail uprooted",
             "PoisonThreshold" => m.Amount < 0 ? $"Poison bursts {abs} stacks sooner" : $"Poison bursts {abs} stacks later",
             "CooldownPercent" => m.Amount < 0 ? $"{abs}% faster cooldowns" : $"{abs}% slower cooldowns",
+            "CooldownSeconds" => m.Amount < 0 ? $"{abs}s faster cooldowns" : $"{abs}s slower cooldowns",
             _ => $"{sign}{abs} {m.Stat}",
         };
+        if (m.PerItemTag is string per) what += $" for each {per} item {(ctx.IsEnemy ? "it has" : "on your board")}";
         return $"{who}: {what}.";
     }
 }

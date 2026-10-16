@@ -1,0 +1,25 @@
+{
+  "id": "frozen_roots",
+  "kind": "Passive",
+  "name": "Frozen Roots",
+  "rarity": "Rare",
+  "tags": [
+    "Nail",
+    "Chill"
+  ],
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnNailsUprooted",
+        "per": 2
+      },
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Chill",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

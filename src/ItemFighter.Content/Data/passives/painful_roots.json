@@ -1,0 +1,25 @@
+{
+  "id": "painful_roots",
+  "kind": "Passive",
+  "name": "Painful Roots",
+  "rarity": "Rare",
+  "tags": [
+    "Nail",
+    "Pain"
+  ],
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnNailsUprooted",
+        "per": 2
+      },
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Pain",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

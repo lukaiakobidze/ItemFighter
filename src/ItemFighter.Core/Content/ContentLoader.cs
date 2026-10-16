@@ -124,6 +124,7 @@ public static class ContentLoader
             Phases = ParsePhases(json),
             StartingItems = ctx.ReadStrings("startingItems"),
             GoldOnWin = ctx.Has("goldOnWin") ? ctx.ReadValue("goldOnWin") : null,
+            MaxHpPerWin = ctx.ReadInt("maxHpPerWin", 0),
             Difficulty = ctx.ReadInt("difficulty", 1),
         };
     }
@@ -207,13 +208,17 @@ public static class ContentLoader
             if (!ModifierDefinition.KnownStats.Contains(stat)) throw new ContentException($"unknown modifier stat '{stat}'");
             SourceKind? kind = null;
             string? tag = null;
+            int? slot = null;
             if (m.TryGetProperty("filter", out var f))
             {
                 var fctx = new ParseContext(f, none);
                 if (fctx.Has("kind")) kind = fctx.ReadEnum<SourceKind>("kind");
                 if (fctx.Has("tag")) tag = fctx.ReadString("tag");
+                if (fctx.Has("slot")) slot = fctx.ReadInt("slot");
+                if (slot is < 1) throw new ContentException("modifier filter 'slot' must be 1 or more");
             }
-            result.Add(new ModifierDefinition(stat, ctx.ReadInt("amount"), new ModifierFilter(kind, tag)));
+            string? perItemTag = ctx.Has("perItemTag") ? ctx.ReadString("perItemTag") : null;
+            result.Add(new ModifierDefinition(stat, ctx.ReadInt("amount"), new ModifierFilter(kind, tag, slot), perItemTag));
         }
         return result;
     }

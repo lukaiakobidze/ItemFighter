@@ -2,6 +2,10 @@
   "id": "explosive",
   "kind": "Passive",
   "name": "Explosive",
+  "rarity": "Rare",
+  "tags": [
+    "Burn"
+  ],
   "abilities": [
     {
       "effects": [

@@ -1,0 +1,19 @@
+{
+  "id": "toxicology",
+  "kind": "Passive",
+  "name": "Toxicology",
+  "rarity": "Common",
+  "tags": [
+    "Poison"
+  ],
+  "modifiers": [
+    {
+      "stat": "PoisonApplied",
+      "amount": 1,
+      "filter": {
+        "kind": "Item",
+        "tag": "Poison"
+      }
+    }
+  ]
+}

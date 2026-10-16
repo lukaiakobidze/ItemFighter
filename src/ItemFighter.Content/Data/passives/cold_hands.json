@@ -1,0 +1,19 @@
+{
+  "id": "cold_hands",
+  "kind": "Passive",
+  "name": "Cold Hands",
+  "rarity": "Common",
+  "tags": [
+    "Chill"
+  ],
+  "modifiers": [
+    {
+      "stat": "CooldownSeconds",
+      "amount": -1,
+      "filter": {
+        "kind": "Item",
+        "tag": "Chill"
+      }
+    }
+  ]
+}

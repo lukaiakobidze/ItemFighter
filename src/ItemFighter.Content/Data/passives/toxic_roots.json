@@ -1,0 +1,25 @@
+{
+  "id": "toxic_roots",
+  "kind": "Passive",
+  "name": "Toxic Roots",
+  "rarity": "Rare",
+  "tags": [
+    "Nail",
+    "Poison"
+  ],
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnNailsUprooted",
+        "per": 1
+      },
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Poison",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

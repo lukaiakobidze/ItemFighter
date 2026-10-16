@@ -1,0 +1,21 @@
+{
+  "id": "vanguard",
+  "kind": "Passive",
+  "name": "Vanguard",
+  "rarity": "Common",
+  "tags": [
+    "Weapon"
+  ],
+  "modifiers": [
+    {
+      "stat": "DamageDealt",
+      "amount": 1,
+      "perItemTag": "Weapon",
+      "filter": {
+        "kind": "Item",
+        "tag": "Weapon",
+        "slot": 1
+      }
+    }
+  ]
+}

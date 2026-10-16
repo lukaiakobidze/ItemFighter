@@ -73,14 +73,18 @@ public static class Offers
     /// <summary>
     /// A fight day's choices: different enemies, each one difficulty above the run's with harderPercent chance, else at
     /// the run's difficulty, all enemies of a difficulty equally likely. When no enemy is left at that difficulty, the
-    /// nearest difficulty that has one is used (the easier one on a tie).
+    /// nearest difficulty that has one is used (the easier one on a tie). Enemies in fought are only offered once every
+    /// other enemy is used up.
     /// </summary>
-    public static IReadOnlyList<Encounter> FightChoices(Rng rng, RunView view, int runDifficulty, int harderPercent)
+    public static IReadOnlyList<Encounter> FightChoices(Rng rng, RunView view, int runDifficulty, int harderPercent, IReadOnlySet<string>? fought = null)
     {
-        var left = view.Db.OfKind(SourceKind.Enemy).OrderBy(e => e.Id, StringComparer.Ordinal).ToList();
+        var all = view.Db.OfKind(SourceKind.Enemy).OrderBy(e => e.Id, StringComparer.Ordinal).ToList();
+        var left = all.Where(e => fought is null || !fought.Contains(e.Id)).ToList();
+        var repeats = all.Except(left).ToList();
         var picks = new List<Encounter>();
-        while (picks.Count < view.Config.ChoicesPerPick && left.Count > 0)
+        while (picks.Count < view.Config.ChoicesPerPick && (left.Count > 0 || repeats.Count > 0))
         {
+            if (left.Count == 0) (left, repeats) = (repeats, []);
             int wanted = rng.Chance(harderPercent) ? runDifficulty + 1 : runDifficulty;
             int nearest = left.Select(e => e.Difficulty).OrderBy(d => Math.Abs(d - wanted)).ThenBy(d => d).First();
             var pool = left.Where(e => e.Difficulty == nearest).ToList();

@@ -35,6 +35,10 @@ public sealed class RunState
     public List<string>? ShopStock { get; set; }
     public int ShopRerolls { get; set; }
     public int FightsWon { get; set; }
+    /// <summary>Max HP gained this run (from passives like Battle Hardened).</summary>
+    public int BonusMaxHp { get; set; }
+    /// <summary>Enemies fought this run (bosses excluded). They aren't offered again while there are others.</summary>
+    public List<string> FoughtEnemies { get; set; } = [];
 
     [JsonIgnore] public RunConfig Config { get; private set; } = new();
     [JsonIgnore] public ContentDatabase Db { get; private set; } = new();
@@ -76,7 +80,7 @@ public sealed class RunState
         var rng = RngFor($"enc:{Mission}:{Encounter}");
         return MissionPlan[Encounter] == DayKind.Shop && Config.Shops.Count > 0
             ? Offers.ShopChoices(rng, View)
-            : Offers.FightChoices(rng, View, Config.RunDifficulty(Mission, Encounter), Config.HarderEnemyChance(Mission, Encounter));
+            : Offers.FightChoices(rng, View, Config.RunDifficulty(Mission, Encounter), Config.HarderEnemyChance(Mission, Encounter), FoughtEnemies.ToHashSet());
     }
 
     /// <summary>The mission's boss from run.json, or the enemy with the most HP when none is listed.</summary>
@@ -125,7 +129,8 @@ public sealed class RunState
             if (Hotbar[i] is OwnedItem item) board.Add(new BoardItem(item.ItemId, i, item.Level));
         ulong seed = StableHash.Of($"fight:{Seed}:{Mission}:{Encounter}");
         Phase = RunPhase.Fighting;
-        return new BattleSetup(new PlayerSetup(CharacterId, board, Passives.ToList()), encounter.EnemyId!, seed == 0 ? 1 : seed);
+        if (encounter.Kind == EncounterKind.Fight && !FoughtEnemies.Contains(encounter.EnemyId!)) FoughtEnemies.Add(encounter.EnemyId!);
+        return new BattleSetup(new PlayerSetup(CharacterId, board, Passives.ToList(), BonusMaxHp), encounter.EnemyId!, seed == 0 ? 1 : seed);
     }
 
     public void FinishFight(bool won)
@@ -138,6 +143,7 @@ public sealed class RunState
             return;
         }
         FightsWon++;
+        BonusMaxHp += Passives.Sum(p => Db.TryGet(p, out var def) ? def.MaxHpPerWin : 0);
         Gold += GoldFor(encounter) + GoldFromItems;
         PendingDrop = Offers.Drop(RngFor($"drop:{Mission}:{Encounter}"), encounter.EnemyId!, View);
         Phase = RunPhase.Dropping;

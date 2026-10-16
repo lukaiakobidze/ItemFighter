@@ -1,0 +1,25 @@
+{
+  "id": "burning_roots",
+  "kind": "Passive",
+  "name": "Burning Roots",
+  "rarity": "Rare",
+  "tags": [
+    "Nail",
+    "Burn"
+  ],
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnNailsUprooted",
+        "per": 1
+      },
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Burn",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

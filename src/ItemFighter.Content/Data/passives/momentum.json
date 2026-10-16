@@ -1,0 +1,28 @@
+{
+  "id": "momentum",
+  "kind": "Passive",
+  "name": "Momentum",
+  "rarity": "Rare",
+  "tags": [
+    "Weapon"
+  ],
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnItemFired",
+        "filter": [
+          "Slot:1",
+          "Tag:Weapon"
+        ]
+      },
+      "effects": [
+        {
+          "type": "ModifyStat",
+          "stat": "Damage",
+          "amount": 1,
+          "target": "TriggeringItem"
+        }
+      ]
+    }
+  ]
+}

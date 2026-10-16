@@ -1,0 +1,8 @@
+{
+  "id": "battle_hardened",
+  "kind": "Passive",
+  "name": "Battle Hardened",
+  "rarity": "Rare",
+  "tags": [],
+  "maxHpPerWin": 5
+}

@@ -2,6 +2,10 @@
   "id": "fast_reload",
   "kind": "Passive",
   "name": "Fast Reload",
+  "rarity": "Common",
+  "tags": [
+    "Weapon"
+  ],
   "abilities": [
     {
       "trigger": {

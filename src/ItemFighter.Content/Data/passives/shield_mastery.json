@@ -1,0 +1,19 @@
+{
+  "id": "shield_mastery",
+  "kind": "Passive",
+  "name": "Shield Mastery",
+  "rarity": "Common",
+  "tags": [
+    "Shield"
+  ],
+  "modifiers": [
+    {
+      "stat": "ShieldGained",
+      "amount": 5,
+      "filter": {
+        "kind": "Item",
+        "tag": "Shield"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "parry",
+  "kind": "Passive",
+  "name": "Parry",
+  "rarity": "Common",
+  "tags": [
+    "Shield",
+    "Weapon"
+  ],
+  "abilities": [
+    {
+      "trigger": {
+        "type": "OnItemFired",
+        "filter": [
+          "Tag:Weapon"
+        ]
+      },
+      "effects": [
+        {
+          "type": "Shield",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

@@ -205,4 +205,36 @@ public class DaysTests
         run.Choose(new Encounter(EncounterKind.Shop, null, "smith"));
         Assert.Equal(["a"], run.ShopStock!);
     }
+
+    /// <summary>Luka 2026-10-16: you can't fight an enemy you already fought this run (repeats only once every enemy is used).</summary>
+    [Fact]
+    public void FoughtEnemies_AreNotOfferedAgain()
+    {
+        var db = Db(("e1", 1, "Common"), ("e2", 1, "Common"), ("e3", 1, "Common"), ("e4", 1, "Common"), ("e5", 1, "Common"));
+        var view = View(db, new RunConfig());
+        for (ulong seed = 1; seed <= 50; seed++)
+        {
+            var choices = Offers.FightChoices(new Rng(seed), view, 1, 0, new HashSet<string> { "e1", "e2" });
+            Assert.Equal(new[] { "e3", "e4", "e5" }, choices.Select(c => c.EnemyId).Order());
+            var few = Offers.FightChoices(new Rng(seed), view, 1, 0, new HashSet<string> { "e1", "e2", "e3", "e4" });
+            Assert.Equal(3, few.Count);
+            Assert.Contains(few, c => c.EnemyId == "e5"); // unfought first, then repeats to fill the day
+        }
+    }
+
+    [Fact]
+    public void Run_RemembersWhoYouFought()
+    {
+        var run = RunState.New(1, "silver_knight", Content.Run, Content.Database);
+        run.Choose(new Encounter(EncounterKind.Fight, "squire_zombie"));
+        run.StartFight();
+        run.FinishFight(true);
+        Assert.Contains("squire_zombie", run.FoughtEnemies);
+        run.TakeDrop(0);
+        for (int e = 1; e < Content.Run.EncountersPerMission; e++)
+        {
+            run.Encounter = e;
+            Assert.DoesNotContain(run.EncounterChoices(), c => c.EnemyId == "squire_zombie");
+        }
+    }
 }

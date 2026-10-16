@@ -1,0 +1,19 @@
+{
+  "id": "kindling",
+  "kind": "Passive",
+  "name": "Kindling",
+  "rarity": "Common",
+  "tags": [
+    "Burn"
+  ],
+  "modifiers": [
+    {
+      "stat": "BurnApplied",
+      "amount": 1,
+      "filter": {
+        "kind": "Item",
+        "tag": "Burn"
+      }
+    }
+  ]
+}

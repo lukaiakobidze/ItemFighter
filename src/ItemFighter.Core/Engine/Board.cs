@@ -9,7 +9,8 @@ public static class Board
 public sealed record BoardItem(string ItemId, int Slot, int Level = 1);
 
 /// <param name="CharacterId">Null uses a plain 100 HP character with no passives (handy for tests).</param>
-public sealed record PlayerSetup(string? CharacterId, IReadOnlyList<BoardItem> Board, IReadOnlyList<string> PassiveIds);
+/// <summary>BonusMaxHp is max HP gained during the run (e.g. a passive that grows with every win).</summary>
+public sealed record PlayerSetup(string? CharacterId, IReadOnlyList<BoardItem> Board, IReadOnlyList<string> PassiveIds, int BonusMaxHp = 0);
 
 /// <summary>EnemyHpPercent scales the enemy's max HP (run missions, elites and bosses).</summary>
 public sealed record BattleSetup(PlayerSetup Player, string EnemyId, ulong Seed, int EnemyHpPercent = 100);

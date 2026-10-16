@@ -2,11 +2,20 @@
   "id": "fury",
   "kind": "Passive",
   "name": "Fury",
+  "rarity": "Rare",
+  "tags": [
+    "Power"
+  ],
   "abilities": [
     {
       "trigger": "OnDamageTaken",
       "effects": [
-        { "type": "ApplyStatus", "status": "Power", "amount": 1, "target": "Self" }
+        {
+          "type": "ApplyStatus",
+          "status": "Power",
+          "amount": 1,
+          "target": "Self"
+        }
       ]
     }
   ]

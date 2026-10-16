@@ -48,6 +48,8 @@ public sealed class SourceDefinition
 
     /// <summary>Items only: gold earned for each fight won with this item on the board (run loop, not the fight).</summary>
     public ValueRef? GoldOnWin { get; init; }
+    /// <summary>A passive's max HP gain for every fight won while you have it, for the rest of the run.</summary>
+    public int MaxHpPerWin { get; init; }
 
     /// <summary>An enemy ability with no cooldown (always on or reacting), which the player can also take as a passive.</summary>
     public bool IsPassiveAbility => Kind == SourceKind.EnemyAbility && CooldownTicks is null;
@@ -64,14 +66,16 @@ public sealed record AbilityDefinition(ITrigger Trigger, IReadOnlyList<IEffect> 
 
 public sealed record PhaseDefinition(int HpBelowPercent, IReadOnlyList<string> AddAbilityIds);
 
-public sealed record ModifierFilter(SourceKind? Kind, string? Tag);
+/// <summary>Which sources a modifier applies to. Slot is 1-based (an enemy's first attack is slot 1).</summary>
+public sealed record ModifierFilter(SourceKind? Kind, string? Tag, int? Slot = null);
 
 /// <summary>A standing bonus such as "+5 shield gained by items". Summed by the modifier pipeline.</summary>
-public sealed record ModifierDefinition(string Stat, int Amount, ModifierFilter Filter)
+/// PerItemTag multiplies Amount by how many of the holder's items have that tag.
+public sealed record ModifierDefinition(string Stat, int Amount, ModifierFilter Filter, string? PerItemTag = null)
 {
     public static readonly IReadOnlySet<string> KnownStats = new HashSet<string>(StringComparer.Ordinal)
     {
         "ShieldGained", "DamageDealt", "HealGained", "BurnApplied", "PoisonApplied", "ChillApplied",
-        "PainApplied", "NailApplied", "PowerApplied", "NailDamage", "PoisonThreshold", "CooldownPercent", "DamageTaken",
+        "PainApplied", "NailApplied", "PowerApplied", "NailDamage", "PoisonThreshold", "CooldownPercent", "CooldownSeconds", "DamageTaken",
     };
 }

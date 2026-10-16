@@ -35,7 +35,7 @@ public sealed class Battle
         Rng = new Rng(setup.Seed).Fork("combat");
 
         SourceDefinition? character = setup.Player.CharacterId is null ? null : Require(setup.Player.CharacterId, SourceKind.Character);
-        Player = new Combatant(Side.Player, character?.MaxHp ?? DefaultPlayerHp);
+        Player = new Combatant(Side.Player, (character?.MaxHp ?? DefaultPlayerHp) + Math.Max(0, setup.Player.BonusMaxHp));
         if (character is not null) AddSource(Player, character, null, 1);
         foreach (string id in setup.Player.PassiveIds)
             AddSource(Player, RequirePassive(id), null, 1);
@@ -66,7 +66,9 @@ public sealed class Battle
     {
         if (!s.HasCooldown) return;
         int baseTicks = s.Def.CooldownTicks!.Value;
-        s.CooldownTicks = Rules.FloorCooldown(baseTicks, ModifierPipeline.ModifiedCooldown(baseTicks, ModifierPipeline.Sum(this, "CooldownPercent", s)));
+        int ticks = ModifierPipeline.ModifiedCooldown(baseTicks, ModifierPipeline.Sum(this, "CooldownPercent", s))
+            + ModifierPipeline.Sum(this, "CooldownSeconds", s) * 10;
+        s.CooldownTicks = Rules.FloorCooldown(baseTicks, Math.Max(1, ticks));
     }
 
     public int Tick { get; private set; }
@@ -485,8 +487,11 @@ public sealed class Battle
                 if (t is OnCooldownTrigger or OnActivateTrigger) continue;
                 if (source == producer && !t.AllowSelf) continue;
                 if (!t.Matches(e, source, this)) continue;
-                if (!TryReact(source, depth + 1)) continue;
-                React(source, ability, depth + 1, trigger);
+                for (int n = t.Repeats(e); n > 0; n--)
+                {
+                    if (!TryReact(source, depth + 1)) break;
+                    React(source, ability, depth + 1, trigger);
+                }
             }
             if (source.Script is not null && depth + 1 <= MaxChainDepth)
                 source.Script.OnEvent(e, source, this, depth + 1);
