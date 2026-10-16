@@ -27,7 +27,6 @@ public sealed class FightScreen : Screen
     private readonly FloatingTexts _floats = new();
     private readonly CombatLog _log = new();
     private readonly Dictionary<int, double> _firedAt = [];
-    private readonly HashSet<int> _revealed = [];
     private double _time;
     private double _endedAt = -1;
     private bool _wasActive;
@@ -81,19 +80,7 @@ public sealed class FightScreen : Screen
         _time += seconds;
         _clock.Advance(seconds);
         var events = _cursor.TakeNew();
-        foreach (var e in events)
-        {
-            if (e is SourceFired f)
-            {
-                _firedAt[f.SourceId] = _time;
-                _revealed.Add(f.SourceId);
-            }
-            // Always-on passives (like Thick Skin) never fire; they show themselves the first time their side is hit.
-            if (e is DamageDealt { Target: Side.Enemy })
-                foreach (var s in Battle.Enemy.Sources.Where(s => s.Def.Abilities.Count == 0 && s.Def.Modifiers.Count > 0)) _revealed.Add(s.Id);
-            int? by = e switch { DamageDealt d => d.SourceId, ShieldGained g => g.SourceId, StatusApplied a => a.SourceId, _ => null };
-            if (by is int id) _revealed.Add(id);
-        }
+        foreach (var e in events.OfType<SourceFired>()) _firedAt[e.SourceId] = _time;
         _floats.Consume(events, Battle);
         _log.Consume(events, Battle);
         _floats.Update(seconds);
@@ -143,7 +130,7 @@ public sealed class FightScreen : Screen
         var portrait = new Rectangle(32, 28, 158, 158);
         ui.Art("Enemies", def.Id, def.Name, portrait, Battle.Enemy.IsFrozenAt(Battle.Tick) ? new Color(120, 200, 255) * 0.35f : null);
         ui.Border(portrait, Palette.Border, 1);
-        if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities show up as it uses them."], Palette.Damage);
+        if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities and passives are listed beside it."], Palette.Damage);
 
         ui.Text(def.Name, new Vector2(206, 24), 28, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
@@ -159,18 +146,12 @@ public sealed class FightScreen : Screen
     /// <summary>An enemy ability as a box like the player's item cards: picture, name, time left and cooldown bar.</summary>
     private void DrawAbility(Ui ui, SourceInstance a, Rectangle r)
     {
-        bool known = _revealed.Contains(a.Id);
         bool flash = _firedAt.TryGetValue(a.Id, out double t) && _time - t < 0.3;
         bool hover = ui.Hover(r);
         ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
         var art = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, 62);
         Color? tint = a.FreezeTicks > 0 ? new Color(120, 200, 255) * 0.45f : null;
-        if (known) ui.Art("EnemyAbilities", a.Def.Id, a.Def.Name, art, tint);
-        else
-        {
-            ui.Rect(art, new Color(30, 32, 44));
-            ui.TextIn("?", art, 30, Palette.TextDim, bold: true);
-        }
+        ui.Art("EnemyAbilities", a.Def.Id, a.Def.Name, art, tint);
         if (!a.Ready)
         {
             int covered = (int)(art.Height * (1 - CooldownFraction(a)));
@@ -178,37 +159,27 @@ public sealed class FightScreen : Screen
         }
         if (flash) ui.Rect(art, new Color(255, 120, 110) * 0.45f);
 
-        ui.TextIn(known ? a.Def.Name : "???", new Rectangle(r.X, r.Y + 68, r.Width, 20), 13, known ? Palette.Text : Palette.TextDim, bold: true);
+        ui.TextIn(a.Def.Name, new Rectangle(r.X, r.Y + 68, r.Width, 20), 13, Palette.Text, bold: true);
         int speed = Battle.CooldownSpeed(a);
         ui.TextIn(speed == 0 ? "frozen" : $"{SecondsLeft(a):0.0}s", new Rectangle(r.X, r.Y + 88, r.Width, 18), 14, speed == 0 ? Palette.Freeze : Palette.TextDim);
         ui.Bar(new Rectangle(r.X + 8, r.Y + 112, r.Width - 16, 8), (float)CooldownFraction(a), speed == 0 ? Palette.Freeze : new Color(200, 90, 80), new Color(24, 26, 36));
         DrawItemTimers(ui, a, new Vector2(r.X + 6, r.Y + 6));
         ui.Border(r, flash ? Palette.Damage : Palette.Border, flash ? 2 : 1);
         if (hover)
-            ui.Tooltip(known ? a.Def.Name : "Unknown ability", known ? Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines : ["You'll learn what this does when it happens."], Palette.Damage);
+            ui.Tooltip(a.Def.Name, Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines, Palette.Damage);
     }
 
-    /// <summary>A passive as a small square icon; details on mouse-over. Enemy passives stay "?" until they first act.</summary>
+    /// <summary>A passive as a small square icon; details on mouse-over.</summary>
     private void DrawPassive(Ui ui, SourceInstance p, Rectangle r, bool enemy)
     {
-        bool known = !enemy || _revealed.Contains(p.Id);
         bool flash = _firedAt.TryGetValue(p.Id, out double t) && _time - t < 0.3;
-        if (known) ui.Art("Passives", p.Def.Id, Initials(p.Def.Name), r);
-        else
-        {
-            ui.Rect(r, new Color(30, 32, 44));
-            ui.TextIn("?", r, 20, Palette.TextDim, bold: true);
-        }
+        ui.Art("Passives", p.Def.Id, Initials(p.Def.Name), r);
         if (flash) ui.Rect(r, Color.White * 0.35f);
         bool hover = ui.Hover(r);
         ui.Border(r, hover || flash ? Palette.Accent : Palette.Border, hover || flash ? 2 : 1);
         if (!hover) return;
-        if (!known) ui.Tooltip("Unknown passive", ["You'll learn what this does when it happens."], Palette.Damage);
-        else
-        {
-            var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy);
-            ui.Tooltip(title, ["Passive", .. lines], enemy ? Palette.Damage : Palette.For(p.Def.Rarity));
-        }
+        var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy);
+        ui.Tooltip(title, ["Passive", .. lines], enemy ? Palette.Damage : Palette.For(p.Def.Rarity));
     }
 
     private static string Initials(string name) => string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
