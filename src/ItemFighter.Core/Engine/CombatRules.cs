@@ -30,7 +30,7 @@ public sealed class CombatRules
 
     /// <summary>Poison bursts when it reaches this many stacks (PoisonThreshold modifiers change it per source).</summary>
     public int PoisonThreshold { get; init; } = 10;
-    /// <summary>A burst deals this much per stack, ignoring shield.</summary>
+    /// <summary>A burst deals this much per stack (shield blocks it).</summary>
     public int PoisonBurstPerStack { get; init; } = 3;
 
     /// <summary>Chill stacks last this long; every new stack restarts the timer.</summary>

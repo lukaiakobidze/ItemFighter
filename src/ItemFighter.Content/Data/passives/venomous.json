@@ -1,6 +1,6 @@
 {
   "id": "venomous",
-  "kind": "EnemyAbility",
+  "kind": "Passive",
   "name": "Venomous",
   "abilities": [
     {

@@ -1,6 +1,6 @@
 {
   "id": "cold_fur",
-  "kind": "EnemyAbility",
+  "kind": "Passive",
   "name": "Cold Fur",
   "abilities": [
     {

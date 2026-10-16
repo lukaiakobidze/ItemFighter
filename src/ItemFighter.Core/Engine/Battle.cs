@@ -56,7 +56,7 @@ public sealed class Battle
         EnemyDefinition = enemy;
         AddSource(Enemy, enemy, null, 1);
         foreach (string id in enemy.AbilityIds)
-            AddSource(Enemy, Require(id, SourceKind.EnemyAbility), null, 1);
+            AddSource(Enemy, RequireEnemyAbility(id), null, 1);
 
         foreach (var s in AllSources)
             ApplyCooldownModifier(s);
@@ -99,11 +99,14 @@ public sealed class Battle
         return def;
     }
 
-    /// <summary>Player passives: real passives, or enemy abilities without a cooldown (taken from enemy drops).</summary>
-    private SourceDefinition RequirePassive(string id)
+    /// <summary>Player passives come from the passive pool (passives/), bought in passive shops.</summary>
+    private SourceDefinition RequirePassive(string id) => Require(id, SourceKind.Passive);
+
+    /// <summary>An enemy uses its own abilities (enemies/abilities/) and passives from the shared pool (passives/).</summary>
+    private SourceDefinition RequireEnemyAbility(string id)
     {
         if (!_db.TryGet(id, out var def)) throw new ArgumentException($"no content with id '{id}'");
-        if (def.Kind != SourceKind.Passive && !def.IsPassiveAbility) throw new ArgumentException($"'{id}' can't be a player passive");
+        if (def.Kind is not (SourceKind.EnemyAbility or SourceKind.Passive)) throw new ArgumentException($"'{id}' is not an enemy ability or a passive");
         return def;
     }
 
@@ -383,7 +386,7 @@ public sealed class Battle
             Emit(new PhaseStarted(Tick, i), 0, null);
             foreach (string id in phases[i].AddAbilityIds)
             {
-                var added = AddSource(Enemy, Require(id, SourceKind.EnemyAbility), null, 1);
+                var added = AddSource(Enemy, RequireEnemyAbility(id), null, 1);
                 ApplyCooldownModifier(added);
                 Emit(new SourceAdded(Tick, added.Id, Side.Enemy), 0, added);
             }

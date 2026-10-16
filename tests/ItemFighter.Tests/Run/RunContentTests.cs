@@ -28,19 +28,18 @@ public class RunContentTests
     }
 
     [Fact]
-    public void Player_CanTakeEnemyPassive_Venomous_PoisonsEnemyOnHit()
+    public void Player_CanTakePoolPassive_Venomous_PoisonsEnemyOnHit()
     {
-        var venomous = Item("venomous", null, """{ "type": "ApplyStatus", "status": "Poison", "amount": 2 }""", "\"OnDamageDealt\"",
-            extra: "\"kind\": \"EnemyAbility\",");
-        var db = TestContent.Db(("items/sword.json", Sword), ("enemies/venomous.json", venomous), ("enemies/dummy.json", Enemy()));
-        Assert.True(db.Get("venomous").IsPassiveAbility);
+        var venomous = Item("venomous", null, """{ "type": "ApplyStatus", "status": "Poison", "amount": 2 }""", "\"OnDamageDealt\"");
+        var db = TestContent.Db(("items/sword.json", Sword), ("passives/venomous.json", venomous), ("enemies/dummy.json", Enemy()));
+        Assert.Equal(SourceKind.Passive, db.Get("venomous").Kind);
         var b = new Battle(new BattleSetup(new PlayerSetup(null, [new BoardItem("sword", 0)], ["venomous"]), "dummy", 1), db);
         b.Steps(20);
         Assert.Equal(2, b.Enemy.Statuses.Poison);
     }
 
     [Fact]
-    public void Player_CannotTakeCooldownAbility()
+    public void Player_CannotTakeEnemyAbilities()
     {
         var bite = Item("bite", 3, """{ "type": "Damage", "amount": 1 }""", extra: "\"kind\": \"EnemyAbility\",");
         var db = TestContent.Db(("enemies/bite.json", bite), ("enemies/dummy.json", Enemy()));

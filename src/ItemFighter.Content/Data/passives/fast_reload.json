@@ -1,6 +1,6 @@
 {
   "id": "fast_reload",
-  "kind": "EnemyAbility",
+  "kind": "Passive",
   "name": "Fast Reload",
   "abilities": [
     {

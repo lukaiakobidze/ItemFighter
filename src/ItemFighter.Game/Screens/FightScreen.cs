@@ -134,7 +134,7 @@ public sealed class FightScreen : Screen
 
         ui.Text(def.Name, new Vector2(206, 24), 28, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
-        var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassiveAbility).ToList();
+        var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
         for (int i = 0; i < passives.Count && i < 16; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveRow, i), enemy: true);
         DrawStatuses(ui, Battle.Enemy, new Vector2(206, 146));
 
@@ -178,7 +178,7 @@ public sealed class FightScreen : Screen
         ui.FramedIcon("Passives", p.Def.Id, Initials(p.Def.Name), r, border, hover || flash ? 2 : 1);
         if (flash) ui.Rect(r, Color.White * 0.25f);
         if (!hover) return;
-        var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy);
+        var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy, ownedByEnemy: enemy);
         ui.Tooltip(title, ["Passive", .. lines], enemy ? Palette.Damage : Palette.For(p.Def.Rarity));
     }
 
@@ -353,7 +353,7 @@ public sealed class FightScreen : Screen
         var s = c.Statuses;
         var rules = Battle.Rules;
         if (s.Burn > 0) Chip($"Burn {s.Burn}", Palette.Burn, "Burn", $"Every {rules.BurnTickSeconds:0.##}s deals its stacks as damage (x{rules.BurnShieldMultiplier} against shield), then loses {rules.BurnLossPerTick} {(rules.BurnLossPerTick == 1 ? "stack" : "stacks")}.");
-        if (s.Poison > 0) Chip($"Poison {s.Poison}/{rules.PoisonThreshold}", Palette.Poison, "Poison", $"At {rules.PoisonThreshold} stacks it bursts for {rules.PoisonBurstPerStack} damage per stack, ignoring shield, then resets.");
+        if (s.Poison > 0) Chip($"Poison {s.Poison}/{rules.PoisonThreshold}", Palette.Poison, "Poison", $"At {rules.PoisonThreshold} stacks it bursts for {rules.PoisonBurstPerStack} damage per stack (shield blocks it), then resets.");
         if (s.Chill > 0)
             Chip($"Chill {s.Chill}/{rules.ChillFreezeAtStacks}  {Math.Max(0, s.ChillExpiresAtTick - Battle.Tick) / 10.0:0.0}s", Palette.Chill, "Chill",
                 $"Each stack makes every cooldown {rules.ChillCooldownPercentPerStack}% longer. Stacks last {rules.ChillSeconds:0.#}s, refreshed by each new stack. At {rules.ChillFreezeAtStacks} stacks: frozen for {rules.FreezeSeconds:0.#}s.");
@@ -387,7 +387,7 @@ public sealed class FightScreen : Screen
             var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility && s.HasCooldown).ToList();
             int index = abilities.IndexOf(source);
             if (index >= 0) return new Vector2(AbilityCard(index).Center.X, AbilityCard(index).Y + 30);
-            var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassiveAbility).ToList();
+            var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
             index = passives.IndexOf(source);
             if (index >= 0) return PassiveIcon(EnemyPassiveRow, index).Center.ToVector2();
         }

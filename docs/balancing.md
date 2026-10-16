@@ -23,7 +23,7 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 | `burnLossPerTick` | 1 | Stacks burn loses after each tick |
 | `burnShieldMultiplier` | 2 | Burn damage against shield is multiplied by this |
 | `poisonThreshold` | 10 | Poison bursts at this many stacks |
-| `poisonBurstPerStack` | 3 | Damage per stack when poison bursts (ignores shield) |
+| `poisonBurstPerStack` | 3 | Damage per stack when poison bursts (shield blocks it, like all damage) |
 | `chillSeconds` | 5 | How long chill stacks last; each new stack restarts the timer |
 | `chillCooldownPercentPerStack` | 5 | Each chill stack makes every cooldown this % longer |
 | `chillFreezeAtStacks` | 5 | Chill stacks that freeze the target |

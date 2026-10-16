@@ -49,6 +49,9 @@ public sealed class SourceDefinition
     /// <summary>An enemy ability with no cooldown (always on or reacting), which the player can also take as a passive.</summary>
     public bool IsPassiveAbility => Kind == SourceKind.EnemyAbility && CooldownTicks is null;
 
+    /// <summary>Shown as a passive in fights: a passive from passives/, or an enemy ability without a cooldown.</summary>
+    public bool IsPassive => Kind == SourceKind.Passive || IsPassiveAbility;
+
     public bool HasTag(string tag) => Tags.Contains(tag, StringComparer.Ordinal);
 
     public override string ToString() => Id;

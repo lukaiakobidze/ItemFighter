@@ -134,7 +134,7 @@ public sealed class RunState
         Phase = RunPhase.Dropping;
     }
 
-    public bool IsPassiveId(string? id) => id is not null && Db.TryGet(id, out var def) && (def.Kind == SourceKind.Passive || def.IsPassiveAbility);
+    public bool IsPassiveId(string? id) => id is not null && Db.TryGet(id, out var def) && def.Kind == SourceKind.Passive;
 
     /// <summary>Takes drop choice index. False (nothing changes) when the item needs room you don't have.</summary>
     public bool TakeDrop(int index)

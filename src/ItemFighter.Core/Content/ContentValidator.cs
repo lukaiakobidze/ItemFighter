@@ -18,7 +18,7 @@ public static class ContentValidator
             foreach (string abilityId in def.AbilityIds.Concat(def.Phases.SelectMany(p => p.AddAbilityIds)))
             {
                 if (!db.TryGet(abilityId, out var ability)) Error($"unknown ability '{abilityId}'");
-                else if (ability.Kind != SourceKind.EnemyAbility) Error($"'{abilityId}' is not an EnemyAbility");
+                else if (ability.Kind is not (SourceKind.EnemyAbility or SourceKind.Passive)) Error($"'{abilityId}' is not an EnemyAbility or a Passive");
             }
 
             foreach (string itemId in def.StartingItems)

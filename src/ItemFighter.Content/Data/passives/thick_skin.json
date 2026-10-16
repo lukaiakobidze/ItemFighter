@@ -1,6 +1,6 @@
 {
   "id": "thick_skin",
-  "kind": "EnemyAbility",
+  "kind": "Passive",
   "name": "Thick Skin",
   "modifiers": [
     {

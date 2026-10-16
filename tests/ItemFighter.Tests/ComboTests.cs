@@ -23,31 +23,42 @@ public class ComboTests
         Assert.Equal(new[] { 40, 70 }, Fires(b, "sword")); // the apple at 6s takes 1s off the sword's second cooldown
     }
 
+    // These read Luka's numbers from the data, so rebalancing the JSON doesn't break them.
+    private static int Level1(string defId, string key) => ContentIntegrityTests.WithDummy().Database.Get(defId).Levels[key][0];
+
     [Fact]
     public void Weights_PushesTheZombiesBiteBack()
     {
+        var control = Fight("squire_zombie", null, "weights");
+        control.Steps(300);
         var b = Fight("squire_zombie", null, "weights");
         var weights = b.Player.Items.Single();
-        b.Steps(80);
-        b.Enqueue(new ActivateCommand(b.Tick + 1, weights.Id, null));
-        b.Steps(50);
-        Assert.Equal(new[] { 50, 120 }, Fires(b, "bite")); // level 1 Weights adds 2s
+        b.Steps(weights.Def.CooldownTicks!.Value + 1); // Weights is Active: ready once its cooldown has charged
+        int activatedAt = b.Tick + 1;
+        b.Enqueue(new ActivateCommand(activatedAt, weights.Id, null));
+        b.Steps(300 - b.Tick);
+        int nextControl = Fires(control, "bite").First(t => t > activatedAt), next = Fires(b, "bite").First(t => t > activatedAt);
+        Assert.Equal(nextControl + Level1("weights", "slow"), next); // level 1 Weights delays the next bite by its slow
     }
 
     [Fact]
     public void GrizzlyBear_ThickSkin_TakesOneLessFromDaggers()
     {
         var b = Fight("grizzly_bear", null, "dagger");
-        b.Steps(20);
-        Assert.Equal(99, b.Enemy.Hp);
+        int maxHp = b.Enemy.MaxHp;
+        b.Steps(20); // the dagger's first hit
+        Assert.Equal(maxHp - (Level1("dagger", "damage") - 1), b.Enemy.Hp);
     }
 
     [Fact]
     public void GreenSnake_Venomous_PoisonsOnEachStrike()
     {
         var b = Fight("green_snake", null, "metal_plating");
-        b.Steps(30);
-        Assert.Equal(2, b.Player.Statuses.Poison);
+        b.Steps(100);
+        var hits = b.Events.OfType<StatusApplied>().Where(s => s.Status == StatusType.Poison && s.TargetSide == Side.Player).ToList();
+        int strikes = b.Events.OfType<DamageDealt>().Count(d => d.Target == Side.Player && d.Kind == DamageKind.Direct);
+        Assert.NotEmpty(hits);
+        Assert.Equal(strikes, hits.Count);
     }
 
     [Fact]
@@ -55,7 +66,7 @@ public class ComboTests
     {
         var b = Fight("flaming_rock", null, "dagger");
         b.Steps(100); // 5 dagger hits by 10s
-        Assert.Contains(b.Events.OfType<StatusApplied>(), s => s.Status == StatusType.Burn && s.Amount == 3 && s.TargetSide == Side.Player);
+        Assert.Single(b.Events.OfType<StatusApplied>(), s => s.SourceId is int id && b.FindSource(id)!.Def.Id == "explosive");
     }
 
     [Fact]

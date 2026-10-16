@@ -11,7 +11,7 @@ SourceFired { Tick = 60, SourceId = 7, Owner = Player, TargetSourceId = , Reacti
 StatusApplied { Tick = 60, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
 DamageDealt { Tick = 60, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
 SourceFired { Tick = 60, SourceId = 10, Owner = Enemy, TargetSourceId = , Reaction = False }
-DamageDealt { Tick = 60, Target = Player, HpDamage = 10, ShieldDamage = 0, Kind = Direct, SourceId = 10, Total = 10 }
+DamageDealt { Tick = 60, Target = Player, HpDamage = 20, ShieldDamage = 0, Kind = Direct, SourceId = 10, Total = 20 }
 SourceFired { Tick = 70, SourceId = 2, Owner = Player, TargetSourceId = , Reaction = False }
 DamageDealt { Tick = 70, Target = Enemy, HpDamage = 9, ShieldDamage = 0, Kind = Direct, SourceId = 2, Total = 9 }
 ItemReady { Tick = 80, SourceId = 3 }
@@ -39,7 +39,7 @@ PoisonBurst { Tick = 140, Target = Enemy, Damage = 30 }
 DamageDealt { Tick = 140, Target = Enemy, HpDamage = 29, ShieldDamage = 0, Kind = Poison, SourceId = 7, Total = 29 }
 DamageDealt { Tick = 140, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
 SourceFired { Tick = 143, SourceId = 10, Owner = Enemy, TargetSourceId = , Reaction = False }
-DamageDealt { Tick = 143, Target = Player, HpDamage = 0, ShieldDamage = 10, Kind = Direct, SourceId = 10, Total = 10 }
+DamageDealt { Tick = 143, Target = Player, HpDamage = 10, ShieldDamage = 10, Kind = Direct, SourceId = 10, Total = 20 }
 SourceFired { Tick = 160, SourceId = 6, Owner = Player, TargetSourceId = , Reaction = False }
 ShieldGained { Tick = 160, Target = Player, Amount = 10, SourceId = 6 }
 ItemReady { Tick = 161, SourceId = 3 }
@@ -63,8 +63,9 @@ SourceFired { Tick = 220, SourceId = 7, Owner = Player, TargetSourceId = , React
 StatusApplied { Tick = 220, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
 DamageDealt { Tick = 220, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
 SourceFired { Tick = 226, SourceId = 10, Owner = Enemy, TargetSourceId = , Reaction = False }
-DamageDealt { Tick = 226, Target = Player, HpDamage = 0, ShieldDamage = 10, Kind = Direct, SourceId = 10, Total = 10 }
+DamageDealt { Tick = 226, Target = Player, HpDamage = 10, ShieldDamage = 10, Kind = Direct, SourceId = 10, Total = 20 }
 SourceFired { Tick = 240, SourceId = 4, Owner = Player, TargetSourceId = , Reaction = False }
+Healed { Tick = 240, Target = Player, Amount = 5, SourceId = 4 }
 Charged { Tick = 240, TargetSourceId = 3, Ticks = 10, SourceId = 4 }
 ItemReady { Tick = 240, SourceId = 3 }
 SourceFired { Tick = 240, SourceId = 5, Owner = Player, TargetSourceId = , Reaction = False }
@@ -84,4 +85,59 @@ StatusApplied { Tick = 280, TargetSide = Enemy, TargetSourceId = , Status = Pois
 PoisonBurst { Tick = 280, Target = Enemy, Damage = 30 }
 DamageDealt { Tick = 280, Target = Enemy, HpDamage = 29, ShieldDamage = 0, Kind = Poison, SourceId = 7, Total = 29 }
 DamageDealt { Tick = 280, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
-BattleEnded { Tick = 280, Result = PlayerWon }
+SourceFired { Tick = 300, SourceId = 4, Owner = Player, TargetSourceId = , Reaction = False }
+Healed { Tick = 300, Target = Player, Amount = 5, SourceId = 4 }
+Charged { Tick = 300, TargetSourceId = 5, Ticks = 10, SourceId = 4 }
+SourceFired { Tick = 300, SourceId = 5, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 300, TargetSide = Enemy, TargetSourceId = , Status = Chill, Amount = 1, SourceId = 5 }
+DamageDealt { Tick = 300, Target = Enemy, HpDamage = 3, ShieldDamage = 0, Kind = Direct, SourceId = 5, Total = 3 }
+SourceFired { Tick = 309, SourceId = 10, Owner = Enemy, TargetSourceId = , Reaction = False }
+DamageDealt { Tick = 309, Target = Player, HpDamage = 10, ShieldDamage = 10, Kind = Direct, SourceId = 10, Total = 20 }
+SourceFired { Tick = 310, SourceId = 7, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 310, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
+DamageDealt { Tick = 310, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
+SourceFired { Tick = 320, SourceId = 6, Owner = Player, TargetSourceId = , Reaction = False }
+ShieldGained { Tick = 320, Target = Player, Amount = 10, SourceId = 6 }
+ItemReady { Tick = 321, SourceId = 3 }
+SourceFired { Tick = 322, SourceId = 3, Owner = Player, TargetSourceId = , Reaction = False }
+Delayed { Tick = 322, TargetSourceId = 10, Ticks = 20, SourceId = 3 }
+SourceFired { Tick = 340, SourceId = 2, Owner = Player, TargetSourceId = , Reaction = False }
+DamageDealt { Tick = 340, Target = Enemy, HpDamage = 9, ShieldDamage = 0, Kind = Direct, SourceId = 2, Total = 9 }
+SourceFired { Tick = 340, SourceId = 7, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 340, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
+DamageDealt { Tick = 340, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
+SourceFired { Tick = 350, SourceId = 5, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 350, TargetSide = Enemy, TargetSourceId = , Status = Chill, Amount = 1, SourceId = 5 }
+DamageDealt { Tick = 350, Target = Enemy, HpDamage = 3, ShieldDamage = 0, Kind = Direct, SourceId = 5, Total = 3 }
+SourceFired { Tick = 360, SourceId = 4, Owner = Player, TargetSourceId = , Reaction = False }
+Healed { Tick = 360, Target = Player, Amount = 5, SourceId = 4 }
+Charged { Tick = 360, TargetSourceId = 2, Ticks = 10, SourceId = 4 }
+SourceFired { Tick = 370, SourceId = 7, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 370, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
+DamageDealt { Tick = 370, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
+SourceFired { Tick = 393, SourceId = 10, Owner = Enemy, TargetSourceId = , Reaction = False }
+DamageDealt { Tick = 393, Target = Player, HpDamage = 10, ShieldDamage = 10, Kind = Direct, SourceId = 10, Total = 20 }
+SourceFired { Tick = 393, SourceId = 1, Owner = Player, TargetSourceId = , Reaction = True }
+ShieldGained { Tick = 393, Target = Player, Amount = 5, SourceId = 1 }
+SourceFired { Tick = 400, SourceId = 2, Owner = Player, TargetSourceId = , Reaction = False }
+DamageDealt { Tick = 400, Target = Enemy, HpDamage = 9, ShieldDamage = 0, Kind = Direct, SourceId = 2, Total = 9 }
+SourceFired { Tick = 400, SourceId = 6, Owner = Player, TargetSourceId = , Reaction = False }
+ShieldGained { Tick = 400, Target = Player, Amount = 10, SourceId = 6 }
+SourceFired { Tick = 400, SourceId = 7, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 400, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
+DamageDealt { Tick = 400, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
+ItemReady { Tick = 402, SourceId = 3 }
+SourceFired { Tick = 403, SourceId = 3, Owner = Player, TargetSourceId = , Reaction = False }
+Delayed { Tick = 403, TargetSourceId = 10, Ticks = 20, SourceId = 3 }
+SourceFired { Tick = 410, SourceId = 5, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 410, TargetSide = Enemy, TargetSourceId = , Status = Chill, Amount = 1, SourceId = 5 }
+DamageDealt { Tick = 410, Target = Enemy, HpDamage = 3, ShieldDamage = 0, Kind = Direct, SourceId = 5, Total = 3 }
+SourceFired { Tick = 420, SourceId = 4, Owner = Player, TargetSourceId = , Reaction = False }
+Healed { Tick = 420, Target = Player, Amount = 5, SourceId = 4 }
+Charged { Tick = 420, TargetSourceId = 3, Ticks = 10, SourceId = 4 }
+SourceFired { Tick = 430, SourceId = 7, Owner = Player, TargetSourceId = , Reaction = False }
+StatusApplied { Tick = 430, TargetSide = Enemy, TargetSourceId = , Status = Poison, Amount = 2, SourceId = 7 }
+PoisonBurst { Tick = 430, Target = Enemy, Damage = 30 }
+DamageDealt { Tick = 430, Target = Enemy, HpDamage = 29, ShieldDamage = 0, Kind = Poison, SourceId = 7, Total = 29 }
+DamageDealt { Tick = 430, Target = Enemy, HpDamage = 1, ShieldDamage = 0, Kind = Direct, SourceId = 7, Total = 1 }
+BattleEnded { Tick = 430, Result = PlayerWon }

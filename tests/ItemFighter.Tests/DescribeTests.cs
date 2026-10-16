@@ -22,13 +22,27 @@ public class DescribeTests
     public void Apple_Charge() => Assert.Equal("Every 6s: heal 5, then charge a random other item 1s.", Text("apple"));
 
     [Fact]
-    public void EnemyAbility_SpeaksToThePlayer() => Assert.Equal("When it deals damage: apply 2 Poison to you.", Text("venomous"));
+    public void EnemyAbility_SpeaksToThePlayer() => Assert.Equal("Every 3s: deal 6 damage to you.", Text("bow_shot"));
+
+    // Passives come from the shared pool (passives/), so the same passive reads from the enemy's side or the player's.
+    private static readonly ContentDatabase PassiveDb = TestContent.Db(
+        ("passives/venomous.json", """{ "id": "venomous", "name": "Venomous", "abilities": [ { "trigger": "OnDamageDealt", "effects": [ { "type": "ApplyStatus", "status": "Poison", "amount": 2 } ] } ] }"""),
+        ("passives/explosive.json", """{ "id": "explosive", "name": "Explosive", "abilities": [ { "trigger": { "type": "OnDamageTaken", "every": 5 }, "effects": [ { "type": "ApplyStatus", "status": "Burn", "amount": 3 } ] } ] }"""),
+        ("passives/thick_skin.json", """{ "id": "thick_skin", "name": "Thick Skin", "modifiers": [ { "stat": "DamageTaken", "amount": -1 } ] }"""));
+
+    private static string PassiveText(string id, bool enemy) => string.Join("\n", SourceDescriber.Lines(PassiveDb.Get(id), 1, ownedByEnemy: enemy));
 
     [Fact]
-    public void EveryFifth() => Assert.Equal("Every 5th time it takes damage: apply 3 Burn to you.", Text("explosive"));
+    public void Passive_OnAnEnemy_SpeaksToThePlayer() => Assert.Equal("When it deals damage: apply 2 Poison to you.", PassiveText("venomous", enemy: true));
 
     [Fact]
-    public void ThickSkin() => Assert.Equal("Takes 1 less damage from everything.", Text("thick_skin"));
+    public void Passive_OnThePlayer_SpeaksToThePlayer() => Assert.Equal("When you deal damage: apply 2 Poison to the enemy.", PassiveText("venomous", enemy: false));
+
+    [Fact]
+    public void EveryFifth() => Assert.Equal("Every 5th time it takes damage: apply 3 Burn to you.", PassiveText("explosive", enemy: true));
+
+    [Fact]
+    public void ThickSkin() => Assert.Equal("Takes 1 less damage from everything.", PassiveText("thick_skin", enemy: true));
 
     [Fact]
     public void SilverKnight() => Assert.Equal("Every 5th time you take damage: gain shield equal to 5% of max HP.", Text("silver_knight"));

@@ -1,6 +1,6 @@
 {
   "id": "fury",
-  "kind": "EnemyAbility",
+  "kind": "Passive",
   "name": "Fury",
   "abilities": [
     {

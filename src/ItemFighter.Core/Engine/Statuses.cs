@@ -82,7 +82,7 @@ public sealed class BurnRule : IStatusRule
     }
 }
 
-/// <summary>Builds up silently; at the threshold it bursts for 3 per stack, ignoring shield, and resets (numbers in rules.json).</summary>
+/// <summary>Builds up silently; at the threshold it bursts for 3 per stack (shield blocks it like any hit) and resets (numbers in rules.json).</summary>
 public sealed class PoisonRule : IStatusRule
 {
     public StatusType Type => StatusType.Poison;
@@ -95,7 +95,7 @@ public sealed class PoisonRule : IStatusRule
         int damage = target.Statuses.Poison * battle.Rules.PoisonBurstPerStack;
         target.Statuses.Poison = 0;
         battle.Emit(new PoisonBurst(battle.Tick, target.Side, damage), depth, source);
-        battle.ApplyRawDamage(target.Side, damage, 0, DamageKind.Poison, source, depth);
+        battle.DealDamage(target.Side, damage, DamageKind.Poison, source, depth);
     }
 
     public void OnTick(Battle battle, Combatant target) { }

@@ -5,11 +5,14 @@ using ItemFighter.Core.Engine.Triggers;
 
 namespace ItemFighter.Core.Content;
 
-/// <summary>What a description is being written for: one definition at one level. OwnedByPlayer words an enemy passive the player took.</summary>
-public sealed record DescribeContext(SourceDefinition Def, int Level, bool OwnedByPlayer = false)
+/// <summary>
+/// What a description is being written for: one definition at one level. OwnedByPlayer words an enemy ability the player
+/// has; OwnedByEnemy words a passive (from the shared pool) that an enemy has.
+/// </summary>
+public sealed record DescribeContext(SourceDefinition Def, int Level, bool OwnedByPlayer = false, bool OwnedByEnemy = false)
 {
     /// <summary>Enemy abilities talk to the player ("deal 5 damage to you").</summary>
-    public bool IsEnemy => !OwnedByPlayer && (Def.Kind is SourceKind.Enemy or SourceKind.EnemyAbility);
+    public bool IsEnemy => OwnedByEnemy || (!OwnedByPlayer && (Def.Kind is SourceKind.Enemy or SourceKind.EnemyAbility));
 
     public int Value(ValueRef v) => v.ResolveAt(Def, Level);
 
@@ -64,9 +67,9 @@ public static class Words
 /// <summary>Turns a definition into plain-English tooltip lines. A "description" in JSON replaces the generated text.</summary>
 public static class SourceDescriber
 {
-    public static IReadOnlyList<string> Lines(SourceDefinition def, int level, bool ownedByPlayer = false)
+    public static IReadOnlyList<string> Lines(SourceDefinition def, int level, bool ownedByPlayer = false, bool ownedByEnemy = false)
     {
-        var ctx = new DescribeContext(def, level, ownedByPlayer);
+        var ctx = new DescribeContext(def, level, ownedByPlayer, ownedByEnemy);
         if (def.Description is not null)
             return Regex.Replace(def.Description, @"\{(\w+)\}", m =>
                     def.Levels.TryGetValue(m.Groups[1].Value, out var values) ? values[Math.Clamp(level, 1, 4) - 1].ToString(CultureInfo.InvariantCulture) : m.Value)

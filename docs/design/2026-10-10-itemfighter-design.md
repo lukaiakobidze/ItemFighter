@@ -46,7 +46,7 @@ A Source has:
 - **Effects:** what it does. Examples: `Damage`, `Shield`, `Heal`, `ApplyStatus` (burn, poison, chill, freeze, slow, haste), `Charge` (advance another item's cooldown), `ModifyStat`, `CopyEffect`, `ResetCooldown`, `Transform`, `SpawnTemporaryItem`.
 - **Statuses** each have their own identity (not copied from The Bazaar):
   - **Burn** is fast and anti-armour: it ticks every 0.5s for its stack count, then loses a stack, and deals double damage to shield.
-  - **Poison** builds up: it does no damage until it reaches 10 stacks, then bursts for big damage that ignores shield and resets.
+  - **Poison** builds up: it does no damage until it reaches 10 stacks, then bursts for big damage and resets. Shield blocks it like all damage (Luka, 2026-10-16); only burn is special, doing double against shield.
   - **Chill** stacks slow the target's cooldowns, and the timer refreshes with every new stack. Reaching 5 stacks freezes the target briefly, so chill must be applied fast.
   - Later: water/cleansing counters and element **reactions** (water + burn → steam, water + chill → instant freeze, burn + poison → early burst). Each status is its own module, so these are added without reworking the engine.
 - **Targets:** self, enemy, adjacent items, left or right neighbour, all items with a tag, a random item, the player-chosen item.

@@ -1,6 +1,6 @@
 {
   "id": "explosive",
-  "kind": "EnemyAbility",
+  "kind": "Passive",
   "name": "Explosive",
   "abilities": [
     {

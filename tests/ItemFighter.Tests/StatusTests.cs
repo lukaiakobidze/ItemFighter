@@ -69,7 +69,7 @@ public class StatusTests
     }
 
     [Fact]
-    public void Poison_BurstsAtTen_IgnoresShield_Resets()
+    public void Poison_BurstsAtTen_ShieldBlocksIt_Resets()
     {
         var b = Dummy();
         b.Enemy.Shield = 100;
@@ -78,8 +78,8 @@ public class StatusTests
         Assert.Empty(b.Of<PoisonBurst>());
         b.ApplyStatus(Side.Enemy, StatusType.Poison, 4, null, 0);
         Assert.Equal(36, Assert.Single(b.Of<PoisonBurst>()).Damage);
-        Assert.Equal(1000 - 36, b.Enemy.Hp);
-        Assert.Equal(100, b.Enemy.Shield);
+        Assert.Equal(1000, b.Enemy.Hp);
+        Assert.Equal(100 - 36, b.Enemy.Shield);
         Assert.Equal(0, b.Enemy.Statuses.Poison);
     }
 
