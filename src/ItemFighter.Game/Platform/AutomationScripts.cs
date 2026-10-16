@@ -100,6 +100,8 @@ public static class AutomationScripts
         new(Do: g => FightOf(g).Speed = 4),
         new(Wait: 3, Do: g => FightOf(g).Speed = 1),
         new(Wait: 0.4, Shot: "boxer-mid"),
+        new(Wait: 0.2, Do: Automation.Hover(FightScreen.PassiveIcon(FightScreen.EnemyPassiveRow, 0)), Shot: "boxer-passive"),
+        new(Wait: 0.2, Do: Automation.Hover(FightScreen.AbilityCard(0)), Shot: "boxer-ability"),
     ];
 
     /// <summary>Luka's 2026-10-12 rares against the Blur, whose rifle speeds up with every shot.</summary>

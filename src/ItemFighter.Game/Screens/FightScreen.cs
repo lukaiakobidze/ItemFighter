@@ -66,7 +66,12 @@ public sealed class FightScreen : Screen
 
     public static Rectangle CardRect(int slot) => new(32 + slot * 142, 420, 132, 196);
 
-    private static Rectangle AbilityRow(int index) => new(206, 146 + index * 34, 672, 30);
+    public static Rectangle AbilityCard(int index) => new(206 + index * 120, 182, 112, 130);
+
+    public static Rectangle PassiveIcon(Vector2 rowStart, int index) => new((int)rowStart.X + index * 42, (int)rowStart.Y, 36, 36);
+
+    public static readonly Vector2 EnemyPassiveRow = new(206, 104);
+    private static readonly Vector2 PlayerPassiveRow = new(112, 660);
 
     public override void Update(double seconds)
     {
@@ -142,34 +147,71 @@ public sealed class FightScreen : Screen
 
         ui.Text(def.Name, new Vector2(206, 24), 28, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
-        DrawStatuses(ui, Battle.Enemy, new Vector2(206, 104));
+        var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassiveAbility).ToList();
+        for (int i = 0; i < passives.Count && i < 16; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveRow, i), enemy: true);
+        DrawStatuses(ui, Battle.Enemy, new Vector2(206, 146));
 
-        var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility).ToList();
-        for (int i = 0; i < abilities.Count && i < 5; i++) DrawAbility(ui, abilities[i], AbilityRow(i));
+        var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility && s.HasCooldown).ToList();
+        for (int i = 0; i < abilities.Count && i < 5; i++) DrawAbility(ui, abilities[i], AbilityCard(i));
         DrawTimer(ui, new Vector2(32, 200));
     }
 
-    private void DrawAbility(Ui ui, SourceInstance a, Rectangle row)
+    /// <summary>An enemy ability as a box like the player's item cards: picture, name, time left and cooldown bar.</summary>
+    private void DrawAbility(Ui ui, SourceInstance a, Rectangle r)
     {
         bool known = _revealed.Contains(a.Id);
         bool flash = _firedAt.TryGetValue(a.Id, out double t) && _time - t < 0.3;
-        ui.Rect(row, flash ? new Color(110, 60, 60) : Palette.PanelLight);
-        ui.Text(known ? a.Def.Name : "???", new Vector2(row.X + 10, row.Y + 5), 16, known ? Palette.Text : Palette.TextDim, bold: true);
-        var bar = new Rectangle(row.X + 250, row.Y + 9, 300, 12);
-        if (a.HasCooldown)
-        {
-            int speed = Battle.CooldownSpeed(a);
-            ui.Bar(bar, (float)CooldownFraction(a), speed == 0 ? Palette.Freeze : new Color(200, 90, 80), new Color(40, 30, 36));
-            ui.Text(speed == 0 ? "frozen" : $"{SecondsLeft(a):0.0}s", new Vector2(bar.X - 12, row.Y + 5), 15, speed == 0 ? Palette.Freeze : Palette.TextDim, align: Align.Right);
-            DrawItemTimers(ui, a, new Vector2(bar.Right + 12, row.Y + 6));
-        }
+        bool hover = ui.Hover(r);
+        ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
+        var art = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, 62);
+        Color? tint = a.FreezeTicks > 0 ? new Color(120, 200, 255) * 0.45f : null;
+        if (known) ui.Art("EnemyAbilities", a.Def.Id, a.Def.Name, art, tint);
         else
         {
-            ui.Text("passive", new Vector2(bar.X, row.Y + 5), 15, Palette.TextDim);
+            ui.Rect(art, new Color(30, 32, 44));
+            ui.TextIn("?", art, 30, Palette.TextDim, bold: true);
         }
-        if (ui.Hover(row))
+        if (!a.Ready)
+        {
+            int covered = (int)(art.Height * (1 - CooldownFraction(a)));
+            if (covered > 0) ui.Rect(new Rectangle(art.X, art.Y, art.Width, covered), new Color(0, 0, 0, 130));
+        }
+        if (flash) ui.Rect(art, new Color(255, 120, 110) * 0.45f);
+
+        ui.TextIn(known ? a.Def.Name : "???", new Rectangle(r.X, r.Y + 68, r.Width, 20), 13, known ? Palette.Text : Palette.TextDim, bold: true);
+        int speed = Battle.CooldownSpeed(a);
+        ui.TextIn(speed == 0 ? "frozen" : $"{SecondsLeft(a):0.0}s", new Rectangle(r.X, r.Y + 88, r.Width, 18), 14, speed == 0 ? Palette.Freeze : Palette.TextDim);
+        ui.Bar(new Rectangle(r.X + 8, r.Y + 112, r.Width - 16, 8), (float)CooldownFraction(a), speed == 0 ? Palette.Freeze : new Color(200, 90, 80), new Color(24, 26, 36));
+        DrawItemTimers(ui, a, new Vector2(r.X + 6, r.Y + 6));
+        ui.Border(r, flash ? Palette.Damage : Palette.Border, flash ? 2 : 1);
+        if (hover)
             ui.Tooltip(known ? a.Def.Name : "Unknown ability", known ? Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines : ["You'll learn what this does when it happens."], Palette.Damage);
     }
+
+    /// <summary>A passive as a small square icon; details on mouse-over. Enemy passives stay "?" until they first act.</summary>
+    private void DrawPassive(Ui ui, SourceInstance p, Rectangle r, bool enemy)
+    {
+        bool known = !enemy || _revealed.Contains(p.Id);
+        bool flash = _firedAt.TryGetValue(p.Id, out double t) && _time - t < 0.3;
+        if (known) ui.Art("Passives", p.Def.Id, Initials(p.Def.Name), r);
+        else
+        {
+            ui.Rect(r, new Color(30, 32, 44));
+            ui.TextIn("?", r, 20, Palette.TextDim, bold: true);
+        }
+        if (flash) ui.Rect(r, Color.White * 0.35f);
+        bool hover = ui.Hover(r);
+        ui.Border(r, hover || flash ? Palette.Accent : Palette.Border, hover || flash ? 2 : 1);
+        if (!hover) return;
+        if (!known) ui.Tooltip("Unknown passive", ["You'll learn what this does when it happens."], Palette.Damage);
+        else
+        {
+            var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy);
+            ui.Tooltip(title, ["Passive", .. lines], enemy ? Palette.Damage : Palette.For(p.Def.Rarity));
+        }
+    }
+
+    private static string Initials(string name) => string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
 
     private static void DrawPausedBanner(Ui ui)
     {
@@ -290,23 +332,12 @@ public sealed class FightScreen : Screen
 
     private void DrawExtras(Ui ui)
     {
-        var passives = Battle.Player.Sources.Where(s => s.Def.Kind == SourceKind.Passive || s.Def.IsPassiveAbility).ToList();
-        float x = 32;
-        if (passives.Count > 0) ui.Text("Passives:", new Vector2(x, 670), 15, Palette.TextDim);
-        x += 80;
-        foreach (var p in passives)
-        {
-            var size = ui.Measure(p.Def.Name, 15, true);
-            var r = new Rectangle((int)x, 666, (int)size.X + 16, 26);
-            ui.Rect(r, Palette.PanelLight);
-            ui.Text(p.Def.Name, new Vector2(x + 8, 670), 15, Palette.For(p.Def.Rarity), bold: true);
-            if (ui.Hover(r))
-            {
-                var (title, lines) = Tooltips.For(p.Def, 1, Game.Data.Database, ownedByPlayer: true);
-                ui.Tooltip(title, lines, Palette.For(p.Def.Rarity));
-            }
-            x += r.Width + 8;
-        }
+        var passives = Battle.Player.Sources
+            .Where(s => s.Def.Kind is SourceKind.Passive or SourceKind.Character || s.Def.IsPassiveAbility)
+            .Where(s => s.Def.Abilities.Count > 0 || s.Def.Modifiers.Count > 0 || s.Script is not null).ToList();
+        if (passives.Count == 0) return;
+        ui.Text("Passives", new Vector2(32, PlayerPassiveRow.Y + 9), 15, Palette.TextDim);
+        for (int i = 0; i < passives.Count && i < 18; i++) DrawPassive(ui, passives[i], PassiveIcon(PlayerPassiveRow, i), enemy: false);
     }
 
     // ---- shared ------------------------------------------------------------------------------------------------
@@ -329,11 +360,14 @@ public sealed class FightScreen : Screen
         float x = pos.X;
         void Chip(string text, Color color, string tip, string body)
         {
+            var icon = ui.Assets.Texture("Statuses", tip == "Frozen" ? "freeze" : tip.ToLowerInvariant());
+            int iconWidth = icon is null ? 0 : 22;
             var size = ui.Measure(text, 15, true);
-            var r = new Rectangle((int)x, (int)pos.Y, (int)size.X + 18, 28);
+            var r = new Rectangle((int)x, (int)pos.Y, (int)size.X + 18 + iconWidth, 28);
             ui.Rect(r, color * 0.18f);
             ui.Border(r, color, 1);
-            ui.Text(text, new Vector2(x + 9, pos.Y + 5), 15, color, bold: true);
+            if (icon is not null) ui.Batch.Draw(icon, new Rectangle(r.X + 6, r.Y + 5, 18, 18), Color.White);
+            ui.Text(text, new Vector2(x + 9 + iconWidth, pos.Y + 5), 15, color, bold: true);
             if (ui.Hover(r)) ui.Tooltip(tip, [body], color);
             x += r.Width + 8;
         }
@@ -371,9 +405,12 @@ public sealed class FightScreen : Screen
         if (source?.Slot is int slot) return new Vector2(CardRect(slot).Center.X, CardRect(slot).Y + 40);
         if (source is not null)
         {
-            var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility).ToList();
+            var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility && s.HasCooldown).ToList();
             int index = abilities.IndexOf(source);
-            if (index >= 0) return new Vector2(AbilityRow(index).X + 380, AbilityRow(index).Y);
+            if (index >= 0) return new Vector2(AbilityCard(index).Center.X, AbilityCard(index).Y + 30);
+            var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassiveAbility).ToList();
+            index = passives.IndexOf(source);
+            if (index >= 0) return PassiveIcon(EnemyPassiveRow, index).Center.ToVector2();
         }
         return new Vector2(EnemyHpBar.Center.X, EnemyHpBar.Y);
     }

@@ -1,0 +1,164 @@
+# ItemFighter art brief (for Codex)
+
+This brief asks for **PNG images only**. The game already loads them: drop each file at the path given and it shows up in game (press F5 in the Fight Lab to reload). You don't need to change any code. The fight screen layout described at the end is already built, so the images just need to fit it.
+
+## What the game is
+
+ItemFighter is a roguelike autobattler, similar to The Bazaar. You fight one enemy at a time. Your items sit in a row of 6 slots and fire on their own cooldowns. Enemies have abilities that fire the same way, plus passives that trigger on their own. The tone is light fantasy, a bit humorous (a martial arts squirrel, a furious boxer).
+
+## Style (same for every image)
+
+- **Look:** hand-painted 2D game icons with bold, readable shapes, a soft painterly texture and a dark outline. Think of the card art in The Bazaar or Slay the Spire.
+- **Readable small:** the icons are shown as small as 36×36 pixels, so use one clear subject, strong silhouettes and high contrast. No text or numbers inside the image.
+- **Background:** transparent for items, enemy abilities, passives and statuses. Enemies and the character get a simple, dark, softly lit background that fits where they live.
+- **Lighting:** light comes from the top left, and every image uses the same palette family. The game's colour language: burn orange `#FF8C28`, poison purple `#B060E6`, chill cyan `#6EDCF0`, freeze pale blue `#AAE6FF`, pain pink `#E84682`, nail steel grey `#AAB4C3`, power red-orange `#F05028`, shield blue `#78AAE6`, heal green `#5AD26E`.
+- **Format:** PNG, square, RGBA. The file name is the id in the tables, in lower case, with `.png` at the end.
+
+| Kind | Folder | Size |
+|---|---|---|
+| Items | `src/ItemFighter.Game/Content/Art/Items/` | 256×256 |
+| Enemy abilities | `src/ItemFighter.Game/Content/Art/EnemyAbilities/` | 256×256 |
+| Passives | `src/ItemFighter.Game/Content/Art/Passives/` | 256×256 |
+| Statuses | `src/ItemFighter.Game/Content/Art/Statuses/` | 128×128 |
+| Enemies (portraits) | `src/ItemFighter.Game/Content/Art/Enemies/` | 512×512 |
+| Characters (portraits) | `src/ItemFighter.Game/Content/Art/Characters/` | 512×512 |
+| Map encounters | `src/ItemFighter.Game/Content/Art/Encounters/` | 512×512 |
+
+## Items (28)
+
+Rarity is shown by the game as a coloured strip, so don't put a frame or border on the image.
+
+| File | Name | Rarity | What it does | Picture idea |
+|---|---|---|---|---|
+| `aggravating_potion.png` | Aggravating Potion | Rare | Doubles the poison on the enemy | Bubbling purple flask with an angry face in the fumes |
+| `apple.png` | Apple | Common | Heals, speeds up another item | Shiny red apple with a small leaf |
+| `axe.png` | Axe | Common | Big single hit | Heavy woodcutter's axe |
+| `cinder.png` | Cinder | Common | Burn | Glowing ember coal with small flames |
+| `dagger.png` | Dagger | Common | Fast small hit | Simple steel dagger |
+| `fang_knife.png` | Fang Knife | Common | Poison and a hit | Knife made from a big curved fang, dripping green-purple |
+| `flaming_heart.png` | Flaming Heart | Rare | Burn and heal | Anatomical-style heart wrapped in warm flames |
+| `flammable_toxins.png` | Flammable Toxins | Rare | Poison and burn | Corked bottle of purple liquid with a fire wick |
+| `gold_pouch.png` | Gold Pouch | Rare | Extra gold after a win | Leather coin pouch spilling gold coins |
+| `hurling_hammer.png` | Hurling Hammer | Rare | Hit and puts a Nail in | Throwing hammer with nails stuck in the head |
+| `ice_bow.png` | Ice Bow | Common | Chill and a hit | Bow made of blue ice with a frosted arrow |
+| `ice_shield.png` | Ice Shield | Rare | Shield and chill | Round shield of thick ice with frost mist |
+| `magnetized_glove.png` | Magnetized Glove | Rare | Rips out every Nail (click to use) | Armoured gauntlet with a magnet in the palm pulling nails |
+| `metal_plating.png` | Metal Plating | Common | Small shield | Riveted steel plate |
+| `molten_dagger.png` | Molten Dagger | Common | Burn and a hit | Dagger with a glowing orange molten blade |
+| `sharpened_chestplate.png` | Sharpened Chestplate | Rare | Shield and Pain | Breastplate covered in sharp spikes |
+| `shield_bash.png` | Shield Bash | Rare | Hit and shield | Heater shield with a dented, bloodied rim |
+| `sledgehammer.png` | Sledgehammer | Rare | Huge slow hit | Massive two-handed sledgehammer |
+| `spiked_buckler.png` | Spiked Buckler | Rare | Hits for your shield | Small round buckler with a central spike |
+| `spiky_club.png` | Spiky Club | Rare | Hit and Pain | Wooden club studded with spikes |
+| `sword.png` | Sword | Common | Steady hit | Classic knight's longsword |
+| `tasty_cleanser.png` | Tasty Cleanser | Rare | Removes your poison and burn | Fizzy green drink with a straw and a lemon slice |
+| `tower_shield.png` | Tower Shield | Common | Big shield | Tall rectangular tower shield |
+| `twin_blades.png` | Twin Blades | Rare | Two hits | Two short curved blades crossed |
+| `venom_fang.png` | Venom Fang | Common | Poison | A single snake fang dripping venom |
+| `war_banner.png` | War Banner | Rare | Hits harder for each weapon you have | Tattered red war banner on a spear |
+| `weights.png` | Weights | Common | Slows an enemy ability | Iron kettlebell on a chain |
+| `whetstone_blade.png` | Whetstone Blade | Rare | Hits, then gets sharper | Sword resting on a whetstone with sparks |
+
+## Enemies (10)
+
+Portraits: the enemy facing slightly toward the viewer, full head and upper body, menacing but charming.
+
+| File | Name | Difficulty | Picture idea |
+|---|---|---|---|
+| `archer_skeleton.png` | Archer Skeleton | 1 | Skeleton in a ragged hood drawing a bow |
+| `armoured_beast.png` | Armoured Beast | 2 | Hulking boar-like beast in heavy plate armour |
+| `flaming_rock.png` | Flaming Rock | 1 | Living boulder with cracks of lava and angry eyes |
+| `furious_boxer.png` | Furious Boxer | 3 | Red-faced boxer in gloves, steam coming off his head |
+| `green_snake.png` | Green Snake | 1 | Coiled green snake, fangs out |
+| `grizzly_bear.png` | Grizzly Bear | 2 | Big scarred grizzly standing up |
+| `martial_arts_squirrel.png` | Martial Arts Squirrel | 1 | Squirrel in a karate gi and headband, fighting stance |
+| `squire_zombie.png` | Squire Zombie | 1 | Shambling zombie in a squire's tabard |
+| `the_blur.png` | The Blur | 2 | Gunslinger with a rifle, motion-blurred streaks |
+| `yeti.png` | Yeti | 2 | Huge shaggy white yeti with frosty breath |
+
+## Enemy abilities (12)
+
+These are the enemy's "items": shown as boxes with a picture, a name and a cooldown bar, like the player's items.
+
+| File | Name | Enemy | What it does | Picture idea |
+|---|---|---|---|---|
+| `bear_claw.png` | Bear Claw | Grizzly Bear | Hit for 10 | Three claw slash marks |
+| `bite.png` | Bite | Squire Zombie | Hit for 5 | Rotten jaws biting |
+| `bow_shot.png` | Bow Shot | Archer Skeleton | Hit for 4 | Bone arrow in flight |
+| `fang_strike.png` | Fang Strike | Green Snake | Hit for 3 | Snake striking, fangs first |
+| `fiery_stone.png` | Fiery Stone | Flaming Rock | Hit and burn | Flaming rock chunk flying |
+| `flurry.png` | Flurry | Martial Arts Squirrel | Four quick hits | Small paws punching in a blur |
+| `harden.png` | Harden | Armoured Beast | Gains 25 shield | Armour plates locking together |
+| `heavy_swipe.png` | Heavy Swipe | Armoured Beast | Hit for 10 | Armoured claw in a wide swipe |
+| `low_blow.png` | Low Blow | Furious Boxer | Gives you 1 Pain | Boxing glove hitting low with a pink impact star |
+| `pummel.png` | Pummel | Yeti | Hit for 20 | Giant furry fist slamming down |
+| `rifle_shot.png` | Rifle Shot | The Blur | Hit for 8 | Rifle firing with a muzzle flash |
+| `right_hook.png` | Right Hook | Furious Boxer | Two hits for 10 | Boxing glove in a curving hook |
+
+## Passives (7)
+
+Passives are shown as small square icons in a row under a fighter's health bar, with the details on mouse-over. Make them read as a symbol or emblem, like a buff icon, more than a full object.
+
+| File | Name | Belongs to | What it does | Picture idea |
+|---|---|---|---|---|
+| `cold_fur.png` | Cold Fur | Yeti | Every 3 times it's hit, chills you | Tuft of white fur with ice crystals |
+| `explosive.png` | Explosive | Flaming Rock | Every 5 times it's hit, burns you | Cracked rock bursting with fire |
+| `fast_reload.png` | Fast Reload | The Blur | Each rifle shot makes the next one faster | Bullets with speed lines |
+| `fury.png` | Fury | Furious Boxer | Each time it's hit, gains 1 Power | Angry vein symbol over a clenched fist |
+| `silver_knight.png` | Silver Knight's passive | Silver Knight (player) | Every 5 times you're hit, gain shield | Silver shield with a glowing knight's crest |
+| `thick_skin.png` | Thick Skin | Grizzly Bear | Takes 1 less damage from each hit | Thick leathery hide patch with a deflected scratch |
+| `venomous.png` | Venomous | Green Snake | Its hits poison you | Venom drop with a snake-eye pupil |
+
+## Statuses (8)
+
+Small icons shown next to the stack count in the status row under the health bar. Keep them very simple: one symbol, the status colour, transparent background.
+
+| File | Status | Colour | Picture idea |
+|---|---|---|---|
+| `burn.png` | Burn | orange | Flame |
+| `poison.png` | Poison | purple | Skull in a droplet |
+| `chill.png` | Chill | cyan | Snowflake |
+| `freeze.png` | Freeze | pale blue | Ice cube |
+| `haste.png` | Haste | green | Winged boot or speed arrow |
+| `pain.png` | Pain | pink | Cracked heart or thorn |
+| `nail.png` | Nail | steel grey | Single iron nail |
+| `power.png` | Power | red-orange | Flexed arm or upward fist |
+
+## Characters (1)
+
+| File | Name | Picture idea |
+|---|---|---|
+| `silver_knight.png` | Silver Knight | Knight in polished silver armour with a sword and shield |
+
+## Map encounters (1)
+
+| File | Name | Picture idea |
+|---|---|---|
+| `shop.png` | Shop | Cosy merchant stall with a lantern and items on display |
+
+## Where the images appear in a fight
+
+Enemy panel, top of the screen:
+
+```
++-----------+  Enemy name
+| portrait  |  [========== health bar ==========]
+|  (Enemies)|  [P][P][P]          <- passives row: small square icons (Passives/), mouse-over = details
+|           |  [burn 3][chill 2]  <- statuses row: status icon (Statuses/) + stack count
++-----------+  +------+ +------+ +------+
+ time left     | art  | | art  | | art  |   <- enemy abilities as boxes (EnemyAbilities/),
+               | name | | name | | name |      name and cooldown bar under the picture
+               | ==== | | ==== | | ==== |
+               +------+ +------+ +------+
+```
+
+Player panel, bottom: the item cards (Items/), the status row under the health bar, and the character's passive as the same small square icon.
+
+The smallest sizes on screen are passive icons at 36×36, status icons at 18×18, and ability box art at about 104×62 (the image is fitted inside and keeps its shape). Item art on cards is about 124×112.
+
+## Checklist
+
+- 28 items, 12 enemy abilities, 7 passives, 8 statuses, 10 enemies, 1 character, 1 shop: 67 PNGs.
+- File names exactly as in the tables (lower case, underscores).
+- Square, transparent background except portraits and the shop.
+- No text, numbers, frames or rarity borders in the images.
