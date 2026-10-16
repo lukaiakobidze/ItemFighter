@@ -209,6 +209,16 @@ The icon frame that every status icon and passive icon sits on, made of two laye
 
 Both must line up exactly: same size, same corner radius, same edges.
 
+**Square frame (`square_frame.png`, new 2026-10-16).** One frame drawn on top of *every* square in the game: items, enemy abilities, passives, statuses, enemy and character portraits, shop and drop squares. It replaces `icon_frame_border.png` (kept only as a fallback).
+
+- 256×256, everything inside the frame fully transparent (the picture shows through), transparent outside the corners.
+- The frame itself about 10-12px thick at 256×256, slightly rounded corners (about 14px radius), so it stays crisp when shrunk to 34px.
+- Drawn in **white and light greys only**: the game tints it per square (rarity colour for items and passives, red for enemies, status colour for statuses), so shading must come from grey levels, not colour. A light outer edge, white body and a slightly darker inner edge gives it depth after tinting.
+- A soft dark inner shadow just inside the frame (black at partial opacity, fading out within ~8px) is welcome; it separates the picture from the frame.
+- Cel style like the rest of the UI: clean edges, no noise or texture. The game draws cooldown shades *under* this frame, so no part of it should be see-through where the frame is.
+
+The game currently uses a plain placeholder made by Claude; overwrite it.
+
 ### Stretchable frames (7)
 
 These are stretched to many sizes, so the game keeps the **outer quarter of each side** exactly as drawn (the corners) and stretches only the middle. So: put all the detail (corner shapes, rivets, notches) in the corners, and keep the edges and the centre plain and even, with no picture or gradient in the middle. All are 96×96, rounded corners about 12px, transparent outside the corners.
@@ -262,7 +272,7 @@ On-screen sizes (the game draws the frame around each square): items 112×112 in
 
 ## Checklist
 
-- 28 items, 12 enemy abilities, 19 passives, 8 statuses, 10 enemies, 1 character, 2 shops, 15 UI pieces: 95 PNGs. The statuses are done already.
+- 28 items, 12 enemy abilities, 19 passives, 8 statuses, 10 enemies, 1 character, 2 shops, 16 UI pieces (including the new `square_frame.png`): 96 PNGs. The statuses are done already.
 - File names exactly as in the tables (lower case, underscores).
 - Items, enemy abilities, passives, portraits and shops: full squares with their own background, no transparency, no frame. Statuses and the small UI icons stay transparent. The logo and the background are the only non-square images.
 - No text, numbers, frames or rarity borders in the images.

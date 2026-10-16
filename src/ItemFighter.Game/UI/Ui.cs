@@ -184,30 +184,42 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
     /// tinted with <paramref name="border"/> (so one white border image serves every colour). Without those PNGs the
     /// frame is drawn as a dark square with a thin coloured line.
     /// </summary>
-    public void FramedIcon(string kind, string id, string name, Rectangle r, Color border, int thickness = 1, int? padding = null)
+    public void FramedIcon(string kind, string id, string name, Rectangle r, Color border, int thickness = 1, int? padding = null, Action? underFrame = null)
     {
         var bg = assets.Texture("UI", "icon_frame_bg");
         if (bg is null) Rect(r, new Color(14, 15, 22));
         else batch.Draw(bg, r, Color.White);
-        int pad = padding ?? Math.Max(2, r.Width / 10);
+        var frame = assets.Texture("UI", "square_frame");
+        // With the drawn frame the picture runs to the edges and the frame covers them.
+        int pad = frame is not null ? 0 : padding ?? Math.Max(2, r.Width / 10);
         var inner = new Rectangle(r.X + pad, r.Y + pad, r.Width - pad * 2, r.Height - pad * 2);
         if (assets.Texture(kind, id) is not null) Art(kind, id, name, inner);
         else TextIn(name, r, Math.Max(10, r.Height / 3), Palette.TextDim, bold: true);
-        var frame = assets.Texture("UI", "icon_frame_border");
-        if (frame is null) Border(r, border, thickness);
+        underFrame?.Invoke(); // cooldown shades and flashes go under the frame (Luka 2026-10-16)
+        if (frame is not null)
+        {
+            // Luka 2026-10-16: one smooth, high-resolution frame picture (UI/square_frame.png, white, tinted here) for
+            // every square: items, abilities, passives, statuses, portraits.
+            batch.Draw(frame, r, border);
+            if (thickness > 2) batch.Draw(frame, r, border * 0.6f);
+            return;
+        }
+        var legacy = assets.Texture("UI", "icon_frame_border");
+        if (legacy is null) Border(r, border, thickness);
         else
         {
-            batch.Draw(frame, r, border);
+            batch.Draw(legacy, r, border);
             if (thickness > 1) Border(r, border, thickness);
         }
     }
 
     /// <summary>
     /// A League-style square: the picture fills a dark square (the art carries its own background) inside a thin frame
-    /// coloured by <paramref name="border"/> (rarity for items and passives).
+    /// coloured by <paramref name="border"/> (rarity for items and passives). <paramref name="underFrame"/> draws between
+    /// the picture and the frame.
     /// </summary>
-    public void Square(string kind, string id, string name, Rectangle r, Color border, int thickness = 2) =>
-        FramedIcon(kind, id, name, r, border, thickness, padding: thickness);
+    public void Square(string kind, string id, string name, Rectangle r, Color border, int thickness = 2, Action? underFrame = null) =>
+        FramedIcon(kind, id, name, r, border, thickness, padding: thickness, underFrame);
 
     /// <summary>A gold coin and a number, as a dark badge in a square's bottom-right corner (for prices).</summary>
     public void PriceBadge(Rectangle square, int price, bool affordable)

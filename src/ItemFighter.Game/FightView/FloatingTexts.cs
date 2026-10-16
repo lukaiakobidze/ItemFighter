@@ -20,6 +20,9 @@ public sealed class FloatingText(string text, Color color, FloatAnchor anchor, i
     /// <summary>Position among the texts showing on the same anchor, so they don't overlap.</summary>
     public int Stack => stack;
     public double Age { get; set; }
+
+    /// <summary>How far it rises over its life, in pixels; varied so two texts don't hide exactly behind each other.</summary>
+    public float Speed { get; init; } = 80;
 }
 
 /// <summary>Numbers that pop up and drift away when damage, shield, healing and statuses happen.</summary>
@@ -28,6 +31,10 @@ public sealed class FloatingTexts
     public const double Lifetime = 1.2;
     private readonly List<FloatingText> _active = [];
     private readonly Dictionary<FloatAnchor, int> _counters = [];
+    private readonly Random _rng = new(); // looks only; the fight itself stays seeded
+
+    /// <summary>How far a text rises over its life: each picks a random distance in this range (Luka 2026-10-16).</summary>
+    public const float MinRise = 60, MaxRise = 130;
 
     public IReadOnlyList<FloatingText> Active => _active;
 
@@ -94,6 +101,6 @@ public sealed class FloatingTexts
         // A rolling position per anchor spreads consecutive numbers apart; it restarts once the anchor is quiet.
         int stack = _active.Any(t => t.Anchor == anchor) ? _counters.GetValueOrDefault(anchor) + 1 : 0;
         _counters[anchor] = stack;
-        _active.Add(new FloatingText(text, color, anchor, stack));
+        _active.Add(new FloatingText(text, color, anchor, stack) { Speed = MinRise + (float)_rng.NextDouble() * (MaxRise - MinRise) });
     }
 }

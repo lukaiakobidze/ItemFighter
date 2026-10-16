@@ -25,7 +25,8 @@ public sealed class FightScreen : Screen
     private static Rectangle HpBarIn(Rectangle panel) => new(panel.X + 204, panel.Y + 54, panel.Width - 228, 40);
     private static Vector2 PassiveGridIn(Rectangle panel) => new(panel.X + 24, panel.Y + 196);
     private static Vector2 StatusRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 108);
-    private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 176, 112, 112);
+    private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 190, 112, 112);
+    private static readonly Color FrostTint = new Color(120, 200, 255) * 0.35f;
     private const int PassiveSize = 34, PassiveGap = 7, PassiveColumns = 4, PassiveMax = 16;
     private static readonly int[] Speeds = [1, 2, 4];
 
@@ -143,8 +144,8 @@ public sealed class FightScreen : Screen
         ui.Panel(EnemyPanel);
         var def = Battle.EnemyDefinition;
         var portrait = PortraitIn(EnemyPanel);
-        ui.Square("Enemies", def.Id, def.Name, portrait, Palette.Damage * 0.8f);
-        if (Battle.Enemy.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, new Color(120, 200, 255) * 0.35f);
+        ui.Square("Enemies", def.Id, def.Name, portrait, Palette.Damage * 0.8f,
+            underFrame: () => { if (Battle.Enemy.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, FrostTint); });
         if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities and passives are listed beside it."], Palette.Damage);
 
         ui.Text(def.Name, new Vector2(EnemyHpBar.X, EnemyPanel.Y + 18), 22, Palette.Text, bold: true);
@@ -163,8 +164,8 @@ public sealed class FightScreen : Screen
     {
         bool flash = _firedAt.TryGetValue(a.Id, out double t) && _time - t < 0.3;
         bool hover = ui.Hover(r);
-        ui.Square("EnemyAbilities", a.Def.Id, a.Def.Name, r, flash ? Palette.Damage : hover ? Palette.Text : new Color(150, 70, 64), flash || hover ? 3 : 2);
-        DrawCooldownShade(ui, a, r, flash ? new Color(255, 120, 110) * 0.45f : null);
+        ui.Square("EnemyAbilities", a.Def.Id, a.Def.Name, r, flash ? Palette.Damage : hover ? Palette.Text : new Color(150, 70, 64), flash || hover ? 3 : 2,
+            underFrame: () => DrawCooldownShade(ui, a, r, flash ? new Color(255, 120, 110) * 0.45f : null));
         DrawItemTimers(ui, a, new Vector2(r.X + 4, r.Y + 4));
         if (hover)
             ui.Tooltip(a.Def.Name, Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines, Palette.Damage);
@@ -198,8 +199,8 @@ public sealed class FightScreen : Screen
         bool flash = _firedAt.TryGetValue(p.Id, out double t) && _time - t < 0.3;
         bool hover = ui.Hover(r);
         var border = hover || flash ? Palette.Accent : enemy ? Palette.Damage : Palette.Accent * 0.8f;
-        ui.FramedIcon("Passives", p.Def.Id, Initials(p.Def.Name), r, border, hover || flash ? 2 : 1);
-        if (flash) ui.Rect(r, Color.White * 0.25f);
+        ui.FramedIcon("Passives", p.Def.Id, Initials(p.Def.Name), r, border, hover || flash ? 3 : 2,
+            underFrame: () => { if (flash) ui.Rect(r, Color.White * 0.25f); });
         if (!hover) return;
         var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy, ownedByEnemy: enemy);
         ui.Tooltip(title, ["Passive", .. lines], enemy ? Palette.Damage : Palette.For(p.Def.Rarity));
@@ -231,8 +232,8 @@ public sealed class FightScreen : Screen
         // The character's portrait where the enemy's is; no name needed.
         var portrait = PortraitIn(PlayerPanel);
         var character = _battleSetup.Player.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? ch : null;
-        ui.Square("Characters", character?.Id ?? "none", character?.Name ?? "You", portrait, Palette.Accent * 0.8f);
-        if (Battle.Player.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, new Color(120, 200, 255) * 0.35f);
+        ui.Square("Characters", character?.Id ?? "none", character?.Name ?? "You", portrait, Palette.Accent * 0.8f,
+            underFrame: () => { if (Battle.Player.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, FrostTint); });
         if (character is not null && ui.Hover(portrait))
         {
             var (title, lines) = Tooltips.For(character, 1, Game.Data.Database);
@@ -260,8 +261,8 @@ public sealed class FightScreen : Screen
             : canClick ? Palette.Ready
             : hover ? Palette.Text : Palette.For(def.Rarity);
         int thickness = selected ? 4 : validTarget ? (int)(3 + Math.Sin(_time * 8) * 1.5) : canClick ? (int)(2 + (Math.Sin(_time * 6) + 1) * 1.2) : hover ? 3 : 2;
-        ui.Square("Items", def.Id, def.Name, r, border, Math.Max(2, thickness));
-        DrawCooldownShade(ui, item, r, fired ? Color.White * 0.3f : null, def.Activation == Activation.Active ? (canClick ? "click" : null) : null);
+        ui.Square("Items", def.Id, def.Name, r, border, Math.Max(2, thickness),
+            underFrame: () => DrawCooldownShade(ui, item, r, fired ? Color.White * 0.3f : null, def.Activation == Activation.Active ? (canClick ? "click" : null) : null));
         DrawPips(ui, item.Level, new Vector2(r.X + 6, r.Bottom - 12));
         DrawItemTimers(ui, item, new Vector2(r.X + 4, r.Y + 4));
 
@@ -308,7 +309,7 @@ public sealed class FightScreen : Screen
         }
         else if (Battle.Player.Items.Any(i => _targeting.CanActivate(i, Battle)))
             hint = "Glowing items are ready: click to use them.";
-        if (hint is not null) ui.Text(hint, new Vector2(PlayerHpBar.X, PlayerPanel.Y + 304), 15, Palette.Accent, bold: true);
+        if (hint is not null) ui.Text(hint, new Vector2(PlayerHpBar.X, PlayerPanel.Y + 316), 15, Palette.Accent, bold: true);
     }
 
     private void DrawExtras(Ui ui)
@@ -324,8 +325,8 @@ public sealed class FightScreen : Screen
 
     /// <summary>
     /// The HP bar (Luka 2026-10-16): shield as a see-through layer over the bar, a thin line every
-    /// <see cref="HpTickEvery"/> HP so a bigger health pool shows as more segments, the shield number with its icon in
-    /// the middle and the HP number with the heart on the right.
+    /// <see cref="HpTickEvery"/> HP so a bigger health pool shows as more segments, the shield number with its icon on
+    /// the left and the HP number with the heart on the right.
     /// </summary>
     private static void DrawHp(Ui ui, Combatant c, Rectangle bar)
     {
@@ -334,7 +335,7 @@ public sealed class FightScreen : Screen
         {
             int w = (int)(bar.Width * Math.Min(1f, c.Shield / (float)c.MaxHp));
             ui.Rect(new Rectangle(bar.X, bar.Y, w, bar.Height), Palette.Shield * 0.6f);
-            ui.Rect(new Rectangle(bar.X, bar.Y, w, 3), Palette.Shield);
+            ui.Rect(new Rectangle(bar.X + w - 2, bar.Y, 3, bar.Height), Palette.Shield); // where the shield ends
         }
         for (int hp = HpTickEvery; hp < c.MaxHp; hp += HpTickEvery)
         {
@@ -352,9 +353,7 @@ public sealed class FightScreen : Screen
         if (!ui.Icon("heart", heart)) Shadowed(ui, "HP", new Vector2(heart.X, textY));
         if (c.Shield <= 0) return;
         string shieldText = $"{c.Shield}";
-        float shieldWidth = ui.Measure(shieldText, 20, true).X;
-        float left = bar.Center.X - (icon + 6 + shieldWidth) / 2;
-        var shield = new Rectangle((int)left, iconY, icon, icon);
+        var shield = new Rectangle(bar.X + 10, iconY, icon, icon);
         if (!ui.Icon("shield", shield)) shieldText += " shield";
         Shadowed(ui, shieldText, new Vector2(shield.Right + 6, textY));
     }
@@ -368,38 +367,59 @@ public sealed class FightScreen : Screen
         ui.Text(text, pos, 20, Color.White, bold: true);
     }
 
+    /// <summary>
+    /// Statuses as framed squares (Luka 2026-10-16): stacks in the bottom-right corner; a status that runs on a timer
+    /// (burn's next tick, chill wearing off, frozen) gets the same shade as a charging item, and its seconds show only on
+    /// mouse-over.
+    /// </summary>
     private void DrawStatuses(Ui ui, Combatant c, Vector2 pos)
     {
         float x = pos.X;
-        // Each status: its icon on the shared dark frame with a border in the status colour, then the numbers.
-        // Without an icon PNG the status name is written out instead.
-        void Chip(string text, Color color, string tip, string body)
+        void Chip(string id, string name, int? stacks, Color color, string body, int ticksLeft = 0, int ticksTotal = 0)
         {
-            string id = tip == "Frozen" ? "freeze" : tip.ToLowerInvariant();
-            bool hasIcon = ui.Assets.Texture("Statuses", id) is not null;
-            string numbers = hasIcon && text.StartsWith(tip, StringComparison.OrdinalIgnoreCase) ? text[tip.Length..].Trim() : text;
-            var icon = new Rectangle((int)x, (int)pos.Y - 1, 30, 30);
-            var size = ui.Measure(numbers, 15, true);
-            var r = new Rectangle(icon.X, icon.Y, icon.Width + (int)size.X + 10, icon.Height);
-            if (hasIcon) ui.FramedIcon("Statuses", id, tip, icon, color);
-            else r = icon = new Rectangle((int)x, (int)pos.Y, 0, 28);
-            ui.Text(numbers, new Vector2(icon.Right + 6, pos.Y + 5), 15, color, bold: true);
-            if (!hasIcon) r.Width = (int)size.X + 12;
-            if (ui.Hover(r)) ui.Tooltip(tip, [body], color);
-            x += r.Width + 10;
+            var r = new Rectangle((int)x, (int)pos.Y, StatusSize, StatusSize);
+            x += StatusSize + 10;
+            bool hover = ui.Hover(r);
+            bool timed = ticksTotal > 0;
+            ui.FramedIcon("Statuses", id, name, r, color, hover ? 3 : 2, underFrame: () =>
+            {
+                if (!timed) return;
+                double left = Math.Clamp((ticksLeft - _clock.Fraction) / ticksTotal, 0, 1);
+                int covered = (int)(r.Height * left);
+                if (covered > 0) ui.Rect(new Rectangle(r.X, r.Y, r.Width, covered), new Color(0, 0, 0, 140));
+                if (!hover) return;
+                string seconds = $"{Math.Max(0, ticksLeft - _clock.Fraction) / 10.0:0.0}";
+                ui.TextIn(seconds, new Rectangle(r.X + 2, r.Y + 2, r.Width, r.Height), 18, Color.Black * 0.8f, bold: true);
+                ui.TextIn(seconds, r, 18, Color.White, bold: true);
+            });
+            if (stacks is int n)
+            {
+                string text = n.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var size = ui.Measure(text, 17, true);
+                var at = new Vector2(r.Right - size.X - 5, r.Bottom - size.Y - 3);
+                ui.Text(text, at + new Vector2(2, 2), 17, Color.Black * 0.9f, bold: true);
+                ui.Text(text, at, 17, Color.White, bold: true);
+            }
+            if (hover) ui.Tooltip(name, [body], color);
         }
         var s = c.Statuses;
         var rules = Battle.Rules;
-        if (s.Burn > 0) Chip($"Burn {s.Burn}", Palette.Burn, "Burn", $"Every {rules.BurnTickSeconds:0.##}s deals its stacks as damage (x{rules.BurnShieldMultiplier} against shield), then loses {rules.BurnLossPerTick} {(rules.BurnLossPerTick == 1 ? "stack" : "stacks")}.");
-        if (s.Poison > 0) Chip($"Poison {s.Poison}/{rules.PoisonThreshold}", Palette.Poison, "Poison", $"At {rules.PoisonThreshold} stacks it bursts for {rules.PoisonBurstPerStack} damage per stack (shield blocks it), then resets.");
+        int tick = Battle.Tick;
+        if (s.Burn > 0)
+            Chip("burn", "Burn", s.Burn, Palette.Burn, $"Every {rules.BurnTickSeconds:0.##}s deals its stacks as damage (x{rules.BurnShieldMultiplier} against shield), then loses {rules.BurnLossPerTick} {(rules.BurnLossPerTick == 1 ? "stack" : "stacks")}.",
+                rules.BurnTickInterval - tick % rules.BurnTickInterval, rules.BurnTickInterval);
+        if (s.Poison > 0) Chip("poison", "Poison", s.Poison, Palette.Poison, $"{s.Poison}/{rules.PoisonThreshold} stacks. At {rules.PoisonThreshold} it bursts for {rules.PoisonBurstPerStack} damage per stack (shield blocks it), then resets.");
         if (s.Chill > 0)
-            Chip($"Chill {s.Chill}/{rules.ChillFreezeAtStacks}  {Math.Max(0, s.ChillExpiresAtTick - Battle.Tick) / 10.0:0.0}s", Palette.Chill, "Chill",
-                $"Each stack makes every cooldown {rules.ChillCooldownPercentPerStack}% longer. Stacks last {rules.ChillSeconds:0.#}s, refreshed by each new stack. At {rules.ChillFreezeAtStacks} stacks: frozen for {rules.FreezeSeconds:0.#}s.");
-        if (s.Pain > 0) Chip($"Pain {s.Pain}", Palette.Pain, "Pain", $"Each time one of {(c.Side == Side.Player ? "your items" : "its abilities")} fires, {(c.Side == Side.Player ? "you take" : "it takes")} {s.Pain} damage. Lasts all fight.");
-        if (s.Nail > 0) Chip($"Nail {s.Nail}", Palette.Nail, "Nail", $"Does nothing alone. Uproot pulls every Nail out for {rules.NailDamage} damage each (more with bonuses).");
-        if (s.Power > 0) Chip($"Power {s.Power}", Palette.Power, "Power", $"Every hit {(c.Side == Side.Player ? "you deal" : "it deals")} does {s.Power * rules.PowerDamagePerStack} more damage. Lasts all fight.");
-        if (c.IsFrozenAt(Battle.Tick)) Chip($"FROZEN {(s.FrozenUntilTick - Battle.Tick + 1) / 10.0:0.0}s", Palette.Freeze, "Frozen", "Nothing charges or fires until it thaws.");
+            Chip("chill", "Chill", s.Chill, Palette.Chill,
+                $"{s.Chill}/{rules.ChillFreezeAtStacks} stacks. Each stack makes every cooldown {rules.ChillCooldownPercentPerStack}% longer. Stacks last {rules.ChillSeconds:0.#}s, refreshed by each new stack. At {rules.ChillFreezeAtStacks} stacks: frozen for {rules.FreezeSeconds:0.#}s.",
+                Math.Max(0, s.ChillExpiresAtTick - tick), rules.ChillTicks);
+        if (s.Pain > 0) Chip("pain", "Pain", s.Pain, Palette.Pain, $"Each time one of {(c.Side == Side.Player ? "your items" : "its abilities")} fires, {(c.Side == Side.Player ? "you take" : "it takes")} {s.Pain} damage. Lasts all fight.");
+        if (s.Nail > 0) Chip("nail", "Nail", s.Nail, Palette.Nail, $"Does nothing alone. Uproot pulls every Nail out for {rules.NailDamage} damage each (more with bonuses).");
+        if (s.Power > 0) Chip("power", "Power", s.Power, Palette.Power, $"Every hit {(c.Side == Side.Player ? "you deal" : "it deals")} does {s.Power * rules.PowerDamagePerStack} more damage. Lasts all fight.");
+        if (c.IsFrozenAt(tick)) Chip("freeze", "Frozen", null, Palette.Freeze, "Nothing charges or fires until it thaws.", s.FrozenUntilTick - tick + 1, rules.FreezeTicks);
     }
+
+    private const int StatusSize = 60;
 
     private double CooldownFraction(SourceInstance s)
     {
@@ -439,7 +459,7 @@ public sealed class FightScreen : Screen
         {
             float age = (float)(f.Age / FloatingTexts.Lifetime);
             float dx = (f.Stack % 3) switch { 0 => 0, 1 => -110, _ => 110 };
-            var pos = AnchorPosition(f.Anchor) + new Vector2(dx, -age * 80 - f.Stack / 3 % 2 * 22); // rises quickly
+            var pos = AnchorPosition(f.Anchor) + new Vector2(dx, -age * f.Speed - f.Stack / 3 % 2 * 22); // each rises at its own speed
             var color = f.Color * (age < 0.7f ? 1f : (1 - age) / 0.3f);
             ui.Text(f.Text, pos + new Vector2(2, 2), 22, Color.Black * (color.A / 255f), bold: true, align: Align.Center);
             ui.Text(f.Text, pos, 22, color, bold: true, align: Align.Center);
