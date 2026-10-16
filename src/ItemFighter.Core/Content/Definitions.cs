@@ -36,7 +36,10 @@ public sealed class SourceDefinition
 
     public int MaxHp { get; init; }
 
+    /// <summary>An enemy's abilities (enemies/abilities/, kind EnemyAbility).</summary>
     public IReadOnlyList<string> AbilityIds { get; init; } = [];
+    /// <summary>An enemy's passives, from the shared pool (passives/, kind Passive).</summary>
+    public IReadOnlyList<string> PassiveIds { get; init; } = [];
     public IReadOnlyList<PhaseDefinition> Phases { get; init; } = [];
     public IReadOnlyList<string> StartingItems { get; init; } = [];
 

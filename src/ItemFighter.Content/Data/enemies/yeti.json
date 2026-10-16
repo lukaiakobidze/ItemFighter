@@ -3,5 +3,6 @@
   "name": "Yeti",
   "difficulty": 2,
   "maxHp": 120,
-  "abilityIds": ["cold_fur", "pummel"]
+  "abilityIds": ["pummel"],
+  "passiveIds": ["cold_fur"]
 }

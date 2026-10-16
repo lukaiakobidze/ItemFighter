@@ -8,9 +8,9 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 |---|---|---|
 | An item's damage, shield, burn, cooldown, rarity, tags | `items/<item>.json` | `cooldown`, `rarity`, `tags`, and the `levels` table (one number per level 1 to 4). Numbers written straight into an effect (like Ice Bow's 1 Chill or War Banner's +3 per weapon) are edited right there |
 | What an item does | `items/<item>.json` | `abilities` (see [content-guide.md](content-guide.md) for triggers and effects) |
-| An enemy's HP, when it shows up | `enemies/<enemy>.json` | `maxHp`, `difficulty` (1 to 10) |
+| An enemy's HP, when it shows up, what it has | `enemies/<enemy>.json` | `maxHp`, `difficulty` (1 to 10), `abilityIds`, `passiveIds` |
 | An enemy's attacks | `enemies/abilities/<ability>.json` | `cooldown`, `amount`, `percent`… |
-| A passive (enemies list them in `abilityIds`; the passive shop sells every one) | `passives/<passive>.json` | `amount`, `every`, `rarity` (sets its shop price)… |
+| A passive (enemies list them in `passiveIds`; the passive shop sells every one) | `passives/<passive>.json` | `amount`, `every`, `rarity` (sets its shop price)… |
 | A character's HP, starting items and passive | `characters/<character>.json` | `maxHp`, `startingItems`, `abilities` |
 | Burn, poison, chill, freeze, nail, power, the fight time limit, the minimum cooldown | `rules.json` | see below |
 | Gold, prices, shops, run length, which enemies show up when, reward odds, bosses | `run.json` | see the run.json table in [content-guide.md](content-guide.md#the-run-runjson) |

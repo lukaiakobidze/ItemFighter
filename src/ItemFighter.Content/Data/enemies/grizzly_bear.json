@@ -3,5 +3,6 @@
   "name": "Grizzly Bear",
   "difficulty": 2,
   "maxHp": 150,
-  "abilityIds": ["thick_skin", "bear_claw"]
+  "abilityIds": ["bear_claw"],
+  "passiveIds": ["thick_skin"]
 }

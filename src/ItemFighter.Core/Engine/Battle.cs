@@ -55,7 +55,7 @@ public sealed class Battle
         Enemy = new Combatant(Side.Enemy, Math.Max(1, (int)((long)enemy.MaxHp * setup.EnemyHpPercent / 100)));
         EnemyDefinition = enemy;
         AddSource(Enemy, enemy, null, 1);
-        foreach (string id in enemy.AbilityIds)
+        foreach (string id in enemy.AbilityIds.Concat(enemy.PassiveIds))
             AddSource(Enemy, RequireEnemyAbility(id), null, 1);
 
         foreach (var s in AllSources)

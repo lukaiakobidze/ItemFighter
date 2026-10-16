@@ -3,5 +3,6 @@
   "name": "Green Snake",
   "difficulty": 1,
   "maxHp": 50,
-  "abilityIds": ["venomous", "fang_strike"]
+  "abilityIds": ["fang_strike"],
+  "passiveIds": ["venomous"]
 }

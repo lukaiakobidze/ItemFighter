@@ -3,5 +3,6 @@
   "name": "Squire Zombie",
   "difficulty": 1,
   "maxHp": 50,
-  "abilityIds": ["bite"]
+  "abilityIds": ["bite"],
+  "passiveIds": []
 }

@@ -3,5 +3,6 @@
   "name": "Archer Skeleton",
   "difficulty": 1,
   "maxHp": 40,
-  "abilityIds": ["bow_shot"]
+  "abilityIds": ["bow_shot"],
+  "passiveIds": []
 }

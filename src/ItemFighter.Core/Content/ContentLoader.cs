@@ -120,6 +120,7 @@ public static class ContentLoader
             Description = json.TryGetProperty("description", out _) ? ctx.ReadString("description") : null,
             MaxHp = ctx.ReadInt("maxHp", 0),
             AbilityIds = ctx.ReadStrings("abilityIds"),
+            PassiveIds = ctx.ReadStrings("passiveIds"),
             Phases = ParsePhases(json),
             StartingItems = ctx.ReadStrings("startingItems"),
             GoldOnWin = ctx.Has("goldOnWin") ? ctx.ReadValue("goldOnWin") : null,

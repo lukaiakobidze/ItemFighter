@@ -3,8 +3,6 @@
   "name": "The Blur",
   "difficulty": 2,
   "maxHp": 80,
-  "abilityIds": [
-    "fast_reload",
-    "rifle_shot"
-  ]
+  "abilityIds": ["rifle_shot"],
+  "passiveIds": ["fast_reload"]
 }

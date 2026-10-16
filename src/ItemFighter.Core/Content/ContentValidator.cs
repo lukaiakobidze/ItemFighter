@@ -15,7 +15,21 @@ public static class ContentValidator
             if (def.Script is not null && !scripts.Contains(def.Script))
                 Error($"unknown script '{def.Script}'");
 
-            foreach (string abilityId in def.AbilityIds.Concat(def.Phases.SelectMany(p => p.AddAbilityIds)))
+            foreach (string abilityId in def.AbilityIds)
+            {
+                if (!db.TryGet(abilityId, out var ability)) Error($"unknown ability '{abilityId}'");
+                else if (ability.Kind == SourceKind.Passive) Error($"'{abilityId}' is a passive: list it in passiveIds, not abilityIds");
+                else if (ability.Kind != SourceKind.EnemyAbility) Error($"'{abilityId}' is not an EnemyAbility");
+            }
+
+            foreach (string passiveId in def.PassiveIds)
+            {
+                if (!db.TryGet(passiveId, out var passive)) Error($"unknown passive '{passiveId}'");
+                else if (passive.Kind == SourceKind.EnemyAbility) Error($"'{passiveId}' is an enemy ability: list it in abilityIds, not passiveIds");
+                else if (passive.Kind != SourceKind.Passive) Error($"'{passiveId}' is not a Passive");
+            }
+
+            foreach (string abilityId in def.Phases.SelectMany(p => p.AddAbilityIds))
             {
                 if (!db.TryGet(abilityId, out var ability)) Error($"unknown ability '{abilityId}'");
                 else if (ability.Kind is not (SourceKind.EnemyAbility or SourceKind.Passive)) Error($"'{abilityId}' is not an EnemyAbility or a Passive");

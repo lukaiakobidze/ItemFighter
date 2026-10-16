@@ -3,5 +3,6 @@
   "name": "Martial Arts Squirrel",
   "difficulty": 1,
   "maxHp": 60,
-  "abilityIds": ["flurry"]
+  "abilityIds": ["flurry"],
+  "passiveIds": []
 }

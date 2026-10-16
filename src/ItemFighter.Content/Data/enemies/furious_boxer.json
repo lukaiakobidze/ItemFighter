@@ -3,5 +3,6 @@
   "name": "Furious Boxer",
   "difficulty": 3,
   "maxHp": 150,
-  "abilityIds": ["fury", "right_hook", "low_blow"]
+  "abilityIds": ["right_hook", "low_blow"],
+  "passiveIds": ["fury"]
 }

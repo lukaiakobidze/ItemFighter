@@ -20,7 +20,7 @@ public static class Tooltips
         lines.AddRange(SourceDescriber.Lines(def, level, ownedByPlayer, ownedByEnemy));
         if (def.Kind == SourceKind.Enemy)
         {
-            foreach (string id in def.AbilityIds)
+            foreach (string id in def.AbilityIds.Concat(def.PassiveIds))
                 if (db.TryGet(id, out var ability))
                     lines.Add($"{ability.Name}: {string.Join(" ", SourceDescriber.Lines(ability, 1, ownedByEnemy: ability.Kind == SourceKind.Passive))}");
             foreach (var phase in def.Phases)

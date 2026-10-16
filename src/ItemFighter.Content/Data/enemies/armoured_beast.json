@@ -3,5 +3,6 @@
   "name": "Armoured Beast",
   "difficulty": 2,
   "maxHp": 100,
-  "abilityIds": ["heavy_swipe", "harden"]
+  "abilityIds": ["heavy_swipe", "harden"],
+  "passiveIds": []
 }
