@@ -20,10 +20,13 @@ public sealed class FightScreen : Screen
 
     // Positions inside a side's panel, the same for both sides.
     private static Rectangle PortraitIn(Rectangle panel) => new(panel.X + 24, panel.Y + 24, 156, 156);
-    private static Rectangle HpBarIn(Rectangle panel) => new(panel.X + 204, panel.Y + 58, 560, 24);
-    private static Vector2 PassiveRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 96);
-    private static Vector2 StatusRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 140);
-    private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 236, 112, 112);
+    // Luka 2026-10-16: a thick HP bar running to the panel's right edge, statuses under it, passives in a grid under the
+    // portrait.
+    private static Rectangle HpBarIn(Rectangle panel) => new(panel.X + 204, panel.Y + 54, panel.Width - 228, 40);
+    private static Vector2 PassiveGridIn(Rectangle panel) => new(panel.X + 24, panel.Y + 196);
+    private static Vector2 StatusRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 108);
+    private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 176, 112, 112);
+    private const int PassiveSize = 34, PassiveGap = 7, PassiveColumns = 4, PassiveMax = 16;
     private static readonly int[] Speeds = [1, 2, 4];
 
     private readonly LabSetup? _lab;
@@ -76,10 +79,13 @@ public sealed class FightScreen : Screen
 
     public static Rectangle AbilityCard(int index) => SquareIn(EnemyPanel, index);
 
-    public static Rectangle PassiveIcon(Vector2 rowStart, int index) => new((int)rowStart.X + index * 38, (int)rowStart.Y, 32, 32);
+    /// <summary>A passive's square in the grid under a portrait: left to right, then the next row down.</summary>
+    public static Rectangle PassiveIcon(Vector2 gridStart, int index) => new(
+        (int)gridStart.X + index % PassiveColumns * (PassiveSize + PassiveGap),
+        (int)gridStart.Y + index / PassiveColumns * (PassiveSize + PassiveGap), PassiveSize, PassiveSize);
 
-    public static readonly Vector2 EnemyPassiveRow = PassiveRowIn(EnemyPanel);
-    private static readonly Vector2 PlayerPassiveRow = PassiveRowIn(PlayerPanel);
+    public static readonly Vector2 EnemyPassiveGrid = PassiveGridIn(EnemyPanel);
+    private static readonly Vector2 PlayerPassiveGrid = PassiveGridIn(PlayerPanel);
 
     public override void Update(double seconds)
     {
@@ -141,10 +147,10 @@ public sealed class FightScreen : Screen
         if (Battle.Enemy.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, new Color(120, 200, 255) * 0.35f);
         if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities and passives are listed beside it."], Palette.Damage);
 
-        ui.Text(def.Name, new Vector2(EnemyHpBar.X, EnemyPanel.Y + 20), 22, Palette.Text, bold: true);
+        ui.Text(def.Name, new Vector2(EnemyHpBar.X, EnemyPanel.Y + 18), 22, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
         var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
-        for (int i = 0; i < passives.Count && i < 16; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveRow, i), enemy: true);
+        for (int i = 0; i < passives.Count && i < PassiveMax; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveGrid, i), enemy: true);
         DrawStatuses(ui, Battle.Enemy, StatusRowIn(EnemyPanel));
 
         var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility && s.HasCooldown).ToList();
@@ -302,7 +308,7 @@ public sealed class FightScreen : Screen
         }
         else if (Battle.Player.Items.Any(i => _targeting.CanActivate(i, Battle)))
             hint = "Glowing items are ready: click to use them.";
-        if (hint is not null) ui.Text(hint, new Vector2(PlayerHpBar.X, PlayerPanel.Y + 192), 15, Palette.Accent, bold: true);
+        if (hint is not null) ui.Text(hint, new Vector2(PlayerHpBar.X, PlayerPanel.Y + 304), 15, Palette.Accent, bold: true);
     }
 
     private void DrawExtras(Ui ui)
@@ -311,26 +317,55 @@ public sealed class FightScreen : Screen
             .Where(s => s.Def.Kind is SourceKind.Passive or SourceKind.Character || s.Def.IsPassiveAbility)
             .Where(s => s.Def.Abilities.Count > 0 || s.Def.Modifiers.Count > 0 || s.Script is not null).ToList();
         if (passives.Count == 0) return;
-        for (int i = 0; i < passives.Count && i < 18; i++) DrawPassive(ui, passives[i], PassiveIcon(PlayerPassiveRow, i), enemy: false);
+        for (int i = 0; i < passives.Count && i < PassiveMax; i++) DrawPassive(ui, passives[i], PassiveIcon(PlayerPassiveGrid, i), enemy: false);
     }
 
     // ---- shared ------------------------------------------------------------------------------------------------
 
+    /// <summary>
+    /// The HP bar (Luka 2026-10-16): shield as a see-through layer over the bar, a thin line every
+    /// <see cref="HpTickEvery"/> HP so a bigger health pool shows as more segments, the shield number with its icon in
+    /// the middle and the HP number with the heart on the right.
+    /// </summary>
     private static void DrawHp(Ui ui, Combatant c, Rectangle bar)
     {
-        ui.Bar(bar, c.Hp / (float)c.MaxHp, Palette.Hp, Palette.HpBack);
+        ui.Bar(bar, Math.Max(0, c.Hp) / (float)c.MaxHp, Palette.Hp, Palette.HpBack);
         if (c.Shield > 0)
         {
             int w = (int)(bar.Width * Math.Min(1f, c.Shield / (float)c.MaxHp));
-            ui.Rect(new Rectangle(bar.X, bar.Y, w, 8), Palette.Shield);
+            ui.Rect(new Rectangle(bar.X, bar.Y, w, bar.Height), Palette.Shield * 0.6f);
+            ui.Rect(new Rectangle(bar.X, bar.Y, w, 3), Palette.Shield);
+        }
+        for (int hp = HpTickEvery; hp < c.MaxHp; hp += HpTickEvery)
+        {
+            int x = bar.X + (int)Math.Round(bar.Width * hp / (double)c.MaxHp);
+            bool big = hp % (HpTickEvery * 10) == 0;
+            ui.Rect(new Rectangle(x, bar.Y, big ? 2 : 1, big ? bar.Height : bar.Height * 2 / 3), Color.Black * (big ? 0.55f : 0.35f));
         }
         ui.Border(bar, Palette.Border, 1);
-        int icon = bar.Height - 4;
-        ui.Icon("heart", new Rectangle(bar.X + 4, bar.Y + 2, icon, icon));
-        bool shieldIcon = c.Shield > 0 && ui.Icon("shield", new Rectangle(bar.Right - icon - 52, bar.Y + 2, icon, icon));
-        if (shieldIcon) ui.Text($"{c.Shield}", new Vector2(bar.Right - 50, bar.Y + 4), 17, Color.White, bold: true);
-        string text = $"{Math.Max(0, c.Hp)} / {c.MaxHp}" + (c.Shield > 0 && !shieldIcon ? $"   +{c.Shield} shield" : "");
-        ui.TextIn(text, bar, 17, Color.White, bold: true);
+
+        int icon = 26, iconY = bar.Center.Y - icon / 2, textY = bar.Center.Y - 11;
+        string hpText = $"{Math.Max(0, c.Hp)} / {c.MaxHp}";
+        float hpWidth = ui.Measure(hpText, 20, true).X;
+        var heart = new Rectangle(bar.Right - 10 - icon, iconY, icon, icon);
+        Shadowed(ui, hpText, new Vector2(heart.X - 8 - hpWidth, textY));
+        if (!ui.Icon("heart", heart)) Shadowed(ui, "HP", new Vector2(heart.X, textY));
+        if (c.Shield <= 0) return;
+        string shieldText = $"{c.Shield}";
+        float shieldWidth = ui.Measure(shieldText, 20, true).X;
+        float left = bar.Center.X - (icon + 6 + shieldWidth) / 2;
+        var shield = new Rectangle((int)left, iconY, icon, icon);
+        if (!ui.Icon("shield", shield)) shieldText += " shield";
+        Shadowed(ui, shieldText, new Vector2(shield.Right + 6, textY));
+    }
+
+    /// <summary>A thin line on the HP bar every this many HP.</summary>
+    private const int HpTickEvery = 10;
+
+    private static void Shadowed(Ui ui, string text, Vector2 pos)
+    {
+        ui.Text(text, pos + new Vector2(2, 2), 20, Color.Black * 0.8f, bold: true);
+        ui.Text(text, pos, 20, Color.White, bold: true);
     }
 
     private void DrawStatuses(Ui ui, Combatant c, Vector2 pos)
@@ -393,7 +428,7 @@ public sealed class FightScreen : Screen
             if (index >= 0) return new Vector2(AbilityCard(index).Center.X, AbilityCard(index).Y + 30);
             var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
             index = passives.IndexOf(source);
-            if (index >= 0) return PassiveIcon(EnemyPassiveRow, index).Center.ToVector2();
+            if (index >= 0) return PassiveIcon(EnemyPassiveGrid, index).Center.ToVector2();
         }
         return new Vector2(EnemyHpBar.Center.X, EnemyHpBar.Y);
     }
