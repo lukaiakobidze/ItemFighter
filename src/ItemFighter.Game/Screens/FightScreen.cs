@@ -10,11 +10,20 @@ namespace ItemFighter.Screens;
 /// <summary>Plays one fight in real time. The battle runs in Core; this screen only shows it and sends clicks.</summary>
 public sealed class FightScreen : Screen
 {
-    public static readonly Rectangle EnemyPanel = new(40, 32, 1160, 340);
-    public static readonly Rectangle PlayerPanel = new(40, 396, 1160, 472);
+    // Luka 2026-10-16: both sides use the same layout at the same size, so everything sits in the same place in each
+    // panel. The fight timer sits between them on the left.
+    public static readonly Rectangle EnemyPanel = new(40, 32, 1160, 380);
+    public static readonly Rectangle PlayerPanel = new(40, 488, 1160, 380);
     public static readonly Rectangle LogPanel = new(1240, 88, 320, 780);
-    private static readonly Rectangle EnemyHpBar = new(244, 90, 560, 24);
-    private static readonly Rectangle PlayerHpBar = new(300, 418, 560, 24);
+    private static readonly Rectangle EnemyHpBar = HpBarIn(EnemyPanel);
+    private static readonly Rectangle PlayerHpBar = HpBarIn(PlayerPanel);
+
+    // Positions inside a side's panel, the same for both sides.
+    private static Rectangle PortraitIn(Rectangle panel) => new(panel.X + 24, panel.Y + 24, 156, 156);
+    private static Rectangle HpBarIn(Rectangle panel) => new(panel.X + 204, panel.Y + 58, 560, 24);
+    private static Vector2 PassiveRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 96);
+    private static Vector2 StatusRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 140);
+    private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 236, 112, 112);
     private static readonly int[] Speeds = [1, 2, 4];
 
     private readonly LabSetup? _lab;
@@ -63,14 +72,14 @@ public sealed class FightScreen : Screen
         set => _clock.Speed = value;
     }
 
-    public static Rectangle CardRect(int slot) => new(64 + slot * 128, 540, 112, 112);
+    public static Rectangle CardRect(int slot) => SquareIn(PlayerPanel, slot);
 
-    public static Rectangle AbilityCard(int index) => new(244 + index * 112, 236, 96, 96);
+    public static Rectangle AbilityCard(int index) => SquareIn(EnemyPanel, index);
 
     public static Rectangle PassiveIcon(Vector2 rowStart, int index) => new((int)rowStart.X + index * 38, (int)rowStart.Y, 32, 32);
 
-    public static readonly Vector2 EnemyPassiveRow = new(244, 128);
-    private static readonly Vector2 PlayerPassiveRow = new(140, 740);
+    public static readonly Vector2 EnemyPassiveRow = PassiveRowIn(EnemyPanel);
+    private static readonly Vector2 PlayerPassiveRow = PassiveRowIn(PlayerPanel);
 
     public override void Update(double seconds)
     {
@@ -127,20 +136,20 @@ public sealed class FightScreen : Screen
     {
         ui.Panel(EnemyPanel);
         var def = Battle.EnemyDefinition;
-        var portrait = new Rectangle(64, 56, 156, 156);
+        var portrait = PortraitIn(EnemyPanel);
         ui.Square("Enemies", def.Id, def.Name, portrait, Palette.Damage * 0.8f);
         if (Battle.Enemy.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, new Color(120, 200, 255) * 0.35f);
         if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities and passives are listed beside it."], Palette.Damage);
 
-        ui.Text(def.Name, new Vector2(244, 52), 24, Palette.Text, bold: true);
+        ui.Text(def.Name, new Vector2(EnemyHpBar.X, EnemyPanel.Y + 20), 22, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
         var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
         for (int i = 0; i < passives.Count && i < 16; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveRow, i), enemy: true);
-        DrawStatuses(ui, Battle.Enemy, new Vector2(244, 176));
+        DrawStatuses(ui, Battle.Enemy, StatusRowIn(EnemyPanel));
 
         var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility && s.HasCooldown).ToList();
         for (int i = 0; i < abilities.Count && i < 5; i++) DrawAbility(ui, abilities[i], AbilityCard(i));
-        DrawTimer(ui, new Vector2(64, 232));
+        DrawTimer(ui, new Vector2(EnemyPanel.X + 24, EnemyPanel.Bottom + 26));
     }
 
     /// <summary>An enemy ability as a square like the player's items: picture, cooldown shade and seconds left.</summary>
@@ -194,7 +203,7 @@ public sealed class FightScreen : Screen
 
     private static void DrawPausedBanner(Ui ui)
     {
-        var r = new Rectangle(452, 360, 336, 48);
+        var r = new Rectangle(452, 426, 336, 48);
         ui.Panel(r, new Color(20, 22, 32) * 0.92f, Palette.Accent);
         ui.TextIn("PAUSED  ·  Space to resume", r, 18, Palette.Accent, bold: true);
     }
@@ -204,8 +213,8 @@ public sealed class FightScreen : Screen
         int ticksLeft = Math.Max(0, Battle.TimeLimitTicks - Battle.Tick);
         int secondsLeft = (ticksLeft + 9) / 10;
         var color = secondsLeft <= 15 ? Palette.Damage : Palette.TextDim;
-        ui.IconText("clock", "Time left ", $"{secondsLeft / 60}:{secondsLeft % 60:00}", pos, 17, color, bold: secondsLeft <= 15);
-        ui.Text("Out of time = defeat", pos + new Vector2(0, 22), 14, Palette.TextDim);
+        ui.IconText("clock", "Time left ", $"{secondsLeft / 60}:{secondsLeft % 60:00}", pos, 20, color, bold: true);
+        ui.Text("Out of time = defeat", pos + new Vector2(100, 4), 14, Palette.TextDim);
     }
 
     // ---- player ------------------------------------------------------------------------------------------------
@@ -213,11 +222,18 @@ public sealed class FightScreen : Screen
     private void DrawPlayer(Ui ui)
     {
         ui.Panel(PlayerPanel);
-        string title = _battleSetup.Player.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? $"You ({ch.Name})" : "You";
-        ui.Text(title, new Vector2(64, 416), 20, Palette.Text, bold: true);
+        // The character's portrait where the enemy's is; no name needed.
+        var portrait = PortraitIn(PlayerPanel);
+        var character = _battleSetup.Player.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? ch : null;
+        ui.Square("Characters", character?.Id ?? "none", character?.Name ?? "You", portrait, Palette.Accent * 0.8f);
+        if (Battle.Player.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, new Color(120, 200, 255) * 0.35f);
+        if (character is not null && ui.Hover(portrait))
+        {
+            var (title, lines) = Tooltips.For(character, 1, Game.Data.Database);
+            ui.Tooltip(title, lines, Palette.Accent);
+        }
         DrawHp(ui, Battle.Player, PlayerHpBar);
-        DrawStatuses(ui, Battle.Player, new Vector2(300, 456));
-        if (Battle.Player.IsFrozenAt(Battle.Tick)) ui.Text("You are frozen!", new Vector2(64, 456), 16, Palette.Freeze, bold: true);
+        DrawStatuses(ui, Battle.Player, StatusRowIn(PlayerPanel));
 
         foreach (var item in Battle.Player.Items) DrawCard(ui, item, CardRect(item.Slot!.Value));
         DrawHint(ui);
@@ -286,7 +302,7 @@ public sealed class FightScreen : Screen
         }
         else if (Battle.Player.Items.Any(i => _targeting.CanActivate(i, Battle)))
             hint = "Glowing items are ready: click to use them.";
-        if (hint is not null) ui.TextIn(hint, new Rectangle(PlayerPanel.X, 680, PlayerPanel.Width, 24), 16, Palette.Accent, bold: true);
+        if (hint is not null) ui.Text(hint, new Vector2(PlayerHpBar.X, PlayerPanel.Y + 192), 15, Palette.Accent, bold: true);
     }
 
     private void DrawExtras(Ui ui)
@@ -295,7 +311,6 @@ public sealed class FightScreen : Screen
             .Where(s => s.Def.Kind is SourceKind.Passive or SourceKind.Character || s.Def.IsPassiveAbility)
             .Where(s => s.Def.Abilities.Count > 0 || s.Def.Modifiers.Count > 0 || s.Script is not null).ToList();
         if (passives.Count == 0) return;
-        ui.Text("Passives", new Vector2(64, PlayerPassiveRow.Y + 7), 15, Palette.TextDim);
         for (int i = 0; i < passives.Count && i < 18; i++) DrawPassive(ui, passives[i], PassiveIcon(PlayerPassiveRow, i), enemy: false);
     }
 
@@ -367,8 +382,8 @@ public sealed class FightScreen : Screen
 
     private Vector2 AnchorPosition(FloatAnchor a)
     {
-        // Damage to a side floats in the open space right of its HP bar.
-        if (a.Side is Side side) return side == Side.Enemy ? new Vector2(EnemyHpBar.Right + 170, EnemyHpBar.Y + 90) : new Vector2(PlayerHpBar.Right + 170, PlayerHpBar.Y + 90);
+        // Damage to a side comes out of its HP bar.
+        if (a.Side is Side side) return side == Side.Enemy ? new Vector2(EnemyHpBar.Center.X, EnemyHpBar.Center.Y - 12) : new Vector2(PlayerHpBar.Center.X, PlayerHpBar.Center.Y - 12);
         var source = a.SourceId is int id ? Battle.FindSource(id) : null;
         if (source?.Slot is int slot) return new Vector2(CardRect(slot).Center.X, CardRect(slot).Y + 40);
         if (source is not null)
@@ -389,7 +404,7 @@ public sealed class FightScreen : Screen
         {
             float age = (float)(f.Age / FloatingTexts.Lifetime);
             float dx = (f.Stack % 3) switch { 0 => 0, 1 => -110, _ => 110 };
-            var pos = AnchorPosition(f.Anchor) + new Vector2(dx, -age * 30 - f.Stack / 3 % 2 * 22);
+            var pos = AnchorPosition(f.Anchor) + new Vector2(dx, -age * 80 - f.Stack / 3 % 2 * 22); // rises quickly
             var color = f.Color * (age < 0.7f ? 1f : (1 - age) / 0.3f);
             ui.Text(f.Text, pos + new Vector2(2, 2), 22, Color.Black * (color.A / 255f), bold: true, align: Align.Center);
             ui.Text(f.Text, pos, 22, color, bold: true, align: Align.Center);
