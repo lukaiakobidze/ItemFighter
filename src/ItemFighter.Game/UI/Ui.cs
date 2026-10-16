@@ -126,6 +126,29 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         if (w > 0) Rect(new Rectangle(r.X, r.Y, w, r.Height), fill);
     }
 
+    /// <summary>
+    /// A small icon on the shared frame: UI/icon_frame_bg.png behind it and UI/icon_frame_border.png on top, the border
+    /// tinted with <paramref name="border"/> (so one white border image serves every colour). Without those PNGs the
+    /// frame is drawn as a dark square with a thin coloured line.
+    /// </summary>
+    public void FramedIcon(string kind, string id, string name, Rectangle r, Color border, int thickness = 1)
+    {
+        var bg = assets.Texture("UI", "icon_frame_bg");
+        if (bg is null) Rect(r, new Color(14, 15, 22));
+        else batch.Draw(bg, r, Color.White);
+        int pad = Math.Max(2, r.Width / 10);
+        var inner = new Rectangle(r.X + pad, r.Y + pad, r.Width - pad * 2, r.Height - pad * 2);
+        if (assets.Texture(kind, id) is not null) Art(kind, id, name, inner);
+        else TextIn(name, r, Math.Max(10, r.Height / 3), Palette.TextDim, bold: true);
+        var frame = assets.Texture("UI", "icon_frame_border");
+        if (frame is null) Border(r, border, thickness);
+        else
+        {
+            batch.Draw(frame, r, border);
+            if (thickness > 1) Border(r, border, thickness);
+        }
+    }
+
     /// <summary>A content picture, or a placeholder (colour + name) when there is no PNG.</summary>
     public void Art(string kind, string id, string name, Rectangle r, Color? tint = null)
     {

@@ -173,10 +173,10 @@ public sealed class FightScreen : Screen
     private void DrawPassive(Ui ui, SourceInstance p, Rectangle r, bool enemy)
     {
         bool flash = _firedAt.TryGetValue(p.Id, out double t) && _time - t < 0.3;
-        ui.Art("Passives", p.Def.Id, Initials(p.Def.Name), r);
-        if (flash) ui.Rect(r, Color.White * 0.35f);
         bool hover = ui.Hover(r);
-        ui.Border(r, hover || flash ? Palette.Accent : Palette.Border, hover || flash ? 2 : 1);
+        var border = hover || flash ? Palette.Accent : enemy ? Palette.Damage : Palette.Accent * 0.8f;
+        ui.FramedIcon("Passives", p.Def.Id, Initials(p.Def.Name), r, border, hover || flash ? 2 : 1);
+        if (flash) ui.Rect(r, Color.White * 0.25f);
         if (!hover) return;
         var (title, lines) = Tooltips.For(p.Def, p.Level, Game.Data.Database, ownedByPlayer: !enemy);
         ui.Tooltip(title, ["Passive", .. lines], enemy ? Palette.Damage : Palette.For(p.Def.Rarity));
@@ -329,18 +329,22 @@ public sealed class FightScreen : Screen
     private void DrawStatuses(Ui ui, Combatant c, Vector2 pos)
     {
         float x = pos.X;
+        // Each status: its icon on the shared dark frame with a border in the status colour, then the numbers.
+        // Without an icon PNG the status name is written out instead.
         void Chip(string text, Color color, string tip, string body)
         {
-            var icon = ui.Assets.Texture("Statuses", tip == "Frozen" ? "freeze" : tip.ToLowerInvariant());
-            int iconWidth = icon is null ? 0 : 22;
-            var size = ui.Measure(text, 15, true);
-            var r = new Rectangle((int)x, (int)pos.Y, (int)size.X + 18 + iconWidth, 28);
-            ui.Rect(r, color * 0.18f);
-            ui.Border(r, color, 1);
-            if (icon is not null) ui.Batch.Draw(icon, new Rectangle(r.X + 6, r.Y + 5, 18, 18), Color.White);
-            ui.Text(text, new Vector2(x + 9 + iconWidth, pos.Y + 5), 15, color, bold: true);
+            string id = tip == "Frozen" ? "freeze" : tip.ToLowerInvariant();
+            bool hasIcon = ui.Assets.Texture("Statuses", id) is not null;
+            string numbers = hasIcon && text.StartsWith(tip, StringComparison.OrdinalIgnoreCase) ? text[tip.Length..].Trim() : text;
+            var icon = new Rectangle((int)x, (int)pos.Y - 1, 30, 30);
+            var size = ui.Measure(numbers, 15, true);
+            var r = new Rectangle(icon.X, icon.Y, icon.Width + (int)size.X + 10, icon.Height);
+            if (hasIcon) ui.FramedIcon("Statuses", id, tip, icon, color);
+            else r = icon = new Rectangle((int)x, (int)pos.Y, 0, 28);
+            ui.Text(numbers, new Vector2(icon.Right + 6, pos.Y + 5), 15, color, bold: true);
+            if (!hasIcon) r.Width = (int)size.X + 12;
             if (ui.Hover(r)) ui.Tooltip(tip, [body], color);
-            x += r.Width + 8;
+            x += r.Width + 10;
         }
         var s = c.Statuses;
         var rules = Battle.Rules;

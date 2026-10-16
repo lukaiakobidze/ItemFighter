@@ -2,6 +2,14 @@
 
 This brief asks for **PNG images only**. The game already loads them: drop each file at the path given and it shows up in game (press F5 in the Fight Lab to reload). You don't need to change any code. The fight screen layout described at the end is already built, so the images just need to fit it.
 
+## How to work (Codex)
+
+- **Work in `D:\CODING\GameDev\ItemFighterArt`** (this brief sits in that folder). Write every image there, under the same folders the game uses: `src\ItemFighter.Game\Content\Art\<Kind>\<id>.png`, for example `src\ItemFighter.Game\Content\Art\Items\sword.png`. Luka copies that `src` folder over the game repo, so the paths must match exactly.
+- Make one image per file, at the exact size in the table below, as a real PNG with an alpha channel (no JPEG renamed to .png).
+- Don't change images that already exist unless Luka asks; add the missing ones. Check the folder first to see what's done.
+- Work through the tables in order and save each image as soon as it's finished, so progress can be checked while you work.
+- Don't touch anything else in the folder or in the game repo.
+
 ## What the game is
 
 ItemFighter is a roguelike autobattler, similar to The Bazaar. You fight one enemy at a time. Your items sit in a row of 6 slots and fire on their own cooldowns. Enemies have abilities that fire the same way, plus passives that trigger on their own. The tone is light fantasy, a bit humorous (a martial arts squirrel, a furious boxer).
@@ -23,6 +31,7 @@ ItemFighter is a roguelike autobattler, similar to The Bazaar. You fight one ene
 | Enemies (portraits) | `src/ItemFighter.Game/Content/Art/Enemies/` | 512×512 |
 | Characters (portraits) | `src/ItemFighter.Game/Content/Art/Characters/` | 512×512 |
 | Map encounters | `src/ItemFighter.Game/Content/Art/Encounters/` | 512×512 |
+| UI pieces | `src/ItemFighter.Game/Content/Art/UI/` | 128×128 |
 
 ## Items (28)
 
@@ -136,6 +145,17 @@ Small icons shown next to the stack count in the status row under the health bar
 |---|---|---|
 | `shop.png` | Shop | Cosy merchant stall with a lantern and items on display |
 
+## UI pieces (2)
+
+The icon frame that every status icon and passive icon sits on, made of two layers. The game draws the background, then the icon inside it (with a small margin), then the border on top. The border is **pure white** so the game can tint it: orange for burn, purple for poison, red for enemy passives, gold for yours, and so on.
+
+| File | What it is | How it should look |
+|---|---|---|
+| `icon_frame_bg.png` | Background behind the icon | Dark square that fills the whole 128×128, near-black blue-grey (`#0E0F16` to `#1A1C28`), with a very soft inner shadow or subtle texture so it isn't flat. Slightly rounded corners (about 10px), transparent outside the corners |
+| `icon_frame_border.png` | Thin border on top | Thin **white** line (about 4px at 128×128) following the same rounded square, everything else fully transparent. A faint inner glow is fine, but keep it white so tinting works |
+
+Both must line up exactly: same size, same corner radius, same edges.
+
 ## Where the images appear in a fight
 
 Enemy panel, top of the screen:
@@ -143,8 +163,8 @@ Enemy panel, top of the screen:
 ```
 +-----------+  Enemy name
 | portrait  |  [========== health bar ==========]
-|  (Enemies)|  [P][P][P]          <- passives row: small square icons (Passives/), mouse-over = details
-|           |  [burn 3][chill 2]  <- statuses row: status icon (Statuses/) + stack count
+|  (Enemies)|  [P][P][P]          <- passives row: framed square icons (Passives/), mouse-over = details
+|           |  [B] 3  [C] 1/5     <- statuses row: framed status icon (Statuses/) + stack count
 +-----------+  +------+ +------+ +------+
  time left     | art  | | art  | | art  |   <- enemy abilities as boxes (EnemyAbilities/),
                | name | | name | | name |      name and cooldown bar under the picture
@@ -154,11 +174,11 @@ Enemy panel, top of the screen:
 
 Player panel, bottom: the item cards (Items/), the status row under the health bar, and the character's passive as the same small square icon.
 
-The smallest sizes on screen are passive icons at 36×36, status icons at 18×18, and ability box art at about 104×62 (the image is fitted inside and keeps its shape). Item art on cards is about 124×112.
+Status and passive icons sit inside the UI frame. The smallest sizes on screen are passive icons at 36×36 and status icons at 30×30 (frame included; the icon itself is a little smaller), and ability box art at about 104×62 (the image is fitted inside and keeps its shape). Item art on cards is about 124×112.
 
 ## Checklist
 
-- 28 items, 12 enemy abilities, 7 passives, 8 statuses, 10 enemies, 1 character, 1 shop: 67 PNGs.
+- 28 items, 12 enemy abilities, 7 passives, 8 statuses, 10 enemies, 1 character, 1 shop, 2 UI frame pieces: 69 PNGs. The statuses and passives are done already.
 - File names exactly as in the tables (lower case, underscores).
-- Square, transparent background except portraits and the shop.
+- Square, transparent background except portraits, the shop and the frame background.
 - No text, numbers, frames or rarity borders in the images.
