@@ -1,0 +1,7 @@
+{
+  "id": "yeti",
+  "name": "Yeti",
+  "difficulty": 2,
+  "maxHp": 80,
+  "abilityIds": ["cold_fur", "pummel"]
+}

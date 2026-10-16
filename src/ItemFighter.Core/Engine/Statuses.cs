@@ -1,11 +1,11 @@
 namespace ItemFighter.Core.Engine;
 
-public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail }
+public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power }
 
 public static class StatusTypes
 {
-    /// <summary>Burn, poison, chill, pain and nail stack on a combatant; freeze and haste are timers on one item or ability.</summary>
-    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail;
+    /// <summary>Burn, poison, chill, pain, nail and power stack on a combatant; freeze and haste are timers on one item or ability.</summary>
+    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power;
 }
 
 /// <summary>Stacking statuses on a combatant.</summary>
@@ -17,6 +17,7 @@ public sealed class StatusSet
     public int ChillExpiresAtTick { get; set; }
     public int Pain { get; set; }
     public int Nail { get; set; }
+    public int Power { get; set; }
 
     /// <summary>Stacks of a combatant status.</summary>
     public int Get(StatusType s) => s switch
@@ -26,6 +27,7 @@ public sealed class StatusSet
         StatusType.Chill => Chill,
         StatusType.Pain => Pain,
         StatusType.Nail => Nail,
+        StatusType.Power => Power,
         _ => 0,
     };
 
@@ -39,6 +41,7 @@ public sealed class StatusSet
             case StatusType.Chill: Chill = 0; break;
             case StatusType.Pain: Pain = 0; break;
             case StatusType.Nail: Nail = 0; break;
+            case StatusType.Power: Power = 0; break;
         }
     }
 
@@ -142,6 +145,17 @@ public sealed class NailRule : IStatusRule
 
     public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth) =>
         target.Statuses.Nail += amount;
+
+    public void OnTick(Battle battle, Combatant target) { }
+}
+
+/// <summary>Stays all fight. Each stack adds powerDamagePerStack (rules.json) to every hit its owner deals.</summary>
+public sealed class PowerRule : IStatusRule
+{
+    public StatusType Type => StatusType.Power;
+
+    public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth) =>
+        target.Statuses.Power += amount;
 
     public void OnTick(Battle battle, Combatant target) { }
 }

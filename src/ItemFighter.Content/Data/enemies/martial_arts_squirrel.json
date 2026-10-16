@@ -1,0 +1,7 @@
+{
+  "id": "martial_arts_squirrel",
+  "name": "Martial Arts Squirrel",
+  "difficulty": 1,
+  "maxHp": 40,
+  "abilityIds": ["flurry"]
+}

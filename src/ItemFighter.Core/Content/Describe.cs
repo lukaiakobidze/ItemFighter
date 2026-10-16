@@ -127,6 +127,7 @@ public static class SourceDescriber
             "ChillApplied" => $"{sign}{abs} Chill applied",
             "PainApplied" => $"{sign}{abs} Pain applied",
             "NailApplied" => $"{sign}{abs} Nail applied",
+            "PowerApplied" => $"{sign}{abs} Power applied",
             "NailDamage" => $"{sign}{abs} damage per Nail uprooted",
             "PoisonThreshold" => m.Amount < 0 ? $"Poison bursts {abs} stacks sooner" : $"Poison bursts {abs} stacks later",
             "CooldownPercent" => m.Amount < 0 ? $"{abs}% faster cooldowns" : $"{abs}% slower cooldowns",

@@ -1,0 +1,13 @@
+{
+  "id": "harden",
+  "kind": "EnemyAbility",
+  "name": "Harden",
+  "cooldown": 8,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Shield", "amount": 25 }
+      ]
+    }
+  ]
+}

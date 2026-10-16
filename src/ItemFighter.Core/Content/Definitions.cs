@@ -66,6 +66,6 @@ public sealed record ModifierDefinition(string Stat, int Amount, ModifierFilter 
     public static readonly IReadOnlySet<string> KnownStats = new HashSet<string>(StringComparer.Ordinal)
     {
         "ShieldGained", "DamageDealt", "HealGained", "BurnApplied", "PoisonApplied", "ChillApplied",
-        "PainApplied", "NailApplied", "NailDamage", "PoisonThreshold", "CooldownPercent", "DamageTaken",
+        "PainApplied", "NailApplied", "PowerApplied", "NailDamage", "PoisonThreshold", "CooldownPercent", "DamageTaken",
     };
 }

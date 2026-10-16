@@ -52,7 +52,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `Damage` | `amount`; optional `hits` (2 = two separate hits), `percentOfShield` (adds that % of your current shield; 100 = equal to it), `perItem` + `perItemTag` (adds `perItem` for each board item with that tag, itself included) | Enemy |
 | `Shield` | `amount` and/or `percentOfMaxHp` | Self |
 | `Heal` | `amount` | Self |
-| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail; items for Freeze/Haste |
+| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail/Power (give `"target": "Self"` to power yourself up); items for Freeze/Haste |
 | `RemoveStatus` | `statuses`, e.g. `["Poison", "Burn"]` | Self. Removes every stack |
 | `Uproot` | | Enemy. Pulls out every Nail for `nailDamage` each (rules.json, plus `NailDamage` modifiers), as one hit |
 | `Charge` | `seconds` | Chosen. Takes time off the current cooldown; if that passes zero the item fires and the rest carries into its next cooldown |
@@ -73,6 +73,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 - **Chill:** each stack makes all the target's cooldowns 5% longer. Stacks last 5s, and each new stack refreshes the timer; when it runs out the cooldowns go back to normal. 5 stacks freeze the target for 1s.
 - **Pain:** stays all fight. Each time that side's item or ability fires (on its own or by click, not as a reaction), that side takes damage equal to its Pain. Shield blocks it, and it counts as taking damage.
 - **Nail:** does nothing alone. Uproot pulls them all out for `nailDamage` (4) each.
+- **Power:** stays all fight. Each stack adds `powerDamagePerStack` (1) to every hit its owner deals. Burn, poison and pain are not boosted.
 - **Freeze / Haste:** on single items or abilities, for some `seconds`. Haste ×2 speed, Freeze stops. A frozen item that gets charged or reset to full waits and fires when the freeze ends.
 - **Slow** is an effect, not a status: it adds seconds to the current cooldown.
 
@@ -88,7 +89,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 { "id": "iron_skin", "modifiers": [ { "stat": "ShieldGained", "amount": 5, "filter": { "kind": "Item" } } ] }
 ```
 
-Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
+Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
 
 A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 

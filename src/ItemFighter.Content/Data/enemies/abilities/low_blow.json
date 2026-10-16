@@ -1,0 +1,13 @@
+{
+  "id": "low_blow",
+  "kind": "EnemyAbility",
+  "name": "Low Blow",
+  "cooldown": 6,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "ApplyStatus", "status": "Pain", "amount": 1 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "cold_fur",
+  "kind": "EnemyAbility",
+  "name": "Cold Fur",
+  "abilities": [
+    {
+      "trigger": { "type": "OnDamageTaken", "every": 3 },
+      "effects": [
+        { "type": "ApplyStatus", "status": "Chill", "amount": 1 }
+      ]
+    }
+  ]
+}

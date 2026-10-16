@@ -80,7 +80,7 @@ public sealed class ResetCooldownEffect(TargetSpec target) : IEffect
 public sealed class ModifyStatEffect(string stat, ValueRef amount, TargetSpec target) : IEffect
 {
     public static readonly IReadOnlySet<string> Stats = new HashSet<string>(StringComparer.Ordinal)
-        { "Damage", "Shield", "Heal", "Burn", "Poison", "Chill", "Pain", "Nail" };
+        { "Damage", "Shield", "Heal", "Burn", "Poison", "Chill", "Pain", "Nail", "Power" };
 
     public static ModifyStatEffect Parse(ParseContext ctx)
     {

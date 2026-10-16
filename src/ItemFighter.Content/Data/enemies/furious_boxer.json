@@ -1,0 +1,7 @@
+{
+  "id": "furious_boxer",
+  "name": "Furious Boxer",
+  "difficulty": 3,
+  "maxHp": 100,
+  "abilityIds": ["fury", "right_hook", "low_blow"]
+}

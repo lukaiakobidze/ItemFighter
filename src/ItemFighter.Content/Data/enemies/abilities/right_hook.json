@@ -1,0 +1,13 @@
+{
+  "id": "right_hook",
+  "kind": "EnemyAbility",
+  "name": "Right Hook",
+  "cooldown": 10,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Damage", "amount": 10, "hits": 2 }
+      ]
+    }
+  ]
+}

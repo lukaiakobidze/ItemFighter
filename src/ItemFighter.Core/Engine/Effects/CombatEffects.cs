@@ -115,7 +115,7 @@ public sealed class RemoveStatusEffect(IReadOnlyList<StatusType> statuses, Targe
         foreach (string n in names)
         {
             if (!Enum.TryParse<StatusType>(n, out var s) || !Enum.IsDefined(s) || !s.IsCombatantStatus())
-                throw new ContentException($"'{n}' is not a status that sits on a fighter (Burn, Poison, Chill, Pain, Nail)");
+                throw new ContentException($"'{n}' is not a status that sits on a fighter (Burn, Poison, Chill, Pain, Nail, Power)");
             list.Add(s);
         }
         return new(list, CombatantTarget.Read(ctx, TargetSpec.Self));

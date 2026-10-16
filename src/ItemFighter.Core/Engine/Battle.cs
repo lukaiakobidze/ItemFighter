@@ -181,6 +181,7 @@ public sealed class Battle
         [StatusType.Chill] = new ChillRule(),
         [StatusType.Pain] = new PainRule(),
         [StatusType.Nail] = new NailRule(),
+        [StatusType.Power] = new PowerRule(),
     };
 
     /// <summary>Adds burn, poison or chill stacks to a combatant.</summary>
@@ -491,7 +492,11 @@ public sealed class Battle
 
     public void DealDamage(Side target, int amount, DamageKind kind, SourceInstance? source, int depth, bool ignoreShield = false)
     {
-        if (kind == DamageKind.Direct) amount = Modify("DamageDealt", amount, source);
+        if (kind == DamageKind.Direct)
+        {
+            amount = Modify("DamageDealt", amount, source);
+            if (source is not null) amount += Get(source.Owner).Statuses.Power * Rules.PowerDamagePerStack;
+        }
         if (amount <= 0) return;
         int shieldDamage = ignoreShield ? 0 : Math.Min(Get(target).Shield, amount);
         ApplyRawDamage(target, amount - shieldDamage, shieldDamage, kind, source, depth);

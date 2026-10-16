@@ -1,0 +1,13 @@
+{
+  "id": "flurry",
+  "kind": "EnemyAbility",
+  "name": "Flurry",
+  "cooldown": 6,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Damage", "amount": 3, "hits": 4 }
+      ]
+    }
+  ]
+}

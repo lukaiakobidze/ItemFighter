@@ -1,0 +1,13 @@
+{
+  "id": "heavy_swipe",
+  "kind": "EnemyAbility",
+  "name": "Heavy Swipe",
+  "cooldown": 5,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Damage", "amount": 10 }
+      ]
+    }
+  ]
+}

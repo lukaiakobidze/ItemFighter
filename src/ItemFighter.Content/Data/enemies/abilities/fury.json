@@ -1,0 +1,13 @@
+{
+  "id": "fury",
+  "kind": "EnemyAbility",
+  "name": "Fury",
+  "abilities": [
+    {
+      "trigger": "OnDamageTaken",
+      "effects": [
+        { "type": "ApplyStatus", "status": "Power", "amount": 1, "target": "Self" }
+      ]
+    }
+  ]
+}

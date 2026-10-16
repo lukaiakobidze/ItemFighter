@@ -45,6 +45,9 @@ public sealed class CombatRules
     /// <summary>Damage per nail when nails are uprooted (NailDamage modifiers add to it).</summary>
     public int NailDamage { get; init; } = 4;
 
+    /// <summary>Each Power stack adds this much to every hit its owner deals.</summary>
+    public int PowerDamagePerStack { get; init; } = 1;
+
     /// <summary>Cooldowns never run slower than this percent of normal speed, however much they are chilled.</summary>
     public int SlowestCooldownSpeedPercent { get; init; } = 10;
 
@@ -98,7 +101,7 @@ public sealed class CombatRules
         Check(BurnLossPerTick >= 0 && BurnShieldMultiplier >= 1, "'burnLossPerTick' can't be negative and 'burnShieldMultiplier' must be at least 1");
         Check(PoisonThreshold >= 1 && PoisonBurstPerStack >= 0, "'poisonThreshold' must be at least 1 and 'poisonBurstPerStack' can't be negative");
         Check(ChillCooldownPercentPerStack >= 0 && ChillFreezeAtStacks >= 1, "'chillCooldownPercentPerStack' can't be negative and 'chillFreezeAtStacks' must be at least 1");
-        Check(NailDamage >= 0, "'nailDamage' can't be negative");
+        Check(NailDamage >= 0 && PowerDamagePerStack >= 0, "'nailDamage' and 'powerDamagePerStack' can't be negative");
         Check(SlowestCooldownSpeedPercent is >= 1 and <= 100, "'slowestCooldownSpeedPercent' must be 1 to 100");
     }
 }

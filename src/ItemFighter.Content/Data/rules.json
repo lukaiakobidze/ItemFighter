@@ -15,6 +15,8 @@
 
   "nailDamage": 4,
 
+  "powerDamagePerStack": 1,
+
   "minCooldownSeconds": 0.5,
   "slowestCooldownSpeedPercent": 10
 }
