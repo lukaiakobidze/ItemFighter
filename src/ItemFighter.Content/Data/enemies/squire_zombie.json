@@ -2,6 +2,6 @@
   "id": "squire_zombie",
   "name": "Squire Zombie",
   "difficulty": 1,
-  "maxHp": 40,
+  "maxHp": 50,
   "abilityIds": ["bite"]
 }

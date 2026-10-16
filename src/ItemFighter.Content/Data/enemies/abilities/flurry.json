@@ -6,7 +6,7 @@
   "abilities": [
     {
       "effects": [
-        { "type": "Damage", "amount": 3, "hits": 4 }
+        { "type": "Damage", "amount": 4, "hits": 5 }
       ]
     }
   ]

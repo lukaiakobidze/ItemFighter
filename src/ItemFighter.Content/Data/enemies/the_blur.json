@@ -2,7 +2,7 @@
   "id": "the_blur",
   "name": "The Blur",
   "difficulty": 2,
-  "maxHp": 60,
+  "maxHp": 80,
   "abilityIds": [
     "fast_reload",
     "rifle_shot"

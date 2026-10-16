@@ -8,7 +8,7 @@
         {
           "type": "ApplyStatus",
           "status": "Poison",
-          "amount": 2
+          "amount": 3
         }
       ],
       "trigger": "OnDamageDealt"

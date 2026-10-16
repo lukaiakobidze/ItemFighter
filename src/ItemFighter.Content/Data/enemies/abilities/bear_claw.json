@@ -8,7 +8,7 @@
       "effects": [
         {
           "type": "Damage",
-          "amount": 10
+          "amount": 20
         }
       ]
     }

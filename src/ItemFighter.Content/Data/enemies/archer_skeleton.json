@@ -2,6 +2,6 @@
   "id": "archer_skeleton",
   "name": "Archer Skeleton",
   "difficulty": 1,
-  "maxHp": 20,
+  "maxHp": 40,
   "abilityIds": ["bow_shot"]
 }

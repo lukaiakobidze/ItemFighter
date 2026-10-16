@@ -2,6 +2,6 @@
   "id": "grizzly_bear",
   "name": "Grizzly Bear",
   "difficulty": 2,
-  "maxHp": 100,
+  "maxHp": 150,
   "abilityIds": ["thick_skin", "bear_claw"]
 }

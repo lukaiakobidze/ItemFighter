@@ -2,6 +2,6 @@
   "id": "flaming_rock",
   "name": "Flaming Rock",
   "difficulty": 1,
-  "maxHp": 50,
+  "maxHp": 70,
   "abilityIds": ["explosive", "fiery_stone"]
 }
