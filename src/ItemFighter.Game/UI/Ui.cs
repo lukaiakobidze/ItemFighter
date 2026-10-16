@@ -41,17 +41,32 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         Border(r, border ?? Palette.Border, 1);
     }
 
-    public Vector2 Measure(string text, int size, bool bold = false) => assets.Font(size, bold).MeasureString(text);
+    /// <summary>
+    /// Real screen pixels per virtual pixel. Text is rasterised at size × Scale and drawn at 1/Scale, so it stays sharp
+    /// when the 1280×720 layout is scaled up to a bigger window or fullscreen.
+    /// </summary>
+    public float Scale { get; set; } = 1f;
+
+    private SpriteFontBase Font(int size, bool bold) => assets.Font(Math.Max(1, (int)MathF.Round(size * Scale)), bold);
+
+    private float TextWidth(SpriteFontBase font, string text) => font.MeasureString(text).X / Scale;
+
+    private float Snap(float v) => MathF.Round(v * Scale) / Scale;
+
+    private void DrawText(SpriteFontBase font, string text, Vector2 pos, Color color) =>
+        batch.DrawString(font, text, new Vector2(Snap(pos.X), Snap(pos.Y)), color, scale: new Vector2(1 / Scale));
+
+    public Vector2 Measure(string text, int size, bool bold = false) => Font(size, bold).MeasureString(text) / Scale;
 
     public void Text(string text, Vector2 pos, int size, Color color, bool bold = false, Align align = Align.Left)
     {
-        var font = assets.Font(size, bold);
+        var font = Font(size, bold);
         if (align != Align.Left)
         {
-            float w = font.MeasureString(text).X;
+            float w = TextWidth(font, text);
             pos.X -= align == Align.Center ? w / 2 : w;
         }
-        batch.DrawString(font, text, new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y)), color);
+        DrawText(font, text, pos, color);
     }
 
     /// <summary>Text centred in a rectangle.</summary>
@@ -64,18 +79,18 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
     /// <summary>Draws word-wrapped text and returns the height used.</summary>
     public int Wrapped(string text, Vector2 pos, float width, int size, Color color, bool bold = false)
     {
-        var font = assets.Font(size, bold);
-        var lines = Wrap(s => font.MeasureString(s).X, text, width);
+        var font = Font(size, bold);
+        var lines = Wrap(s => TextWidth(font, s), text, width);
         int lineHeight = (int)(size * 1.25f);
         for (int i = 0; i < lines.Count; i++)
-            batch.DrawString(font, lines[i], new Vector2(MathF.Round(pos.X), MathF.Round(pos.Y + i * lineHeight)), color);
+            DrawText(font, lines[i], new Vector2(pos.X, pos.Y + i * lineHeight), color);
         return lines.Count * lineHeight;
     }
 
     public int WrappedHeight(string text, float width, int size, bool bold = false)
     {
-        var font = assets.Font(size, bold);
-        return Wrap(s => font.MeasureString(s).X, text, width).Count * (int)(size * 1.25f);
+        var font = Font(size, bold);
+        return Wrap(s => TextWidth(font, s), text, width).Count * (int)(size * 1.25f);
     }
 
     /// <summary>Greedy word wrap. A single word longer than the width is cut by characters.</summary>
@@ -118,14 +133,14 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         if (tex is null)
         {
             Rect(r, Palette.PlaceholderFor(id));
-            var font = assets.Font(r.Height >= 120 ? 18 : 13, bold: true);
-            var lines = Wrap(s => font.MeasureString(s).X, name, r.Width - 8);
-            float lh = font.LineHeight;
+            var font = Font(r.Height >= 120 ? 18 : 13, bold: true);
+            var lines = Wrap(s => TextWidth(font, s), name, r.Width - 8);
+            float lh = font.LineHeight / Scale;
             float y = r.Center.Y - lines.Count * lh / 2;
             foreach (var l in lines)
             {
-                float w = font.MeasureString(l).X;
-                batch.DrawString(font, l, new Vector2(MathF.Round(r.Center.X - w / 2), MathF.Round(y)), Color.White * 0.85f);
+                float w = TextWidth(font, l);
+                DrawText(font, l, new Vector2(r.Center.X - w / 2, y), Color.White * 0.85f);
                 y += lh;
             }
         }

@@ -66,12 +66,45 @@ public sealed class Assets : IDisposable
             if (stream.Read(head, 0, head.Length) != head.Length || !head.AsSpan().SequenceEqual(PngSignature)) return null;
             if (device is null) return null;
             stream.Seek(0, SeekOrigin.Begin);
-            return Texture2D.FromStream(device, stream);
+            using var flat = Texture2D.FromStream(device, stream);
+            return WithMipmaps(device, flat);
         }
         catch (Exception) // any decoder failure means "no art", never a crash
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// A copy with a full mip chain (each level a 2×2 average of the one above), so big art drawn small, like a 256px
+    /// passive in a 36px box, is smoothly filtered instead of shimmering and jagged.
+    /// </summary>
+    private static Texture2D WithMipmaps(GraphicsDevice device, Texture2D source)
+    {
+        int w = source.Width, h = source.Height;
+        var level = new Color[w * h];
+        source.GetData(level);
+        var result = new Texture2D(device, w, h, mipmap: true, SurfaceFormat.Color);
+        for (int i = 0; i < result.LevelCount; i++)
+        {
+            result.SetData(i, null, level, 0, level.Length);
+            if (w == 1 && h == 1) break;
+            int nw = Math.Max(1, w / 2), nh = Math.Max(1, h / 2);
+            var next = new Color[nw * nh];
+            for (int y = 0; y < nh; y++)
+            for (int x = 0; x < nw; x++)
+            {
+                int x0 = Math.Min(w - 1, x * 2), x1 = Math.Min(w - 1, x * 2 + 1);
+                int y0 = Math.Min(h - 1, y * 2), y1 = Math.Min(h - 1, y * 2 + 1);
+                Color a = level[y0 * w + x0], b = level[y0 * w + x1], c = level[y1 * w + x0], d = level[y1 * w + x1];
+                next[y * nw + x] = new Color((a.R + b.R + c.R + d.R + 2) / 4, (a.G + b.G + c.G + d.G + 2) / 4,
+                    (a.B + b.B + c.B + d.B + 2) / 4, (a.A + b.A + c.A + d.A + 2) / 4);
+            }
+            level = next;
+            w = nw;
+            h = nh;
+        }
+        return result;
     }
 
     public void Dispose()
