@@ -2,7 +2,7 @@
   "id": "cinder",
   "name": "Cinder",
   "rarity": "Common",
-  "tags": ["Fire"],
+  "tags": ["Burn"],
   "cooldown": 5,
   "activation": "Passive",
   "levels": {

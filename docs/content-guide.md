@@ -9,7 +9,7 @@ All game content lives in `src/ItemFighter.Content/Data/` as JSON, one file per 
   "id": "fire_flask",            // unique, lowercase_with_underscores
   "name": "Fire Flask",
   "rarity": "Common",            // Common, Uncommon, Rare, Epic, Legendary (shop and reward odds)
-  "tags": ["Fire", "Potion"],    // anything you like; other items look for tags, and owning a tag makes items with it show up more
+  "tags": ["Burn", "Potion"],    // anything you like; other items look for tags, and owning a tag makes items with it show up more
   "cooldown": 4,                 // seconds; leave out for items that only react
   "activation": "Passive",       // Passive (fires itself), Active (player clicks), None (only reacts)
   "levels": { "burn": [3, 5, 8, 12] },   // values per level 1-4, used as "{burn}"
@@ -37,7 +37,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `OnCooldown` | cooldown finished (default for Passive items) |
 | `OnActivate` | player clicked it (default for Active items) |
 | `OnFightStart` | once, at the start of the fight |
-| `{ "type": "OnItemFired", "filter": [...] }` | another of your items fired. Filters: `Adjacent`, `Tag:Fire`, `Slot:1` (the item in board slot 1; for an enemy, its 1st attack), `Self`, `AnyOwn` |
+| `{ "type": "OnItemFired", "filter": [...] }` | another of your items fired. Filters: `Adjacent`, `Tag:Burn`, `Slot:1` (the item in board slot 1; for an enemy, its 1st attack), `Self`, `AnyOwn` |
 | `OnDamageTaken` | your side took damage: hits, burn ticks and poison bursts. Add `"every": 5` for every 5th time |
 | `OnDamageDealt` | your side hit the other side directly (not burn/poison). Also takes `"every"` |
 | `{ "type": "OnHpBelow", "percent": 50 }` | once, when your HP first drops below 50% |
@@ -62,7 +62,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `ModifyStat` | `stat` (Damage, Shield, Heal, Burn, Poison, Chill), `amount` | Chosen. The target gets +amount for the rest of the fight |
 | `CopyEffect` | | Chosen. The target's effects run once more |
 
-**Targets** (`"target": ...`): `Self`, `Enemy`, `SelfItem`, `AdjacentItems`, `LeftItem`, `RightItem`, `ItemsWithTag:Fire`, `AllOwn`, `RandomOwnItem`, `RandomEnemyAbility`, `AllEnemy` (every enemy ability, or every player item when an enemy uses it), `Chosen` (what the player clicked), `TriggeringItem` (the item whose firing caused this reaction).
+**Targets** (`"target": ...`): `Self`, `Enemy`, `SelfItem`, `AdjacentItems`, `LeftItem`, `RightItem`, `ItemsWithTag:Burn`, `AllOwn`, `RandomOwnItem`, `RandomEnemyAbility`, `AllEnemy` (every enemy ability, or every player item when an enemy uses it), `Chosen` (what the player clicked), `TriggeringItem` (the item whose firing caused this reaction).
 
 ## Statuses
 

@@ -3,7 +3,7 @@
   "name": "Tasty Cleanser",
   "rarity": "Rare",
   "tags": [
-    "Heal"
+    "Cleanse"
   ],
   "cooldown": 7,
   "activation": "Passive",
