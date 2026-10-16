@@ -69,7 +69,8 @@ public class RunContentTests
         Assert.Empty(errors);
         Assert.Equal(8, config.BackpackSize);
         Assert.Equal(6, config.HotbarSize);
-        Assert.Equal(1, config.DifficultySpread);
+        Assert.Equal(1, config.FightDaysAtStart);
+        Assert.Equal(new[] { 2, 3 }, config.ShopDaysPerMission);
     }
 
     [Fact]

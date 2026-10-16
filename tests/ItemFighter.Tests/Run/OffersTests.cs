@@ -107,17 +107,39 @@ public class OffersTests
     }
 
     [Fact]
-    public void Encounters_EnemiesInRange_AreEquallyLikely()
+    public void Encounters_EnemiesOfOneDifficulty_AreEquallyLikely()
     {
         var db = TestContent.Db(
             ("enemies/one.json", """{ "id": "one", "maxHp": 10, "difficulty": 1 }"""),
-            ("enemies/two.json", """{ "id": "two", "maxHp": 10, "difficulty": 2 }"""));
-        var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
+            ("enemies/two.json", """{ "id": "two", "maxHp": 10, "difficulty": 1 }"""));
+        var config = new RunConfig { ChoicesPerPick = 1 };
         var counts = new Dictionary<string, int> { ["one"] = 0, ["two"] = 0 };
         for (ulong seed = 1; seed <= 2000; seed++)
-            counts[Offers.EncounterChoices(new Rng(seed), View(db, config), runDifficulty: 1)[0].EnemyId!]++;
+            counts[Offers.FightChoices(new Rng(seed), View(db, config), 1, 0)[0].EnemyId!]++;
         double ratio = (double)counts["one"] / counts["two"];
         Assert.InRange(ratio, 0.8, 1.25);
+    }
+
+    /// <summary>Luka 2026-10-16: passives are their own pool, and the passive shop sells from it.</summary>
+    [Fact]
+    public void PassiveShop_SellsOnlyPassivesYouDontHave_AndBuyingGivesThePassive()
+    {
+        var content = GameContent.Load();
+        var passives = content.Database.OfKind(SourceKind.Passive).Select(p => p.Id).ToHashSet();
+        Assert.NotEmpty(passives);
+        var shop = Assert.Single(content.Run.Shops, s => s.Sells == ShopSells.Passives);
+        var run = RunState.New(3, "silver_knight", content.Run, content.Database);
+        run.Gold = 1000;
+        run.Passives.Add(passives.Order().First());
+        run.Choose(new Encounter(EncounterKind.Shop, null, shop.Id));
+        Assert.NotEmpty(run.ShopStock!);
+        Assert.All(run.ShopStock!, id => Assert.Contains(id, passives));
+        Assert.DoesNotContain(passives.Order().First(), run.ShopStock!);
+        string bought = run.ShopStock![0];
+        int items = run.AllOwned.Count;
+        Assert.True(run.Buy(0));
+        Assert.Contains(bought, run.Passives);
+        Assert.Equal(items, run.AllOwned.Count);
     }
 
     [Fact]

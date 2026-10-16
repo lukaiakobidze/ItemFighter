@@ -39,22 +39,80 @@ public class DaysTests
     public void RunDifficulty_RisesEveryFiveDays(int mission, int encounter, int expected) =>
         Assert.Equal(expected, new RunConfig().RunDifficulty(mission, encounter));
 
-    /// <summary>Luka 2026-10-12: the run's difficulty d offers enemies of d-1, d and d+1 (second half of mission 1 → 1 to 3).</summary>
+    private static IReadOnlyList<Encounter> Fights(ContentDatabase db, int runDifficulty, int harderPercent, ulong seed = 1) =>
+        Offers.FightChoices(new Rng(seed), View(db, new RunConfig()), runDifficulty, harderPercent);
+
+    private static readonly ContentDatabase Ladder =
+        Db(Enumerable.Range(1, 10).SelectMany(d => new[] { ($"x{d}", d, "Common"), ($"y{d}", d, "Common"), ($"z{d}", d, "Common") }).ToArray());
+
+    /// <summary>Luka 2026-10-16: a fight day offers the run's difficulty, sometimes one harder; never easier.</summary>
     [Theory]
-    [InlineData(1, 1, 2)]
-    [InlineData(2, 1, 3)]
-    [InlineData(5, 4, 6)]
-    [InlineData(10, 9, 10)]
-    public void FightDay_OffersEnemiesWithinOneOfTheRunDifficulty(int runDifficulty, int low, int high)
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(5)]
+    public void FightDay_OffersTheRunDifficulty_OrOneHarder(int runDifficulty)
     {
-        var enemies = Enumerable.Range(1, 10).SelectMany(d => new[] { ($"x{d}", d, "Common"), ($"y{d}", d, "Common") }).ToArray();
-        var db = Db(enemies);
-        var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
         var seen = new HashSet<int>();
         for (ulong seed = 1; seed <= 300; seed++)
-            foreach (var c in Offers.EncounterChoices(new Rng(seed), View(db, config), runDifficulty))
-                seen.Add(db.Get(c.EnemyId!).Difficulty);
-        Assert.Equal(Enumerable.Range(low, high - low + 1), seen.Order());
+            foreach (var c in Fights(Ladder, runDifficulty, 30, seed)) seen.Add(Ladder.Get(c.EnemyId!).Difficulty);
+        Assert.Equal(new[] { runDifficulty, runDifficulty + 1 }, seen.Order());
+    }
+
+    [Fact]
+    public void HarderPercent_ZeroNeverHarder_HundredAlwaysHarder()
+    {
+        for (ulong seed = 1; seed <= 50; seed++)
+        {
+            Assert.All(Fights(Ladder, 3, 0, seed), c => Assert.Equal(3, Ladder.Get(c.EnemyId!).Difficulty));
+            Assert.All(Fights(Ladder, 3, 100, seed), c => Assert.Equal(4, Ladder.Get(c.EnemyId!).Difficulty));
+        }
+    }
+
+    /// <summary>Luka 2026-10-16: difficulty 2 is very unlikely on day 1, likely by day 4-5, but still less likely than difficulty 1.</summary>
+    [Fact]
+    public void HarderEnemies_GetMoreLikely_AcrossEachHalfMission_ButStayUnderHalf()
+    {
+        var config = new RunConfig();
+        var odds = Enumerable.Range(0, config.EncountersPerMission).Select(e => config.HarderEnemyChance(1, e)).ToList();
+        Assert.True(odds[0] <= 10, $"day 1 is {odds[0]}%");
+        for (int day = 1; day < config.DaysPerDifficulty; day++) Assert.True(odds[day] > odds[day - 1]);
+        Assert.InRange(odds[3], 25, 49);
+        Assert.InRange(odds[4], 25, 49);
+        Assert.Equal(odds[0], odds[config.DaysPerDifficulty]); // the second half starts over one difficulty up
+    }
+
+    [Fact]
+    public void MissionPlan_FirstDayIsAFight_AndTwoOrThreeShopDays()
+    {
+        var config = new RunConfig();
+        var shopDays = new HashSet<int>();
+        for (ulong seed = 1; seed <= 200; seed++)
+        {
+            var plan = Offers.MissionPlan(new Rng(seed), config);
+            Assert.Equal(config.EncountersPerMission, plan.Count);
+            Assert.Equal(DayKind.Fight, plan[0]);
+            int shops = plan.Count(d => d == DayKind.Shop);
+            Assert.InRange(shops, 2, 3);
+            shopDays.Add(shops);
+        }
+        Assert.Equal(new[] { 2, 3 }, shopDays.Order());
+    }
+
+    [Fact]
+    public void Run_FollowsItsMissionPlan()
+    {
+        for (ulong seed = 1; seed <= 50; seed++)
+        {
+            var run = RunState.New(seed, "silver_knight", Content.Run, Content.Database);
+            var kinds = new List<EncounterKind>();
+            for (int e = 0; e < Content.Run.EncountersPerMission; e++)
+            {
+                run.Encounter = e;
+                kinds.Add(run.EncounterChoices()[0].Kind);
+            }
+            Assert.Equal(EncounterKind.Fight, kinds[0]);
+            Assert.InRange(kinds.Count(k => k == EncounterKind.Shop), 2, 3);
+        }
     }
 
     [Fact]
@@ -81,7 +139,9 @@ public class DaysTests
         bool sawFight = false, sawShop = false;
         for (ulong seed = 1; seed <= 100; seed++)
         {
-            var choices = RunState.New(seed, "silver_knight", Content.Run, Content.Database).EncounterChoices();
+            var run = RunState.New(seed, "silver_knight", Content.Run, Content.Database);
+            run.Encounter = (int)(seed % 10);
+            var choices = run.EncounterChoices();
             Assert.Single(choices.Select(c => c.Kind).Distinct());
             if (choices[0].Kind == EncounterKind.Fight)
             {
@@ -100,15 +160,13 @@ public class DaysTests
     }
 
     [Fact]
-    public void HardDays_FallBackToEasierEnemies_SoThereAreStillChoices()
+    public void HardDays_FallBackToTheNearestDifficulty_SoThereAreStillChoices()
     {
         var db = Db(("a1", 1, "Common"), ("b1", 1, "Common"), ("c1", 1, "Common"), ("bear", 4, "Common"));
-        var config = new RunConfig { DayWeights = new() { [DayKind.Fight] = 1 } };
-        var choices = Offers.EncounterChoices(new Rng(1), View(db, config), runDifficulty: 6);
+        var choices = Fights(db, 6, 0);
         Assert.Equal(3, choices.Count);
         Assert.Contains(choices, c => c.EnemyId == "bear");
-        var early = Offers.EncounterChoices(new Rng(1), View(db, config), runDifficulty: 1);
-        Assert.DoesNotContain(early, c => c.EnemyId == "bear");
+        Assert.DoesNotContain(Fights(db, 1, 0), c => c.EnemyId == "bear");
     }
 
     [Fact]

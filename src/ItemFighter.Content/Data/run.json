@@ -14,12 +14,14 @@
   "rerollBaseCost": 1,
   "rerollCostStep": 1,
 
-  "dayWeights": { "Fight": 70, "Shop": 30 },
+  "fightDaysAtStart": 1,
+  "shopDaysPerMission": [2, 3],
   "shops": [
-    { "id": "shop", "name": "Shop", "tags": [] }
+    { "id": "shop", "name": "Shop", "tags": [] },
+    { "id": "passive_shop", "name": "Passive Shop", "sells": "Passives" }
   ],
   "daysPerDifficulty": 5,
-  "difficultySpread": 1,
+  "harderEnemyPercent": [5, 15, 25, 35, 40],
   "bosses": [
     { "enemy": "flaming_rock" },
     { "enemy": "green_snake" },

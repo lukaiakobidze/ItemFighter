@@ -13,8 +13,14 @@ public enum DayKind { Fight, Shop }
 /// <summary>A mission's boss. Enemies always keep their base stats.</summary>
 public sealed record BossConfig(string Enemy);
 
-/// <summary>A kind of shop. Tags limits its stock to items with any of those tags; empty means every item.</summary>
-public sealed record ShopConfig(string Id, string Name, IReadOnlyList<string>? Tags = null);
+/// <summary>What a shop sells: items, or passives from Data/passives/.</summary>
+public enum ShopSells { Items, Passives }
+
+/// <summary>
+/// A kind of shop. Tags limits an item shop's stock to items with any of those tags; empty means every item.
+/// A passive shop sells passives you don't have yet.
+/// </summary>
+public sealed record ShopConfig(string Id, string Name, IReadOnlyList<string>? Tags = null, ShopSells Sells = ShopSells.Items);
 
 /// <summary>
 /// Every number of the run loop, from Data/run.json. A key missing from the file keeps the default below.
@@ -50,18 +56,21 @@ public sealed class RunConfig
     public int RerollBaseCost { get; init; } = 1;
     public int RerollCostStep { get; init; } = 1;
 
-    /// <summary>How often each kind of day comes up (the boss day is never random).</summary>
-    public Dictionary<DayKind, int> DayWeights { get; init; } = new()
-    {
-        [DayKind.Fight] = 70, [DayKind.Shop] = 30,
-    };
-    public List<ShopConfig> Shops { get; init; } = [new ShopConfig("shop", "Shop")];
+    /// <summary>The first this many days of every mission are always fight days.</summary>
+    public int FightDaysAtStart { get; init; } = 1;
+    /// <summary>How many shop days a mission has: [fewest, most], picked at random per mission. Every other day is a fight.</summary>
+    public int[] ShopDaysPerMission { get; init; } = [2, 3];
+    public List<ShopConfig> Shops { get; init; } =
+        [new ShopConfig("shop", "Shop"), new ShopConfig("passive_shop", "Passive Shop", Sells: ShopSells.Passives)];
     /// <summary>
     /// The run's difficulty goes up by 1 every this many days (5 → each half of a 10-day mission), from 1 up to 10.
     /// </summary>
     public int DaysPerDifficulty { get; init; } = 5;
-    /// <summary>Fight days offer enemies up to this far from the run's difficulty (1 → difficulty 2 offers 1, 2 and 3).</summary>
-    public int DifficultySpread { get; init; } = 1;
+    /// <summary>
+    /// Chance (%) that each fight option is one difficulty harder than the run's, by day within the current difficulty
+    /// (1st, 2nd, ... day of each half-mission; the last entry repeats). Every other option is the run's difficulty.
+    /// </summary>
+    public int[] HarderEnemyPercent { get; init; } = [5, 15, 25, 35, 40];
     /// <summary>One boss per mission. Missions past the end of the list reuse the last boss.</summary>
     public List<BossConfig> Bosses { get; init; } = [];
     /// <summary>Rarity weights of the items offered after a win, by the beaten enemy's difficulty 1 to 10 (the last entry repeats).</summary>
@@ -97,6 +106,14 @@ public sealed class RunConfig
     {
         int day = (mission - 1) * EncountersPerMission + encounter;
         return Math.Clamp(1 + day / Math.Max(1, DaysPerDifficulty), 1, 10);
+    }
+
+    /// <summary>Chance (%) that a fight option on this day is one difficulty harder (encounter is 0-based within the mission).</summary>
+    public int HarderEnemyChance(int mission, int encounter)
+    {
+        if (HarderEnemyPercent.Length == 0) return 0;
+        int day = (mission - 1) * EncountersPerMission + encounter;
+        return HarderEnemyPercent[Math.Min(day % Math.Max(1, DaysPerDifficulty), HarderEnemyPercent.Length - 1)];
     }
 
     public int GoldForFight(int enemyDifficulty) => FightGold.Length == 0 ? 0 : FightGold[Math.Clamp(enemyDifficulty - 1, 0, FightGold.Length - 1)];
@@ -146,10 +163,11 @@ public sealed class RunConfig
         Check(StartingGold >= 0 && SellPercent >= 0 && ShopSize >= 0 && RerollBaseCost >= 0 && RerollCostStep >= 0 && BossGold >= 0,
             "gold, prices, sizes and costs can't be negative");
         Check(FightGold.All(g => g >= 0) && Prices.Values.All(p => p >= 0), "gold and prices can't be negative");
-        Check(DayWeights.Values.All(w => w >= 0), "'dayWeights' can't be negative");
-        Check(DayWeights.Values.Sum() > 0, "'dayWeights' needs at least one weight above 0");
+        Check(FightDaysAtStart >= 0, "'fightDaysAtStart' can't be negative");
+        Check(ShopDaysPerMission is { Length: 2 } && ShopDaysPerMission[0] >= 0 && ShopDaysPerMission[0] <= ShopDaysPerMission[1],
+            "'shopDaysPerMission' must be [fewest, most], like [2, 3]");
         Check(DaysPerDifficulty >= 1, "'daysPerDifficulty' must be at least 1");
-        Check(DifficultySpread >= 0, "'difficultySpread' can't be negative");
+        Check(HarderEnemyPercent.All(p => p is >= 0 and <= 100), "'harderEnemyPercent' must be 0 to 100");
         Check(Shops.Count > 0 && Shops.All(s => s is not null && !string.IsNullOrWhiteSpace(s.Id) && !string.IsNullOrWhiteSpace(s.Name)),
             "'shops' needs at least one shop, each with an id and a name");
         Check(TagBonusPercent >= 0, "'tagBonusPercent' can't be negative");

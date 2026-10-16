@@ -46,43 +46,66 @@ public static class Offers
     }
 
     /// <summary>
-    /// A day's choices. A fight day offers different enemies within DifficultySpread of the run's difficulty, all equally
-    /// likely; when that is too few to fill the choices, the range widens a step at a time. A shop day offers the shops.
+    /// The kind of each day of a mission (not counting the boss): the first FightDaysAtStart days are fights, then
+    /// ShopDaysPerMission shop days land at random among the rest, and every other day is a fight.
     /// </summary>
-    public static IReadOnlyList<Encounter> EncounterChoices(Rng rng, RunView view, int runDifficulty)
+    public static IReadOnlyList<DayKind> MissionPlan(Rng rng, RunConfig config)
     {
-        var config = view.Config;
-        var fightPool = FightPool(view, runDifficulty);
-        var days = config.DayWeights.Where(d => d.Value > 0 && (d.Key == DayKind.Shop ? config.Shops.Count > 0 : fightPool.Count > 0))
-            .OrderBy(d => d.Key).Select(d => (d.Key, d.Value)).ToList();
-        if (days.Count == 0) days.Add(fightPool.Count > 0 ? (DayKind.Fight, 1) : (DayKind.Shop, 1));
-
-        if (PickOne(rng, days) == DayKind.Shop)
+        int days = config.EncountersPerMission, start = Math.Min(config.FightDaysAtStart, days);
+        int[] range = config.ShopDaysPerMission is { Length: 2 } r ? r : [0, 0];
+        int shops = Math.Min(range[0] + rng.NextInt(range[1] - range[0] + 1), days - start);
+        var plan = Enumerable.Repeat(DayKind.Fight, days).ToArray();
+        var open = Enumerable.Range(start, days - start).ToList();
+        for (int i = 0; i < shops; i++)
         {
-            var shops = config.Shops.Select(s => (s.Id, 1));
-            return PickDistinct(rng, shops, config.ChoicesPerPick).Select(id => new Encounter(EncounterKind.Shop, null, id)).ToList();
+            int pick = rng.NextInt(open.Count);
+            plan[open[pick]] = DayKind.Shop;
+            open.RemoveAt(pick);
         }
-        return PickDistinct(rng, fightPool, config.ChoicesPerPick).Select(id => new Encounter(EncounterKind.Fight, id)).ToList();
+        return plan;
     }
 
-    private static List<(string Id, int Weight)> FightPool(IReadOnlyList<SourceDefinition> enemies, int runDifficulty, int spread, int wanted)
+    /// <summary>A shop day's choices: the shops from run.json.</summary>
+    public static IReadOnlyList<Encounter> ShopChoices(Rng rng, RunView view) =>
+        PickDistinct(rng, view.Config.Shops.Select(s => (s.Id, 1)), view.Config.ChoicesPerPick)
+            .Select(id => new Encounter(EncounterKind.Shop, null, id)).ToList();
+
+    /// <summary>
+    /// A fight day's choices: different enemies, each one difficulty above the run's with harderPercent chance, else at
+    /// the run's difficulty, all enemies of a difficulty equally likely. When no enemy is left at that difficulty, the
+    /// nearest difficulty that has one is used (the easier one on a tie).
+    /// </summary>
+    public static IReadOnlyList<Encounter> FightChoices(Rng rng, RunView view, int runDifficulty, int harderPercent)
     {
-        var pool = new List<SourceDefinition>();
-        for (int s = spread; pool.Count < wanted && s <= spread + 10; s++)
-            pool = enemies.Where(e => Math.Abs(e.Difficulty - runDifficulty) <= s).ToList();
-        return pool.Select(e => (e.Id, 1)).ToList();
+        var left = view.Db.OfKind(SourceKind.Enemy).OrderBy(e => e.Id, StringComparer.Ordinal).ToList();
+        var picks = new List<Encounter>();
+        while (picks.Count < view.Config.ChoicesPerPick && left.Count > 0)
+        {
+            int wanted = rng.Chance(harderPercent) ? runDifficulty + 1 : runDifficulty;
+            int nearest = left.Select(e => e.Difficulty).OrderBy(d => Math.Abs(d - wanted)).ThenBy(d => d).First();
+            var pool = left.Where(e => e.Difficulty == nearest).ToList();
+            var enemy = pool[rng.NextInt(pool.Count)];
+            picks.Add(new Encounter(EncounterKind.Fight, enemy.Id));
+            left.Remove(enemy);
+        }
+        return picks;
     }
 
-    private static List<(string Id, int Weight)> FightPool(RunView view, int runDifficulty) =>
-        FightPool(view.Db.OfKind(SourceKind.Enemy).ToList(), runDifficulty, view.Config.DifficultySpread, view.Config.ChoicesPerPick);
-
-    /// <summary>Stock for a shop: ShopSize items, limited to the shop's tags when it has any.</summary>
+    /// <summary>
+    /// Stock for a shop: ShopSize picks. An item shop sells items (only its tags when it has any); a passive shop sells
+    /// passives you don't have yet.
+    /// </summary>
     public static IReadOnlyList<string> Shop(Rng rng, RunView view, string? shopId = null)
     {
-        var tags = view.Config.Shops.FirstOrDefault(s => s.Id == shopId)?.Tags ?? [];
+        var shop = view.Config.Shops.FirstOrDefault(s => s.Id == shopId);
+        var weights = view.Config.ShopWeights(view.Mission);
+        if (shop?.Sells == ShopSells.Passives)
+            return PickDistinct(rng, view.Db.OfKind(SourceKind.Passive).Where(p => !view.PassiveIds.Contains(p.Id))
+                .Select(p => (p.Id, Math.Max(1, (int)p.Rarity < weights.Length ? weights[(int)p.Rarity] : 0))), view.Config.ShopSize);
+        var tags = shop?.Tags ?? [];
         var exclude = tags.Count == 0 ? new HashSet<string>()
             : view.Db.OfKind(SourceKind.Item).Where(d => !d.Tags.Any(tags.Contains)).Select(d => d.Id).ToHashSet();
-        return PickItems(rng, view.Config.ShopSize, view.Config.ShopWeights(view.Mission), view, exclude);
+        return PickItems(rng, view.Config.ShopSize, weights, view, exclude);
     }
 
     /// <summary>

@@ -67,8 +67,17 @@ public sealed class RunState
 
     // ---- encounters -------------------------------------------------------------------------------------------
 
-    public IReadOnlyList<Encounter> EncounterChoices() =>
-        IsBossNext ? [Boss(Mission)] : Offers.EncounterChoices(RngFor($"enc:{Mission}:{Encounter}"), View, Config.RunDifficulty(Mission, Encounter));
+    /// <summary>This mission's days (fight or shop), the same every time for this run.</summary>
+    [JsonIgnore] public IReadOnlyList<DayKind> MissionPlan => Offers.MissionPlan(RngFor($"plan:{Mission}"), Config);
+
+    public IReadOnlyList<Encounter> EncounterChoices()
+    {
+        if (IsBossNext) return [Boss(Mission)];
+        var rng = RngFor($"enc:{Mission}:{Encounter}");
+        return MissionPlan[Encounter] == DayKind.Shop && Config.Shops.Count > 0
+            ? Offers.ShopChoices(rng, View)
+            : Offers.FightChoices(rng, View, Config.RunDifficulty(Mission, Encounter), Config.HarderEnemyChance(Mission, Encounter));
+    }
 
     /// <summary>The mission's boss from run.json, or the enemy with the most HP when none is listed.</summary>
     public Encounter Boss(int mission)
@@ -191,7 +200,13 @@ public sealed class RunState
         if (ShopStock is null || stockIndex < 0 || stockIndex >= ShopStock.Count) return false;
         string id = ShopStock[stockIndex];
         int price = Price(id);
-        if (Gold < price || !Offers.CanOffer(id, View) || !AddItem(id)) return false;
+        if (Gold < price) return false;
+        if (Db.TryGet(id, out var def) && def.Kind == SourceKind.Passive)
+        {
+            if (Passives.Contains(id)) return false;
+            Passives.Add(id);
+        }
+        else if (!Offers.CanOffer(id, View) || !AddItem(id)) return false;
         Gold -= price;
         ShopStock.RemoveAt(stockIndex);
         return true;

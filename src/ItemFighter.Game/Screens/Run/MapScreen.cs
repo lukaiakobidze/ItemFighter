@@ -57,7 +57,8 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
             string name = shop?.Name ?? "Shop";
             ui.Art("Encounters", e.ShopId ?? "shop", name, art);
             ui.TextIn(name, new Rectangle(r.X, r.Y + 198, r.Width, 26), 19, Palette.Text, bold: true);
-            string sells = shop?.Tags is { Count: > 0 } tags ? "Sells " + string.Join(", ", tags) + " items" : "Sells any item";
+            string sells = shop?.Sells == ShopSells.Passives ? "Sells passives"
+                : shop?.Tags is { Count: > 0 } tags ? "Sells " + string.Join(", ", tags) + " items" : "Sells any item";
             ui.TextIn(sells, new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.TextDim);
         }
         else if (Db.TryGet(e.EnemyId!, out var enemy))
@@ -69,7 +70,7 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
             int itemGold = Run.GoldFromItems;
             string win = itemGold > 0 ? $"Win: +{Run.GoldFor(e)} gold (+{itemGold} from items)" : $"Win: +{Run.GoldFor(e)} gold";
             ui.TextIn(win, new Rectangle(r.X, r.Y + 250, r.Width, 22), 15, Palette.Accent);
-            if (hover) ui.Tooltip(enemy.Name, [$"{hp} HP", "You learn its abilities by fighting it."], color);
+            if (hover) ui.Tooltip(enemy.Name, Tooltips.For(enemy, 1, Db).Lines, color);
         }
         ui.Text("click to choose", new Vector2(r.Center.X, r.Bottom - 28), 13, hover ? Palette.Text : Palette.TextDim, align: Align.Center);
         ui.Border(r, hover ? color : Palette.Border, hover ? 3 : 1);

@@ -1,15 +1,16 @@
+using ItemFighter.Core.Content;
 using ItemFighter.UI;
 using Microsoft.Xna.Framework;
 
 namespace ItemFighter.Screens.Run;
 
-/// <summary>Buy items for gold, reroll the stock (the cost rises each time), sell what you don't want.</summary>
+/// <summary>Buy items (or passives, in a passive shop) for gold, reroll the stock (the cost rises each time), sell what you don't want.</summary>
 public sealed class ShopScreen(Game1 game, RunSession session) : RunScreen(game, session)
 {
     public static readonly Rectangle RerollButton = new(908, 500, 340, 50);
     public static readonly Rectangle LeaveButton = new(908, 566, 340, 56);
 
-    protected override string Title => "Shop";
+    protected override string Title => Run.Config.Shops.FirstOrDefault(s => s.Id == Run.Current?.ShopId)?.Name ?? "Shop";
 
     public static Rectangle StockRect(int i) => new(24 + i * 170, 64, 160, 262);
 
@@ -22,7 +23,8 @@ public sealed class ShopScreen(Game1 game, RunSession session) : RunScreen(game,
         for (int i = 0; i < stock.Count; i++)
         {
             if (!Db.TryGet(stock[i], out var def)) continue;
-            var owned = Run.AllOwned.FirstOrDefault(o => o.ItemId == def.Id);
+            bool passive = def.Kind == SourceKind.Passive; // passives don't level up or take a slot
+            var owned = passive ? null : Run.AllOwned.FirstOrDefault(o => o.ItemId == def.Id);
             int level = owned is null ? 1 : owned.Level + 1;
             DrawCard(ui, def, StockRect(i), level);
             if (owned is not null)
@@ -32,7 +34,7 @@ public sealed class ShopScreen(Game1 game, RunSession session) : RunScreen(game,
             }
             int price = Run.Price(def.Id);
             bool affordable = Run.Gold >= price;
-            bool room = owned is not null || Run.HasRoom;
+            bool room = passive || owned is not null || Run.HasRoom;
             string label = !room ? "No room" : $"Buy: {price} gold";
             if (ui.Button(BuyRect(i), label, 16, affordable && room) && Run.Buy(i))
             {

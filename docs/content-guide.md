@@ -91,7 +91,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 
 Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
 
-A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (files in `enemies/abilities/` with `"kind": "EnemyAbility"`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (attacks in `enemies/abilities/` with `"kind": "EnemyAbility"`, or passives from the shared `passives/` pool with `"kind": "Passive"`; the passive shop sells everything in `passives/`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 
 Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's passives. Give an enemy ability `"tags": ["Weapon"]` when other effects should treat it as a weapon (the Blur's Rifle Shot).
 
@@ -109,10 +109,11 @@ Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's
 | `prices` | Common 4 … Legendary 25 | Buy price per rarity (× level). Selling gives `sellPercent` of it |
 | `sellPercent` | 50 | |
 | `shopSize`, `rerollBaseCost`, `rerollCostStep` | 5, 1, 1 | Shop stock size; the first reroll costs 1, each one after costs 1 more |
-| `dayWeights` | Fight 70, Shop 30 | How often each kind of day comes up. A fight day offers different enemies; a shop day offers the shops |
-| `shops` | one "Shop" | `{ "id", "name", "tags": [] }` per shop. Tags limit the stock to items with any of those tags; empty sells everything |
+| `fightDaysAtStart` | 1 | The first this many days of every mission are always fights |
+| `shopDaysPerMission` | [2, 3] | Each mission gets between 2 and 3 shop days (random), on random days after the first. Every other day is a fight day. A fight day offers different enemies; a shop day offers the shops |
+| `shops` | "Shop", "Passive Shop" | `{ "id", "name", "tags": [], "sells": "Items" }` per shop. Tags limit an item shop to items with any of those tags; empty sells everything. `"sells": "Passives"` makes it a passive shop: it sells passives from `passives/` you don't have yet, priced by their `rarity` |
 | `daysPerDifficulty` | 5 | The run's difficulty goes up by 1 every 5 days: 1 in the first half of mission 1, 2 in the second half, … 10 in the second half of mission 5 |
-| `difficultySpread` | 1 | Fight days offer enemies within this much of the run's difficulty (run difficulty 2 → enemies of difficulty 1, 2 and 3), all equally likely. When there are too few, the range widens |
+| `harderEnemyPercent` | [5, 15, 25, 35, 40] | Chance (%) that each fight option is one difficulty above the run's, by day within each half-mission (day 1 to 5, then again for days 6 to 10). Every other option is the run's difficulty, never easier. If no enemy of that difficulty is left, the nearest one is used |
 | `bosses` | 5 entries | `{ "enemy": id }` per mission (missing missions reuse the last). Enemies always keep their base stats |
 | `dropRarityWeights` | one row per difficulty | Rarity odds of the 3 items offered after beating an enemy of that difficulty |
 | `shopRarityWeights` | one row per mission | Rarity odds of shop items |

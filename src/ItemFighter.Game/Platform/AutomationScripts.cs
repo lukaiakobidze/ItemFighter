@@ -187,6 +187,17 @@ public static class AutomationScripts
         {
             var session = SessionOf(g);
             Check(session.Run.Encounter == 1 && session.Run.Gold == 15, "won fight gave 5 gold and moved on");
+            session.Run.Choose(new Encounter(EncounterKind.Shop, null, "passive_shop"));
+            session.Commit();
+            session.ShowCurrent(g);
+        }),
+        new(Wait: 0.3, Until: g => g.Current is ShopScreen, Do: Automation.Hover(ShopScreen.StockRect(0)), Shot: "run-passive-shop"),
+        new(Do: g =>
+        {
+            // Back to the map without spending the day, so the rest of the script sees the same run.
+            var session = SessionOf(g);
+            session.Run.Phase = RunPhase.ChoosingEncounter;
+            session.Run.Current = null;
             session.Run.Choose(new Encounter(EncounterKind.Shop, null));
             session.Commit();
             session.ShowCurrent(g);
