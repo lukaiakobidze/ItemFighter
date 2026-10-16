@@ -6,7 +6,7 @@ This brief asks for **PNG images only**. The game already loads them: drop each 
 
 - **Work in `D:\CODING\GameDev\ItemFighterArt`** (this brief sits in that folder). Write every image there, under the same folders the game uses: `src\ItemFighter.Game\Content\Art\<Kind>\<id>.png`, for example `src\ItemFighter.Game\Content\Art\Items\sword.png`. Luka copies that `src` folder over the game repo, so the paths must match exactly.
 - Make one image per file, at the exact size in the table below, as a real PNG with an alpha channel (no JPEG renamed to .png).
-- Keep the 15 images in `Statuses\` and `Passives\`: they are the style reference. **Redo every image in `Items\`** (the 16 made so far drifted into a detailed, realistic, blended look), then add the missing ones. Check the folder first to see what's done.
+- Keep the 8 images in `Statuses\`: they are the style reference. **Redo every image in `Items\`, `EnemyAbilities\` and `Passives\` as a full square with its own background** (see "Square icons" below). Keep the drawing of the 7 existing passives and add the background behind it. Then add the missing ones. Check the folder first to see what's done.
 - Work through the tables in order and save each image as soon as it's finished, so progress can be checked while you work.
 - Don't touch anything else in the folder or in the game repo.
 
@@ -41,9 +41,21 @@ Don't use:
 The items made before this change (the realistic apple, axe, potion, dagger and others in `Items\`) are exactly what to avoid.
 
 - **Readable small:** the icons are shown as small as 36×36 pixels, so use one clear subject, strong silhouettes and high contrast. No text or numbers inside the image.
-- **Background:** transparent for items, enemy abilities, passives and statuses. Enemies, the character and the shop get a simple background in the same flat style: two or three solid dark tones, no detail, so the subject stands out.
+- **Background:** see "Square icons" below. Items, enemy abilities, passives, enemies, the character and the shop are all full squares with their own background. Only statuses stay transparent (they sit on the game's small frame).
 - **Lighting:** light comes from the top left, and every image uses the same palette family. The game's colour language: burn orange `#FF8C28`, poison purple `#B060E6`, chill cyan `#6EDCF0`, freeze pale blue `#AAE6FF`, pain pink `#E84682`, nail steel grey `#AAB4C3`, power red-orange `#F05028`, shield blue `#78AAE6`, heal green `#5AD26E`.
 - **Format:** PNG, RGBA, square except the UI logo and background. The file name is the id in the tables, in lower case, with `.png` at the end.
+
+## Square icons (items, enemy abilities, passives) (updated 2026-10-16)
+
+The game now shows items, enemy abilities and passives the way League of Legends shows its item icons: **a plain square picture, edge to edge, with the game drawing only a thin coloured frame around it** (the frame colour shows rarity). So every one of these images must be a full square with no transparency:
+
+- **Fill the whole square.** No transparent pixels, square corners, no rounded corners, no border or frame of your own (the game adds it).
+- **Background:** a simple flat backdrop in the same cel style: two or three solid tones, plus one bold hard-edged shape behind the subject (a burst, a swirl or a few speed streaks) in the colour of what the thing does: orange for burn, purple for poison, cyan for chill, blue for shield, red for damage, green for heal, pink for pain, steel grey for nails. Keep the backdrop darker and calmer than the subject so the subject still reads first.
+- **Subject:** the same bold-outlined cel-shaded drawing as before, centred and filling about 75 to 85% of the square.
+- **Readable small:** these squares are shown as small as 32×32 (passives) and 96×96 (items), so the subject must still read with the background behind it.
+- The style does **not** change: still bold dark outlines and flat hard-edged shading. Only the transparent background is replaced by a square backdrop.
+
+Statuses stay as they are (transparent, on the game's frame). Enemies, the character and the shop were already squares with a background; keep them that way, also edge to edge with no frame.
 
 | Kind | Folder | Size |
 |---|---|---|
@@ -127,9 +139,9 @@ These are the enemy's "items": shown as boxes with a picture, a name and a coold
 | `rifle_shot.png` | Rifle Shot | The Blur | Hit for 8 | Rifle firing with a muzzle flash |
 | `right_hook.png` | Right Hook | Furious Boxer | Two hits for 10 | Boxing glove in a curving hook |
 
-## Passives (7)
+## Passives (19)
 
-Passives are shown as small square icons in a row under a fighter's health bar, with the details on mouse-over. Make them read as a symbol or emblem, like a buff icon, more than a full object.
+Passives are shown as small square icons in a row under a fighter's health bar and in the Passive Shop, with the details on mouse-over. Make them read as a symbol or emblem, like a buff icon, more than a full object. All passives go in the same pool: enemies use some of them and the player can buy any of them.
 
 | File | Name | Belongs to | What it does | Picture idea |
 |---|---|---|---|---|
@@ -140,6 +152,18 @@ Passives are shown as small square icons in a row under a fighter's health bar, 
 | `silver_knight.png` | Silver Knight's passive | Silver Knight (player) | Every 5 times you're hit, gain shield | Silver shield with a glowing knight's crest |
 | `thick_skin.png` | Thick Skin | Grizzly Bear | Takes 1 less damage from each hit | Thick leathery hide patch with a deflected scratch |
 | `venomous.png` | Venomous | Green Snake | Its hits poison you | Venom drop with a snake-eye pupil |
+| `shield_mastery.png` | Shield Mastery | Shop | Shield items shield 5 more | Shield with a bright upward chevron on it |
+| `kindling.png` | Kindling | Shop | Burn items burn 1 more | Small bundle of sticks catching a flame |
+| `toxicology.png` | Toxicology | Shop | Poison items poison 1 more | Bubbling purple flask with a skull-shaped bubble |
+| `cold_hands.png` | Cold Hands | Shop | Chill items 1s faster | Frosted open hand with a small clock or speed lines |
+| `vanguard.png` | Vanguard | Shop | First-slot weapon +1 damage per weapon you have | Sword at the front of a row of weapons, the front one glowing |
+| `parry.png` | Parry | Shop | Gain 2 shield whenever a weapon is used | Two crossed blades with a blue shield spark where they meet |
+| `burning_roots.png` | Burning Roots | Shop | Burn for each nail uprooted | Nail pulled out with fiery roots trailing |
+| `toxic_roots.png` | Toxic Roots | Shop | Poison for each nail uprooted | Nail pulled out with purple dripping roots |
+| `frozen_roots.png` | Frozen Roots | Shop | Chill for every 2 nails uprooted | Nail pulled out with icy roots |
+| `painful_roots.png` | Painful Roots | Shop | Pain for every 2 nails uprooted | Nail pulled out with pink thorny roots |
+| `battle_hardened.png` | Battle Hardened | Shop | +5 max HP for every fight won | Red heart with a small upward arrow and a scar |
+| `momentum.png` | Momentum | Shop | First-slot weapon grows +1 damage each hit | Sword with stacked motion arcs getting bigger |
 
 ## Statuses (8)
 
@@ -162,11 +186,12 @@ Small icons shown next to the stack count in the status row under the health bar
 |---|---|---|
 | `silver_knight.png` | Silver Knight | Knight in polished silver armour with a sword and shield |
 
-## Map encounters (1)
+## Map encounters (2)
 
 | File | Name | Picture idea |
 |---|---|---|
 | `shop.png` | Shop | Cosy merchant stall with a lantern and items on display |
+| `passive_shop.png` | Passive Shop | Mystic stall with glowing emblems and runes hanging on display |
 
 ## UI pieces (15)
 
@@ -223,22 +248,21 @@ Enemy panel, top of the screen:
 ```
 +-----------+  Enemy name
 | portrait  |  [========== health bar ==========]
-|  (Enemies)|  [P][P][P]          <- passives row: framed square icons (Passives/), mouse-over = details
+|  (Enemies)|  [P][P][P]          <- passives row: small squares (Passives/), mouse-over = details
 |           |  [B] 3  [C] 1/5     <- statuses row: framed status icon (Statuses/) + stack count
 +-----------+  +------+ +------+ +------+
- time left     | art  | | art  | | art  |   <- enemy abilities as boxes (EnemyAbilities/),
-               | name | | name | | name |      name and cooldown bar under the picture
-               | ==== | | ==== | | ==== |
+ time left     |      | |      | |      |   <- enemy abilities as plain squares (EnemyAbilities/):
+               | 4.6  | | 2.0  | |      |      a dark shade shrinks as it charges, seconds in the middle
                +------+ +------+ +------+
 ```
 
-Player panel, bottom: the item cards (Items/), the status row under the health bar, and the character's passive as the same small square icon.
+Player panel, bottom: the items as plain squares (Items/) with the same shade and timer, the status row under the health bar, and passives as small squares.
 
-Status and passive icons sit inside the UI frame. The smallest sizes on screen are passive icons at 36×36 and status icons at 30×30 (frame included; the icon itself is a little smaller), and ability box art at about 104×62 (the image is fitted inside and keeps its shape). Item art on cards is about 124×112.
+On-screen sizes (the game draws the frame around each square): items 112×112 in a fight and 96×96 on the hotbar, shop squares 120×120, enemy abilities 96×96, passives 32×32, status icons 30×30 (frame included), enemy portraits 156×156 in a fight and 200×200 on the map.
 
 ## Checklist
 
-- 28 items, 12 enemy abilities, 7 passives, 8 statuses, 10 enemies, 1 character, 1 shop, 15 UI pieces: 82 PNGs. The statuses and passives are done already.
+- 28 items, 12 enemy abilities, 19 passives, 8 statuses, 10 enemies, 1 character, 2 shops, 15 UI pieces: 95 PNGs. The statuses are done already.
 - File names exactly as in the tables (lower case, underscores).
-- Square, transparent background except portraits, the shop, the frame background and `background.png`. The logo and the background are the only non-square images.
+- Items, enemy abilities, passives, portraits and shops: full squares with their own background, no transparency, no frame. Statuses and the small UI icons stay transparent. The logo and the background are the only non-square images.
 - No text, numbers, frames or rarity borders in the images.

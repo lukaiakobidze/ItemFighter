@@ -111,7 +111,7 @@ public sealed class Game1 : Game
     }
 
     /// <summary>
-    /// The layout is 1280×720 virtual pixels, but it is drawn straight at the window's real resolution (scaled by a
+    /// The layout is 1600×900 virtual pixels, but it is drawn straight at the window's real resolution (scaled by a
     /// transform, text rasterised at the real size), so nothing is upscaled from a small image.
     /// </summary>
     protected override void Draw(GameTime gameTime)

@@ -10,7 +10,7 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 | What an item does | `items/<item>.json` | `abilities` (see [content-guide.md](content-guide.md) for triggers and effects) |
 | An enemy's HP, when it shows up, what it has | `enemies/<enemy>.json` | `maxHp`, `difficulty` (1 to 10), `abilityIds`, `passiveIds` |
 | An enemy's attacks | `enemies/abilities/<ability>.json` | `cooldown`, `amount`, `percent`… |
-| A passive (enemies list them in `passiveIds`; the passive shop sells every one) | `passives/<passive>.json` | `amount`, `every`, `rarity` (sets its shop price)… |
+| A passive (enemies list them in `passiveIds`; the passive shop sells every one) | `passives/<passive>.json` | `amount`, `every`, `per`, `maxHpPerWin`, `rarity` (sets its shop price)… |
 | A character's HP, starting items and passive | `characters/<character>.json` | `maxHp`, `startingItems`, `abilities` |
 | Burn, poison, chill, freeze, nail, power, the fight time limit, the minimum cooldown | `rules.json` | see below |
 | Gold, prices, shops, run length, which enemies show up when, reward odds, bosses | `run.json` | see the run.json table in [content-guide.md](content-guide.md#the-run-runjson) |

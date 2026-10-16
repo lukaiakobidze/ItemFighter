@@ -5,7 +5,7 @@ namespace ItemFighter.Tests.Game;
 
 public class VirtualScreenTests
 {
-    private readonly VirtualScreen _screen = new();
+    private readonly VirtualScreen _screen = new(1280, 720); // the maths at a known size; the game uses Layout.Width × Layout.Height
 
     [Fact]
     public void SameSize_IsIdentity()

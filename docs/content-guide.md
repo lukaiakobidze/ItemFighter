@@ -24,7 +24,7 @@ Active items can add `"requiresTarget": true` (the player clicks the item, then 
 
 Times are in seconds (`"seconds": 1.5`). Every number can be written directly (`"amount": 5`) or as a level value (`"amount": "{damage}"`). Either way it lives in the item's file, so a "5%" in an item's text is a number you can change there.
 
-Items that do something outside the fight: `"goldOnWin": "{gold}"` gives that much gold for every fight won with the item on the board (Gold Pouch).
+Items that do something outside the fight: `"goldOnWin": "{gold}"` gives that much gold for every fight won with the item on the board (Gold Pouch). A passive with `"maxHpPerWin": 5` gives +5 max HP for the rest of the run for every fight won while you have it (Battle Hardened).
 
 ## Tooltip text
 
@@ -44,6 +44,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `{ "type": "OnStatusApplied", "status": "Burn", "side": "Enemy" }` | burn was applied to the enemy (or `"Self"`) |
 | `OnShieldGained` | your side gained shield |
 | `{ "type": "EveryNthUse", "n": 3 }` | every 3rd time this item fires |
+| `{ "type": "OnNailsUprooted", "per": 2 }` | your side uprooted Nails from the enemy: runs once for every 2 Nails (rounded down; `per` 1 = once per Nail) |
 
 ## Effects: what an ability does
 
@@ -89,7 +90,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 { "id": "iron_skin", "modifiers": [ { "stat": "ShieldGained", "amount": 5, "filter": { "kind": "Item" } } ] }
 ```
 
-Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) and `CooldownPercent` (−20 = 20% faster). A filter can name a `kind` (Item, Passive, Character...) and/or a `tag`.
+Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) `CooldownPercent` (−20 = 20% faster) and `CooldownSeconds` (−1 = 1 second faster). A filter can name a `kind` (Item, Passive, Character...), a `tag` and/or a `slot` (1 = the first hotbar slot). `"perItemTag": "Weapon"` multiplies the amount by how many Weapon items you have (Vanguard).
 
 A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (its abilities, files in `enemies/abilities/` with `"kind": "EnemyAbility"`), `passiveIds` (its passives, from the shared `passives/` pool with `"kind": "Passive"`; the passive shop sells everything in `passives/`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 

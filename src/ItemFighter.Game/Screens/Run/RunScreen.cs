@@ -12,8 +12,11 @@ namespace ItemFighter.Screens.Run;
 /// </summary>
 public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
 {
-    public static readonly Rectangle SidePanel = new(892, 16, 372, 688);
-    public static readonly Rectangle MenuButton = new(908, 640, 340, 48);
+    public static readonly Rectangle SidePanel = new(1240, 32, 320, 836);
+    public static readonly Rectangle MenuButton = new(1256, 808, 288, 44);
+
+    /// <summary>A full-width button in the side panel, counted up from the menu button (0 = just above it).</summary>
+    public static Rectangle SideButton(int fromBottom, int height = 48) => new(1256, MenuButton.Y - 14 - (fromBottom + 1) * (height + 12) + 12, 288, height);
 
     public RunSession Session => session;
     protected RunState Run => session.Run;
@@ -24,7 +27,7 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
 
     public override void Draw(Ui ui)
     {
-        ui.Text(Title, new Vector2(24, 16), 30, Palette.Accent, bold: true);
+        ui.Text(Title, new Vector2(Layout.Margin, 36), 26, Palette.Accent, bold: true);
         DrawContent(ui);
         if (Inventory.Draw(ui, Run, Db)) session.Commit();
         DrawSide(ui);
@@ -54,7 +57,7 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         var boss = Run.Boss(Run.Mission);
         if (Db.TryGet(boss.EnemyId!, out var bossDef))
         {
-            var r = new Rectangle(x, y, 340, 22);
+            var r = new Rectangle(x, y, 288, 22);
             ui.Text($"Mission boss: {bossDef.Name}", new Vector2(x, y), 16, Palette.Damage);
             if (ui.Hover(r)) ui.Tooltip(bossDef.Name, [$"{bossDef.MaxHp} HP", "Waits at the end of this mission."], Palette.Damage);
             y += 30;
@@ -70,7 +73,7 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         foreach (string id in Run.Passives)
         {
             if (!Db.TryGet(id, out var def)) continue;
-            var r = new Rectangle(x, y, 340, 20);
+            var r = new Rectangle(x, y, 288, 20);
             ui.Text("• " + def.Name, new Vector2(x, y), 15, Palette.Text);
             if (ui.Hover(r))
             {
@@ -89,23 +92,17 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
         Game.Show(new MainMenuScreen(Game));
     }
 
-    /// <summary>A big card for an item or passive: art, name, rarity, tags and its tooltip.</summary>
-    protected void DrawCard(Ui ui, SourceDefinition def, Rectangle r, int level = 1, bool highlight = false)
+    /// <summary>An item, passive or enemy as a framed square (rarity border); name and details on mouse-over.</summary>
+    protected void DrawSquare(Ui ui, SourceDefinition def, Rectangle r, int level = 1, bool highlight = false)
     {
         bool hover = ui.Hover(r);
-        ui.Rect(r, hover ? Palette.PanelLight : Palette.Panel);
         string kind = def.Kind == SourceKind.Item ? "Items" : def.Kind == SourceKind.Enemy ? "Enemies" : "Passives";
-        ui.Art(kind, def.Id, def.Name, new Rectangle(r.X + 6, r.Y + 6, r.Width - 12, r.Height - 70));
-        ui.TextIn(def.Name, new Rectangle(r.X, r.Bottom - 62, r.Width, 24), 17, Palette.Text, bold: true);
-        string sub = def.Kind == SourceKind.Item ? $"{def.Rarity} item" + (def.Tags.Count > 0 ? " · " + string.Join(", ", def.Tags) : "")
-            : def.Kind == SourceKind.Enemy ? $"{def.MaxHp} HP" : $"{def.Rarity} passive";
-        ui.TextIn(sub, new Rectangle(r.X, r.Bottom - 38, r.Width, 20), 13, Palette.TextDim);
-        ui.Rect(new Rectangle(r.X, r.Bottom - 4, r.Width, 4), def.Kind == SourceKind.Enemy ? Palette.Border : Palette.For(def.Rarity));
-        ui.Border(r, highlight ? Palette.Accent : hover ? Palette.Text : Palette.Border, highlight ? 3 : 1);
-        if (hover && def.Kind != SourceKind.Enemy)
+        Color border = highlight ? Palette.Accent : hover ? Palette.Text : def.Kind == SourceKind.Enemy ? Palette.Border : Palette.For(def.Rarity);
+        ui.Square(kind, def.Id, def.Name, r, border, hover || highlight ? 3 : 2);
+        if (hover)
         {
             var (title, lines) = Tooltips.For(def, level, Db, ownedByPlayer: true);
-            ui.Tooltip(title, lines, Palette.For(def.Rarity));
+            ui.Tooltip(title, lines, def.Kind == SourceKind.Enemy ? Palette.Damage : Palette.For(def.Rarity));
         }
     }
 }

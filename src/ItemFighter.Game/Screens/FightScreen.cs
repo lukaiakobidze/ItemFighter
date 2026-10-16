@@ -10,11 +10,11 @@ namespace ItemFighter.Screens;
 /// <summary>Plays one fight in real time. The battle runs in Core; this screen only shows it and sends clicks.</summary>
 public sealed class FightScreen : Screen
 {
-    public static readonly Rectangle EnemyPanel = new(16, 12, 878, 312);
-    public static readonly Rectangle PlayerPanel = new(16, 336, 878, 372);
-    public static readonly Rectangle LogPanel = new(906, 60, 358, 648);
-    private static readonly Rectangle EnemyHpBar = new(206, 68, 672, 28);
-    private static readonly Rectangle PlayerHpBar = new(246, 350, 632, 28);
+    public static readonly Rectangle EnemyPanel = new(40, 32, 1160, 340);
+    public static readonly Rectangle PlayerPanel = new(40, 396, 1160, 472);
+    public static readonly Rectangle LogPanel = new(1240, 88, 320, 780);
+    private static readonly Rectangle EnemyHpBar = new(244, 90, 560, 24);
+    private static readonly Rectangle PlayerHpBar = new(300, 418, 560, 24);
     private static readonly int[] Speeds = [1, 2, 4];
 
     private readonly LabSetup? _lab;
@@ -63,14 +63,14 @@ public sealed class FightScreen : Screen
         set => _clock.Speed = value;
     }
 
-    public static Rectangle CardRect(int slot) => new(32 + slot * 142, 420, 132, 196);
+    public static Rectangle CardRect(int slot) => new(64 + slot * 128, 540, 112, 112);
 
-    public static Rectangle AbilityCard(int index) => new(206 + index * 120, 182, 112, 130);
+    public static Rectangle AbilityCard(int index) => new(244 + index * 112, 236, 96, 96);
 
-    public static Rectangle PassiveIcon(Vector2 rowStart, int index) => new((int)rowStart.X + index * 42, (int)rowStart.Y, 36, 36);
+    public static Rectangle PassiveIcon(Vector2 rowStart, int index) => new((int)rowStart.X + index * 38, (int)rowStart.Y, 32, 32);
 
-    public static readonly Vector2 EnemyPassiveRow = new(206, 104);
-    private static readonly Vector2 PlayerPassiveRow = new(112, 660);
+    public static readonly Vector2 EnemyPassiveRow = new(244, 128);
+    private static readonly Vector2 PlayerPassiveRow = new(140, 740);
 
     public override void Update(double seconds)
     {
@@ -127,46 +127,54 @@ public sealed class FightScreen : Screen
     {
         ui.Panel(EnemyPanel);
         var def = Battle.EnemyDefinition;
-        var portrait = new Rectangle(32, 28, 158, 158);
-        ui.Art("Enemies", def.Id, def.Name, portrait, Battle.Enemy.IsFrozenAt(Battle.Tick) ? new Color(120, 200, 255) * 0.35f : null);
-        ui.Border(portrait, Palette.Border, 1);
+        var portrait = new Rectangle(64, 56, 156, 156);
+        ui.Square("Enemies", def.Id, def.Name, portrait, Palette.Damage * 0.8f);
+        if (Battle.Enemy.IsFrozenAt(Battle.Tick)) ui.Rect(portrait, new Color(120, 200, 255) * 0.35f);
         if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities and passives are listed beside it."], Palette.Damage);
 
-        ui.Text(def.Name, new Vector2(206, 24), 28, Palette.Text, bold: true);
+        ui.Text(def.Name, new Vector2(244, 52), 24, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
         var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
         for (int i = 0; i < passives.Count && i < 16; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveRow, i), enemy: true);
-        DrawStatuses(ui, Battle.Enemy, new Vector2(206, 146));
+        DrawStatuses(ui, Battle.Enemy, new Vector2(244, 176));
 
         var abilities = Battle.Enemy.Sources.Where(s => s.Def.Kind == SourceKind.EnemyAbility && s.HasCooldown).ToList();
         for (int i = 0; i < abilities.Count && i < 5; i++) DrawAbility(ui, abilities[i], AbilityCard(i));
-        DrawTimer(ui, new Vector2(32, 200));
+        DrawTimer(ui, new Vector2(64, 232));
     }
 
-    /// <summary>An enemy ability as a box like the player's item cards: picture, name, time left and cooldown bar.</summary>
+    /// <summary>An enemy ability as a square like the player's items: picture, cooldown shade and seconds left.</summary>
     private void DrawAbility(Ui ui, SourceInstance a, Rectangle r)
     {
         bool flash = _firedAt.TryGetValue(a.Id, out double t) && _time - t < 0.3;
         bool hover = ui.Hover(r);
-        if (!ui.NineSlice("card", r, 10, hover ? new Color(255, 255, 255) : new Color(215, 215, 225))) ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
-        var art = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, 62);
-        Color? tint = a.FreezeTicks > 0 ? new Color(120, 200, 255) * 0.45f : null;
-        ui.Art("EnemyAbilities", a.Def.Id, a.Def.Name, art, tint);
-        if (!a.Ready)
-        {
-            int covered = (int)(art.Height * (1 - CooldownFraction(a)));
-            if (covered > 0) ui.Rect(new Rectangle(art.X, art.Y, art.Width, covered), new Color(0, 0, 0, 130));
-        }
-        if (flash) ui.Rect(art, new Color(255, 120, 110) * 0.45f);
-
-        ui.TextIn(a.Def.Name, new Rectangle(r.X, r.Y + 68, r.Width, 20), 13, Palette.Text, bold: true);
-        int speed = Battle.CooldownSpeed(a);
-        ui.TextIn(speed == 0 ? "frozen" : $"{SecondsLeft(a):0.0}s", new Rectangle(r.X, r.Y + 88, r.Width, 18), 14, speed == 0 ? Palette.Freeze : Palette.TextDim);
-        ui.Bar(new Rectangle(r.X + 8, r.Y + 112, r.Width - 16, 8), (float)CooldownFraction(a), speed == 0 ? Palette.Freeze : new Color(200, 90, 80), new Color(24, 26, 36));
-        DrawItemTimers(ui, a, new Vector2(r.X + 6, r.Y + 6));
-        ui.Border(r, flash ? Palette.Damage : Palette.Border, flash ? 2 : 1);
+        ui.Square("EnemyAbilities", a.Def.Id, a.Def.Name, r, flash ? Palette.Damage : hover ? Palette.Text : new Color(150, 70, 64), flash || hover ? 3 : 2);
+        DrawCooldownShade(ui, a, r, flash ? new Color(255, 120, 110) * 0.45f : null);
+        DrawItemTimers(ui, a, new Vector2(r.X + 4, r.Y + 4));
         if (hover)
             ui.Tooltip(a.Def.Name, Tooltips.For(a.Def, a.Level, Game.Data.Database).Lines, Palette.Damage);
+    }
+
+    /// <summary>
+    /// The shade over a square that shrinks as it charges, and the seconds left in the middle (Luka 2026-10-16: no bars,
+    /// the shade and the timer are enough).
+    /// </summary>
+    private void DrawCooldownShade(Ui ui, SourceInstance s, Rectangle r, Color? flash, string? readyText = null)
+    {
+        var inner = new Rectangle(r.X + 2, r.Y + 2, r.Width - 4, r.Height - 4);
+        if (s.FreezeTicks > 0) ui.Rect(inner, new Color(120, 200, 255) * 0.40f);
+        if (s.HasCooldown && !s.Ready)
+        {
+            int covered = (int)(inner.Height * (1 - CooldownFraction(s)));
+            if (covered > 0) ui.Rect(new Rectangle(inner.X, inner.Y, inner.Width, covered), new Color(0, 0, 0, 140));
+        }
+        if (flash is Color f) ui.Rect(inner, f);
+        string? label = !s.HasCooldown ? null : s.Ready ? readyText : Battle.CooldownSpeed(s) == 0 ? "frozen" : $"{SecondsLeft(s):0.0}";
+        if (label is null) return;
+        var color = s.Ready ? Palette.Ready : label == "frozen" ? Palette.Freeze : Color.White;
+        int size = r.Width >= 100 ? 22 : 19;
+        ui.TextIn(label, new Rectangle(inner.X + 2, inner.Y + 2, inner.Width, inner.Height), size, Color.Black * 0.8f, bold: true);
+        ui.TextIn(label, inner, size, color, bold: true);
     }
 
     /// <summary>A passive as a small square icon; details on mouse-over.</summary>
@@ -186,7 +194,7 @@ public sealed class FightScreen : Screen
 
     private static void DrawPausedBanner(Ui ui)
     {
-        var r = new Rectangle(287, 304, 336, 48);
+        var r = new Rectangle(452, 360, 336, 48);
         ui.Panel(r, new Color(20, 22, 32) * 0.92f, Palette.Accent);
         ui.TextIn("PAUSED  ·  Space to resume", r, 18, Palette.Accent, bold: true);
     }
@@ -206,10 +214,10 @@ public sealed class FightScreen : Screen
     {
         ui.Panel(PlayerPanel);
         string title = _battleSetup.Player.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? $"You ({ch.Name})" : "You";
-        ui.Text(title, new Vector2(32, 350), 24, Palette.Text, bold: true);
+        ui.Text(title, new Vector2(64, 416), 20, Palette.Text, bold: true);
         DrawHp(ui, Battle.Player, PlayerHpBar);
-        DrawStatuses(ui, Battle.Player, new Vector2(246, 384));
-        if (Battle.Player.IsFrozenAt(Battle.Tick)) ui.Text("You are frozen!", new Vector2(32, 388), 16, Palette.Freeze, bold: true);
+        DrawStatuses(ui, Battle.Player, new Vector2(300, 456));
+        if (Battle.Player.IsFrozenAt(Battle.Tick)) ui.Text("You are frozen!", new Vector2(64, 456), 16, Palette.Freeze, bold: true);
 
         foreach (var item in Battle.Player.Items) DrawCard(ui, item, CardRect(item.Slot!.Value));
         DrawHint(ui);
@@ -225,35 +233,15 @@ public sealed class FightScreen : Screen
         bool fired = _firedAt.TryGetValue(item.Id, out double t) && _time - t < 0.25;
         bool hover = ui.Hover(r);
 
-        if (!ui.NineSlice("card", r, 10, hover ? new Color(255, 255, 255) : new Color(215, 215, 225))) ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
-        var art = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, 112);
-        Color? tint = item.FreezeTicks > 0 ? new Color(120, 200, 255) * 0.45f : null;
-        ui.Art("Items", def.Id, def.Name, art, tint);
-
-        if (item.HasCooldown && !item.Ready)
-        {
-            int covered = (int)(art.Height * (1 - CooldownFraction(item)));
-            if (covered > 0) ui.Rect(new Rectangle(art.X, art.Y, art.Width, covered), new Color(0, 0, 0, 130));
-        }
-        if (fired) ui.Rect(art, Color.White * 0.3f);
-
-        ui.TextIn(def.Name, new Rectangle(r.X, r.Y + 118, r.Width, 22), 14, Palette.Text, bold: true);
-        string status = !item.HasCooldown ? (item.Def.Abilities.Count == 0 ? "after the fight" : "reacts") : item.Ready ? "READY" : Battle.CooldownSpeed(item) == 0 ? "frozen" : $"{SecondsLeft(item):0.0}s";
-        var statusColor = item.Ready ? Palette.Ready : status == "frozen" ? Palette.Freeze : Palette.TextDim;
-        ui.TextIn(status, new Rectangle(r.X, r.Y + 140, r.Width, 20), 15, statusColor, bold: item.Ready);
-        if (item.HasCooldown)
-            ui.Bar(new Rectangle(r.X + 8, r.Y + 164, r.Width - 16, 8), item.Ready ? 1 : (float)CooldownFraction(item),
-                item.Ready ? Palette.Ready : def.Activation == Activation.Active ? new Color(220, 180, 70) : new Color(90, 160, 220), new Color(24, 26, 36));
-        DrawPips(ui, item.Level, new Vector2(r.X + 8, r.Y + 178));
-        if (def.Activation == Activation.Active)
-            ui.Text("click", new Vector2(r.Right - 8, r.Y + 175), 13, canClick ? Palette.Ready : Palette.TextDim, bold: canClick, align: Align.Right);
-        DrawItemTimers(ui, item, new Vector2(r.X + 6, r.Y + 6));
-        ui.Rect(new Rectangle(r.X, r.Bottom - 3, r.Width, 3), Palette.For(def.Rarity));
-
-        if (selected) ui.Border(r, Palette.Accent, 4);
-        else if (validTarget) ui.Border(r, Palette.Valid, (int)(3 + Math.Sin(_time * 8) * 1.5));
-        else if (canClick) ui.Border(r, Palette.Ready, (int)(2 + (Math.Sin(_time * 6) + 1) * 1.2));
-        else ui.Border(r, Palette.Border, 1);
+        Color border = selected ? Palette.Accent
+            : validTarget ? Palette.Valid
+            : canClick ? Palette.Ready
+            : hover ? Palette.Text : Palette.For(def.Rarity);
+        int thickness = selected ? 4 : validTarget ? (int)(3 + Math.Sin(_time * 8) * 1.5) : canClick ? (int)(2 + (Math.Sin(_time * 6) + 1) * 1.2) : hover ? 3 : 2;
+        ui.Square("Items", def.Id, def.Name, r, border, Math.Max(2, thickness));
+        DrawCooldownShade(ui, item, r, fired ? Color.White * 0.3f : null, def.Activation == Activation.Active ? (canClick ? "click" : null) : null);
+        DrawPips(ui, item.Level, new Vector2(r.X + 6, r.Bottom - 12));
+        DrawItemTimers(ui, item, new Vector2(r.X + 4, r.Y + 4));
 
         if (hover)
         {
@@ -268,7 +256,7 @@ public sealed class FightScreen : Screen
     private static void DrawPips(Ui ui, int level, Vector2 pos)
     {
         for (int i = 0; i < ContentLoader.LevelCount; i++)
-            ui.Rect(new Rectangle((int)pos.X + i * 14, (int)pos.Y, 10, 10), i < level ? Palette.Accent : new Color(70, 74, 90));
+            ui.Rect(new Rectangle((int)pos.X + i * 10, (int)pos.Y, 7, 7), i < level ? Palette.Accent : new Color(40, 42, 54, 200));
     }
 
     /// <summary>Small freeze/haste/slow labels on an item or ability.</summary>
@@ -298,7 +286,7 @@ public sealed class FightScreen : Screen
         }
         else if (Battle.Player.Items.Any(i => _targeting.CanActivate(i, Battle)))
             hint = "Glowing items are ready: click to use them.";
-        if (hint is not null) ui.TextIn(hint, new Rectangle(PlayerPanel.X, 622, PlayerPanel.Width, 24), 17, Palette.Accent, bold: true);
+        if (hint is not null) ui.TextIn(hint, new Rectangle(PlayerPanel.X, 680, PlayerPanel.Width, 24), 16, Palette.Accent, bold: true);
     }
 
     private void DrawExtras(Ui ui)
@@ -307,7 +295,7 @@ public sealed class FightScreen : Screen
             .Where(s => s.Def.Kind is SourceKind.Passive or SourceKind.Character || s.Def.IsPassiveAbility)
             .Where(s => s.Def.Abilities.Count > 0 || s.Def.Modifiers.Count > 0 || s.Script is not null).ToList();
         if (passives.Count == 0) return;
-        ui.Text("Passives", new Vector2(32, PlayerPassiveRow.Y + 9), 15, Palette.TextDim);
+        ui.Text("Passives", new Vector2(64, PlayerPassiveRow.Y + 7), 15, Palette.TextDim);
         for (int i = 0; i < passives.Count && i < 18; i++) DrawPassive(ui, passives[i], PassiveIcon(PlayerPassiveRow, i), enemy: false);
     }
 
@@ -379,7 +367,8 @@ public sealed class FightScreen : Screen
 
     private Vector2 AnchorPosition(FloatAnchor a)
     {
-        if (a.Side is Side side) return side == Side.Enemy ? new Vector2(EnemyHpBar.Center.X, EnemyHpBar.Y - 16) : new Vector2(PlayerHpBar.Center.X, PlayerHpBar.Y - 16);
+        // Damage to a side floats in the open space right of its HP bar.
+        if (a.Side is Side side) return side == Side.Enemy ? new Vector2(EnemyHpBar.Right + 170, EnemyHpBar.Y + 90) : new Vector2(PlayerHpBar.Right + 170, PlayerHpBar.Y + 90);
         var source = a.SourceId is int id ? Battle.FindSource(id) : null;
         if (source?.Slot is int slot) return new Vector2(CardRect(slot).Center.X, CardRect(slot).Y + 40);
         if (source is not null)
@@ -412,9 +401,9 @@ public sealed class FightScreen : Screen
     private void DrawSidebar(Ui ui)
     {
         for (int i = 0; i < Speeds.Length; i++)
-            if (ui.Button(SpeedButton(i), $"{Speeds[i]}×", 18, selected: Speed == Speeds[i])) Speed = Speeds[i];
-        if (ui.Button(PauseButton, Paused ? "Resume" : "Pause", 16, Battle.Result == BattleResult.Ongoing, selected: Paused)) Paused = !Paused;
-        if (ui.Button(GiveUpButton, _confirmGiveUp ? "Sure?" : "Give up", 16, Battle.Result == BattleResult.Ongoing, selected: _confirmGiveUp))
+            if (ui.Button(SpeedButton(i), $"{Speeds[i]}×", 16, selected: Speed == Speeds[i])) Speed = Speeds[i];
+        if (ui.Button(PauseButton, Paused ? "Resume" : "Pause", 14, Battle.Result == BattleResult.Ongoing, selected: Paused)) Paused = !Paused;
+        if (ui.Button(GiveUpButton, _confirmGiveUp ? "Sure?" : "Give up", 14, Battle.Result == BattleResult.Ongoing, selected: _confirmGiveUp))
         {
             // In a run giving up loses the run, so it takes a second click.
             if (_lab is null && !_confirmGiveUp) _confirmGiveUp = true;
@@ -436,19 +425,19 @@ public sealed class FightScreen : Screen
         }
     }
 
-    public static readonly Rectangle GiveUpButton = new(1172, 14, 92, 38);
+    public static readonly Rectangle GiveUpButton = new(1484, 32, 76, 40);
 
-    public static Rectangle SpeedButton(int index) => new(906 + index * 60, 14, 54, 38);
-    public static readonly Rectangle PauseButton = new(1086, 14, 80, 38);
+    public static Rectangle SpeedButton(int index) => new(1240 + index * 56, 32, 50, 40);
+    public static readonly Rectangle PauseButton = new(1408, 32, 70, 40);
 
-    public static readonly Rectangle AgainButton = new(390, 400, 160, 48);
-    public static readonly Rectangle ReplayButton = new(560, 400, 160, 48);
-    public static readonly Rectangle BackButton = new(730, 400, 160, 48);
+    public static readonly Rectangle AgainButton = new(550, 500, 160, 48);
+    public static readonly Rectangle ReplayButton = new(720, 500, 160, 48);
+    public static readonly Rectangle BackButton = new(890, 500, 160, 48);
 
     private void DrawResult(Ui ui)
     {
-        ui.Rect(new Rectangle(0, 0, 1280, 720), new Color(0, 0, 0, 160));
-        var panel = new Rectangle(370, 230, 540, 240);
+        ui.Rect(Layout.Full, new Color(0, 0, 0, 160));
+        var panel = new Rectangle(530, 330, 540, 240);
         ui.Panel(panel, new Color(28, 30, 42), Palette.Accent);
         (string title, Color color) = Battle.Result switch
         {

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 namespace ItemFighter.Platform;
 
 /// <summary>The game draws at a fixed virtual size, scaled to fit the window with bars where the aspect differs.</summary>
-public sealed class VirtualScreen(int width = 1280, int height = 720)
+public sealed class VirtualScreen(int width = UI.Layout.Width, int height = UI.Layout.Height)
 {
     public int Width => width;
     public int Height => height;

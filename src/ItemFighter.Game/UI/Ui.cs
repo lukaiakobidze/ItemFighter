@@ -96,7 +96,7 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
 
     /// <summary>
     /// Real screen pixels per virtual pixel. Text is rasterised at size × Scale and drawn at 1/Scale, so it stays sharp
-    /// when the 1280×720 layout is scaled up to a bigger window or fullscreen.
+    /// when the 1600×900 layout is scaled up to a bigger window or fullscreen.
     /// </summary>
     public float Scale { get; set; } = 1f;
 
@@ -184,12 +184,12 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
     /// tinted with <paramref name="border"/> (so one white border image serves every colour). Without those PNGs the
     /// frame is drawn as a dark square with a thin coloured line.
     /// </summary>
-    public void FramedIcon(string kind, string id, string name, Rectangle r, Color border, int thickness = 1)
+    public void FramedIcon(string kind, string id, string name, Rectangle r, Color border, int thickness = 1, int? padding = null)
     {
         var bg = assets.Texture("UI", "icon_frame_bg");
         if (bg is null) Rect(r, new Color(14, 15, 22));
         else batch.Draw(bg, r, Color.White);
-        int pad = Math.Max(2, r.Width / 10);
+        int pad = padding ?? Math.Max(2, r.Width / 10);
         var inner = new Rectangle(r.X + pad, r.Y + pad, r.Width - pad * 2, r.Height - pad * 2);
         if (assets.Texture(kind, id) is not null) Art(kind, id, name, inner);
         else TextIn(name, r, Math.Max(10, r.Height / 3), Palette.TextDim, bold: true);
@@ -200,6 +200,26 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
             batch.Draw(frame, r, border);
             if (thickness > 1) Border(r, border, thickness);
         }
+    }
+
+    /// <summary>
+    /// A League-style square: the picture fills a dark square (the art carries its own background) inside a thin frame
+    /// coloured by <paramref name="border"/> (rarity for items and passives).
+    /// </summary>
+    public void Square(string kind, string id, string name, Rectangle r, Color border, int thickness = 2) =>
+        FramedIcon(kind, id, name, r, border, thickness, padding: thickness);
+
+    /// <summary>A gold coin and a number, as a dark badge in a square's bottom-right corner (for prices).</summary>
+    public void PriceBadge(Rectangle square, int price, bool affordable)
+    {
+        string text = price.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        const int size = 16;
+        int coin = 18;
+        int w = (int)TextWidth(Font(size, true), text) + coin + 14;
+        var badge = new Rectangle(square.Right - w - 3, square.Bottom - 26, w, 23);
+        Rect(badge, new Color(8, 9, 14, 220));
+        if (!Icon("gold", new Rectangle(badge.X + 4, badge.Y + 3, coin, coin))) Text("$", new Vector2(badge.X + 8, badge.Y + 2), size, Palette.Accent, bold: true);
+        Text(text, new Vector2(badge.X + coin + 8, badge.Y + 2), size, affordable ? Palette.Accent : Palette.Damage, bold: true);
     }
 
     /// <summary>A content picture, or a placeholder (colour + name) when there is no PNG.</summary>

@@ -17,9 +17,9 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
 
     public static Rectangle ChoiceRect(int index, int count)
     {
-        const int width = 270, gap = 16;
+        const int width = 200, gap = 80;
         int total = count * width + (count - 1) * gap;
-        return new Rectangle(24 + (842 - total) / 2 + index * (width + gap), 64, width, 306);
+        return new Rectangle(Layout.Margin + (1152 - total) / 2 + index * (width + gap), 110, width, 290);
     }
 
     protected override void DrawContent(Ui ui)
@@ -39,40 +39,39 @@ public sealed class MapScreen(Game1 game, RunSession session) : RunScreen(game, 
         }
     }
 
+    /// <summary>Luka 2026-10-16: just the picture, the name and the gold it pays (details on hover).</summary>
     private void DrawEncounter(Ui ui, Encounter e, Rectangle r)
     {
         bool hover = ui.Hover(r);
-        var (label, color) = e.Kind switch
-        {
-            EncounterKind.Boss => ("BOSS", Palette.Damage),
-            EncounterKind.Shop => ("Shop", Palette.Accent),
-            _ => ("Fight", Palette.Text),
-        };
-        ui.Rect(r, hover ? Palette.PanelLight : Palette.Panel);
-        ui.TextIn(label, new Rectangle(r.X, r.Y + 6, r.Width, 30), 22, color, bold: true);
-        var art = new Rectangle(r.X + 20, r.Y + 42, r.Width - 40, 150);
+        var square = new Rectangle(r.X, r.Y, r.Width, r.Width);
+        var nameRect = new Rectangle(r.X, square.Bottom + 8, r.Width, 26);
+        Color border = hover ? Palette.Text : e.Kind == EncounterKind.Boss ? Palette.Damage : Palette.Border;
         if (e.Kind == EncounterKind.Shop)
         {
             var shop = Run.Config.Shops.FirstOrDefault(s => s.Id == e.ShopId);
             string name = shop?.Name ?? "Shop";
-            ui.Art("Encounters", e.ShopId ?? "shop", name, art);
-            ui.TextIn(name, new Rectangle(r.X, r.Y + 198, r.Width, 26), 19, Palette.Text, bold: true);
-            string sells = shop?.Sells == ShopSells.Passives ? "Sells passives"
-                : shop?.Tags is { Count: > 0 } tags ? "Sells " + string.Join(", ", tags) + " items" : "Sells any item";
-            ui.TextIn(sells, new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.TextDim);
+            ui.Square("Encounters", e.ShopId ?? "shop", name, square, border, hover ? 3 : 2);
+            ui.TextIn(name, nameRect, 20, Palette.Text, bold: true);
+            if (hover)
+            {
+                string sells = shop?.Sells == ShopSells.Passives ? "Sells passives you don't have yet."
+                    : shop?.Tags is { Count: > 0 } tags ? "Sells " + string.Join(", ", tags) + " items." : "Sells any item.";
+                ui.Tooltip(name, [sells], Palette.Accent);
+            }
         }
         else if (Db.TryGet(e.EnemyId!, out var enemy))
         {
-            ui.Art("Enemies", enemy.Id, enemy.Name, art);
-            ui.TextIn(enemy.Name, new Rectangle(r.X, r.Y + 198, r.Width, 26), 19, Palette.Text, bold: true);
-            int hp = enemy.MaxHp;
-            ui.TextIn($"{hp} HP", new Rectangle(r.X, r.Y + 226, r.Width, 22), 15, Palette.Hp);
-            int itemGold = Run.GoldFromItems;
-            string win = itemGold > 0 ? $"Win: +{Run.GoldFor(e)} gold (+{itemGold} from items)" : $"Win: +{Run.GoldFor(e)} gold";
-            ui.TextIn(win, new Rectangle(r.X, r.Y + 250, r.Width, 22), 15, Palette.Accent);
-            if (hover) ui.Tooltip(enemy.Name, Tooltips.For(enemy, 1, Db).Lines, color);
+            ui.Square("Enemies", enemy.Id, enemy.Name, square, border, hover ? 3 : 2);
+            ui.TextIn(enemy.Name, nameRect, 20, e.Kind == EncounterKind.Boss ? Palette.Damage : Palette.Text, bold: true);
+            string gold = $"{Run.GoldFor(e) + Run.GoldFromItems}";
+            float gw = ui.Measure(gold, 20, bold: true).X + 30;
+            ui.IconText("gold", "Gold: ", gold, new Vector2(r.Center.X - gw / 2, nameRect.Bottom + 4), 20, Palette.Accent, bold: true);
+            if (hover)
+            {
+                var lines = Tooltips.For(enemy, 1, Db).Lines;
+                if (e.Kind == EncounterKind.Boss) lines = ["Mission boss", .. lines];
+                ui.Tooltip(enemy.Name, lines, border);
+            }
         }
-        ui.Text("click to choose", new Vector2(r.Center.X, r.Bottom - 28), 13, hover ? Palette.Text : Palette.TextDim, align: Align.Center);
-        ui.Border(r, hover ? color : Palette.Border, hover ? 3 : 1);
     }
 }

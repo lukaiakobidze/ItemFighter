@@ -12,9 +12,9 @@ public sealed class FightLabScreen : Screen
 {
     public static string SavePath => Path.Combine(Paths.Saves, "lab.json");
 
-    private const int GridColumns = 8, GridRows = 3;
-    public static readonly Rectangle FightButton = new(910, 628, 340, 64);
-    public static readonly Rectangle BackButton = new(1100, 18, 150, 40);
+    private const int GridColumns = 11, GridRows = 5;
+    public static readonly Rectangle FightButton = new(1220, 800, 340, 64);
+    public static readonly Rectangle BackButton = new(1410, 32, 150, 40);
 
     private readonly LabSetup _setup;
     private int _selectedSlot;
@@ -48,7 +48,7 @@ public sealed class FightLabScreen : Screen
         DrawSidebar(ui);
 
         ui.Text("Click a slot, then an item.  Right-click a slot to empty it.  Mouse wheel over a slot changes its level.  F5 reloads content and art.",
-            new Vector2(30, 690), 14, Palette.TextDim);
+            new Vector2(30, 866), 14, Palette.TextDim);
         if (ui.Input.KeyPressed(Keys.Escape)) Game.Show(new MainMenuScreen(Game));
     }
 
@@ -100,10 +100,10 @@ public sealed class FightLabScreen : Screen
         int rows = (items.Count + GridColumns - 1) / GridColumns;
         int maxScroll = Math.Max(0, rows - GridRows);
         ui.Text($"Items ({items.Count})  →  slot {_selectedSlot + 1}", new Vector2(30, 300), 20, Palette.Text, bold: true);
-        var area = new Rectangle(24, 326, 856, GridRows * 100 + 4);
+        var area = new Rectangle(24, 326, GridColumns * 106 + 4, GridRows * 100 + 4);
         if (ui.Hover(area) && ui.Input.Wheel != 0) _gridScroll = Math.Clamp(_gridScroll - ui.Input.Wheel, 0, maxScroll);
         _gridScroll = Math.Clamp(_gridScroll, 0, maxScroll);
-        if (maxScroll > 0) ui.Text($"scroll for more ({_gridScroll + 1}/{maxScroll + 1})", new Vector2(700, 304), 14, Palette.TextDim);
+        if (maxScroll > 0) ui.Text($"scroll for more ({_gridScroll + 1}/{maxScroll + 1})", new Vector2(1000, 304), 14, Palette.TextDim);
 
         int first = _gridScroll * GridColumns;
         for (int i = first; i < Math.Min(items.Count, first + GridRows * GridColumns); i++)
@@ -150,48 +150,52 @@ public sealed class FightLabScreen : Screen
 
     private void DrawSidebar(Ui ui)
     {
-        const int x = 910, w = 340;
+        const int x = 1220, w = 340, cw = 166; // two columns of short buttons, details on mouse-over
+        Rectangle Cell(int i, float top) => new(x + i % 2 * (cw + 8), (int)top + i / 2 * 32, cw, 28);
         float y = 72;
-        ui.Text("Enemy", new Vector2(x, y), 20, Palette.Text, bold: true);
-        y += 28;
-        foreach (var enemy in Db.OfKind(SourceKind.Enemy))
+        ui.Text("Enemy", new Vector2(x, y), 18, Palette.Text, bold: true);
+        y += 26;
+        var enemies = Db.OfKind(SourceKind.Enemy).ToList();
+        for (int i = 0; i < enemies.Count; i++)
         {
-            var r = new Rectangle(x, (int)y, w, 34);
-            if (ui.Button(r, $"{enemy.Name}  ({enemy.MaxHp} HP, difficulty {enemy.Difficulty})", 16, selected: _setup.EnemyId == enemy.Id)) _setup.EnemyId = enemy.Id;
+            var enemy = enemies[i];
+            var r = Cell(i, y);
+            if (ui.Button(r, Shorten(ui, $"{enemy.Name} (d{enemy.Difficulty})", cw - 10, 14), 14, selected: _setup.EnemyId == enemy.Id)) _setup.EnemyId = enemy.Id;
             if (ui.Hover(r))
             {
                 var (title, lines) = Tooltips.For(enemy, 1, Db);
-                ui.Tooltip(title, lines, Palette.Damage);
+                ui.Tooltip(title, [$"Difficulty {enemy.Difficulty}", .. lines], Palette.Damage);
             }
-            y += 38;
         }
+        y += (enemies.Count + 1) / 2 * 32 + 12;
 
-        y += 10;
-        ui.Text("Character", new Vector2(x, y), 20, Palette.Text, bold: true);
-        y += 28;
-        if (ui.Button(new Rectangle(x, (int)y, w, 32), "None (100 HP)", 16, selected: _setup.CharacterId is null)) _setup.CharacterId = null;
-        y += 36;
-        foreach (var c in Db.OfKind(SourceKind.Character))
+        ui.Text("Character", new Vector2(x, y), 18, Palette.Text, bold: true);
+        y += 26;
+        var characters = Db.OfKind(SourceKind.Character).ToList();
+        if (ui.Button(Cell(0, y), "None (100 HP)", 14, selected: _setup.CharacterId is null)) _setup.CharacterId = null;
+        for (int i = 0; i < characters.Count; i++)
         {
-            var r = new Rectangle(x, (int)y, w, 32);
-            if (ui.Button(r, $"{c.Name}  ({c.MaxHp} HP)", 16, selected: _setup.CharacterId == c.Id)) _setup.CharacterId = c.Id;
+            var c = characters[i];
+            var r = Cell(i + 1, y);
+            if (ui.Button(r, Shorten(ui, c.Name, cw - 10, 14), 14, selected: _setup.CharacterId == c.Id)) _setup.CharacterId = c.Id;
             if (ui.Hover(r))
             {
                 var (title, lines) = Tooltips.For(c, 1, Db);
                 ui.Tooltip(title, lines);
             }
-            y += 36;
         }
+        y += (characters.Count + 2) / 2 * 32 + 12;
 
-        y += 10;
-        ui.Text("Passives", new Vector2(x, y), 20, Palette.Text, bold: true);
-        y += 28;
-        if (!Db.OfKind(SourceKind.Passive).Any()) ui.Text("none yet", new Vector2(x, y), 16, Palette.TextDim);
-        foreach (var p in Db.OfKind(SourceKind.Passive))
+        ui.Text("Passives", new Vector2(x, y), 18, Palette.Text, bold: true);
+        y += 26;
+        var passives = Db.OfKind(SourceKind.Passive).OrderBy(p => p.Name, StringComparer.Ordinal).ToList();
+        if (passives.Count == 0) ui.Text("none yet", new Vector2(x, y), 16, Palette.TextDim);
+        for (int i = 0; i < passives.Count; i++)
         {
-            var r = new Rectangle(x, (int)y, w, 32);
+            var p = passives[i];
+            var r = Cell(i, y);
             bool on = _setup.Passives.Contains(p.Id);
-            if (ui.Button(r, (on ? "✓ " : "") + p.Name, 16, selected: on))
+            if (ui.Button(r, Shorten(ui, (on ? "✓ " : "") + p.Name, cw - 10, 14), 14, selected: on))
             {
                 if (on) _setup.Passives.Remove(p.Id);
                 else _setup.Passives.Add(p.Id);
@@ -201,7 +205,6 @@ public sealed class FightLabScreen : Screen
                 var (title, lines) = Tooltips.For(p, 1, Db);
                 ui.Tooltip(title, lines, Palette.For(p.Rarity));
             }
-            y += 36;
         }
 
         int seedY = FightButton.Y - 44;

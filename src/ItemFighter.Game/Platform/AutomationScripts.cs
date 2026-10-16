@@ -203,7 +203,7 @@ public static class AutomationScripts
             session.ShowCurrent(g);
         }),
         new(Wait: 0.3, Until: g => g.Current is ShopScreen, Do: Automation.Hover(ShopScreen.StockRect(1)), Shot: "run-shop"),
-        new(Do: Automation.Click(ShopScreen.BuyRect(0))),
+        new(Do: Automation.Click(ShopScreen.StockRect(0))),
         new(Wait: 0.2, Do: Automation.Click(InventoryPanel.HotbarSlot(0))),
         new(Wait: 0.2, Do: Automation.Hover(InventoryPanel.BackpackSlot(0)), Shot: "run-shop-holding"),
         new(Do: Automation.Click(InventoryPanel.BackpackSlot(0))),

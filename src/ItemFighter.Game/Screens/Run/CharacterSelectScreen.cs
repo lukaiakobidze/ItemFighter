@@ -9,16 +9,16 @@ namespace ItemFighter.Screens.Run;
 /// <summary>Start a new run: pick a character.</summary>
 public sealed class CharacterSelectScreen(Game1 game) : Screen(game)
 {
-    public static readonly Rectangle BackButton = new(1100, 18, 150, 40);
+    public static readonly Rectangle BackButton = new(1410, 32, 150, 40);
 
-    public static Rectangle CardRect(int i) => new(60 + i * 300, 120, 280, 400);
+    public static Rectangle CardRect(int i) => new(Layout.Margin + i * 320, 120, 280, 420);
 
     /// <summary>Automation sets this so scripted runs are repeatable.</summary>
     public static ulong? SeedOverride { get; set; }
 
     public override void Draw(Ui ui)
     {
-        ui.Text("Choose your character", new Vector2(30, 18), 34, Palette.Accent, bold: true);
+        ui.Text("Choose your character", new Vector2(Layout.Margin, 32), 30, Palette.Accent, bold: true);
         if (ui.Button(BackButton, "Back") || ui.Input.KeyPressed(Keys.Escape))
         {
             Game.Show(new MainMenuScreen(Game));
