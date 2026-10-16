@@ -6,7 +6,7 @@ This brief asks for **PNG images only**. The game already loads them: drop each 
 
 - **Work in `D:\CODING\GameDev\ItemFighterArt`** (this brief sits in that folder). Write every image there, under the same folders the game uses: `src\ItemFighter.Game\Content\Art\<Kind>\<id>.png`, for example `src\ItemFighter.Game\Content\Art\Items\sword.png`. Luka copies that `src` folder over the game repo, so the paths must match exactly.
 - Make one image per file, at the exact size in the table below, as a real PNG with an alpha channel (no JPEG renamed to .png).
-- Don't change images that already exist unless Luka asks; add the missing ones. Check the folder first to see what's done.
+- Keep the 15 images in `Statuses\` and `Passives\`: they are the style reference. **Redo every image in `Items\`** (the 16 made so far drifted into a detailed, realistic, blended look), then add the missing ones. Check the folder first to see what's done.
 - Work through the tables in order and save each image as soon as it's finished, so progress can be checked while you work.
 - Don't touch anything else in the folder or in the game repo.
 
@@ -16,9 +16,32 @@ ItemFighter is a roguelike autobattler, similar to The Bazaar. You fight one ene
 
 ## Style (same for every image)
 
-- **Look:** hand-painted 2D game icons with bold, readable shapes, a soft painterly texture and a dark outline. Think of the card art in The Bazaar or Slay the Spire.
+**Match the existing status and passive icons exactly.** Open these before you start and compare every new image against them side by side:
+
+- `src\ItemFighter.Game\Content\Art\Statuses\`: `burn.png`, `chill.png`, `freeze.png`, `haste.png`, `nail.png`, `pain.png`, `poison.png`, `power.png`
+- `src\ItemFighter.Game\Content\Art\Passives\`: `cold_fur.png`, `explosive.png`, `fast_reload.png`, `fury.png`, `silver_knight.png`, `thick_skin.png`, `venomous.png`
+
+The best single references are `fury.png`, `silver_knight.png`, `explosive.png` and `freeze.png`.
+
+What that style is:
+
+- **Bold dark outline** around the whole subject: thick (about 6 to 8px at 256×256), the same dark navy (around `#141826`), even all the way round. Thinner dark lines inside separate the big parts.
+- **Solid colour areas with hard edges.** Each part is a flat base colour plus one darker shadow shape and one lighter highlight shape, sometimes a small bright glint. The edges between those tones are crisp, like cel shading or a vector icon. Depth comes from those stepped tones, not from blending.
+- **Simple, chunky shapes**, slightly exaggerated and cartoony: big readable forms, few small details. A sword is a blade, a guard and a grip, not engraved metal.
+- **Bright, saturated colours**, with the light from the top left: highlights on the upper left, shadows on the lower right.
+- **Centred subject** filling about 80 to 90% of the canvas, slightly tilted where it helps (like the nail and the bullets).
+
+Don't use:
+
+- Soft airbrushed gradients or blended shading
+- Painterly brush texture, scratches, grain, rust, wood grain or noise
+- Fine realistic detail, rivets everywhere, engravings, or photo-like metal and fabric
+- Thin or broken outlines, glows that smear outside the outline, or a drop shadow on the canvas
+
+The items made before this change (the realistic apple, axe, potion, dagger and others in `Items\`) are exactly what to avoid.
+
 - **Readable small:** the icons are shown as small as 36×36 pixels, so use one clear subject, strong silhouettes and high contrast. No text or numbers inside the image.
-- **Background:** transparent for items, enemy abilities, passives and statuses. Enemies and the character get a simple, dark, softly lit background that fits where they live.
+- **Background:** transparent for items, enemy abilities, passives and statuses. Enemies, the character and the shop get a simple background in the same flat style: two or three solid dark tones, no detail, so the subject stands out.
 - **Lighting:** light comes from the top left, and every image uses the same palette family. The game's colour language: burn orange `#FF8C28`, poison purple `#B060E6`, chill cyan `#6EDCF0`, freeze pale blue `#AAE6FF`, pain pink `#E84682`, nail steel grey `#AAB4C3`, power red-orange `#F05028`, shield blue `#78AAE6`, heal green `#5AD26E`.
 - **Format:** PNG, square, RGBA. The file name is the id in the tables, in lower case, with `.png` at the end.
 
@@ -70,7 +93,7 @@ Rarity is shown by the game as a coloured strip, so don't put a frame or border 
 
 ## Enemies (10)
 
-Portraits: the enemy facing slightly toward the viewer, full head and upper body, menacing but charming.
+Portraits: the enemy facing slightly toward the viewer, full head and upper body, menacing but charming. Same bold outline and flat stepped shading as the icons, only bigger.
 
 | File | Name | Difficulty | Picture idea |
 |---|---|---|---|
@@ -151,7 +174,7 @@ The icon frame that every status icon and passive icon sits on, made of two laye
 
 | File | What it is | How it should look |
 |---|---|---|
-| `icon_frame_bg.png` | Background behind the icon | Dark square that fills the whole 128×128, near-black blue-grey (`#0E0F16` to `#1A1C28`), with a very soft inner shadow or subtle texture so it isn't flat. Slightly rounded corners (about 10px), transparent outside the corners |
+| `icon_frame_bg.png` | Background behind the icon | Dark square that fills the whole 128×128, near-black blue-grey (`#0E0F16` to `#1A1C28`): one flat tone with a slightly lighter hard-edged band along the top for depth, no texture. Slightly rounded corners (about 10px), transparent outside the corners |
 | `icon_frame_border.png` | Thin border on top | Thin **white** line (about 4px at 128×128) following the same rounded square, everything else fully transparent. A faint inner glow is fine, but keep it white so tinting works |
 
 Both must line up exactly: same size, same corner radius, same edges.
