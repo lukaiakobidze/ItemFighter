@@ -43,7 +43,7 @@ The items made before this change (the realistic apple, axe, potion, dagger and 
 - **Readable small:** the icons are shown as small as 36×36 pixels, so use one clear subject, strong silhouettes and high contrast. No text or numbers inside the image.
 - **Background:** transparent for items, enemy abilities, passives and statuses. Enemies, the character and the shop get a simple background in the same flat style: two or three solid dark tones, no detail, so the subject stands out.
 - **Lighting:** light comes from the top left, and every image uses the same palette family. The game's colour language: burn orange `#FF8C28`, poison purple `#B060E6`, chill cyan `#6EDCF0`, freeze pale blue `#AAE6FF`, pain pink `#E84682`, nail steel grey `#AAB4C3`, power red-orange `#F05028`, shield blue `#78AAE6`, heal green `#5AD26E`.
-- **Format:** PNG, square, RGBA. The file name is the id in the tables, in lower case, with `.png` at the end.
+- **Format:** PNG, RGBA, square except the UI logo and background. The file name is the id in the tables, in lower case, with `.png` at the end.
 
 | Kind | Folder | Size |
 |---|---|---|
@@ -54,7 +54,7 @@ The items made before this change (the realistic apple, axe, potion, dagger and 
 | Enemies (portraits) | `src/ItemFighter.Game/Content/Art/Enemies/` | 512×512 |
 | Characters (portraits) | `src/ItemFighter.Game/Content/Art/Characters/` | 512×512 |
 | Map encounters | `src/ItemFighter.Game/Content/Art/Encounters/` | 512×512 |
-| UI pieces | `src/ItemFighter.Game/Content/Art/UI/` | 128×128 |
+| UI pieces | `src/ItemFighter.Game/Content/Art/UI/` | see the UI table |
 
 ## Items (28)
 
@@ -168,7 +168,12 @@ Small icons shown next to the stack count in the status row under the health bar
 |---|---|---|
 | `shop.png` | Shop | Cosy merchant stall with a lantern and items on display |
 
-## UI pieces (2)
+## UI pieces (15)
+
+Everything around the content: frames, panels, buttons, small icons, the background and the logo. **Same style as the icons:** bold dark navy outline, flat colour areas with one hard-edged shadow and one highlight shape, no texture or gradients. Keep them calmer and darker than the content art so items and enemies stand out.
+
+### Icon frame (2)
+
 
 The icon frame that every status icon and passive icon sits on, made of two layers. The game draws the background, then the icon inside it (with a small margin), then the border on top. The border is **pure white** so the game can tint it: orange for burn, purple for poison, red for enemy passives, gold for yours, and so on.
 
@@ -178,6 +183,38 @@ The icon frame that every status icon and passive icon sits on, made of two laye
 | `icon_frame_border.png` | Thin border on top | Thin **white** line (about 4px at 128×128) following the same rounded square, everything else fully transparent. A faint inner glow is fine, but keep it white so tinting works |
 
 Both must line up exactly: same size, same corner radius, same edges.
+
+### Stretchable frames (7)
+
+These are stretched to many sizes, so the game keeps the **outer quarter of each side** exactly as drawn (the corners) and stretches only the middle. So: put all the detail (corner shapes, rivets, notches) in the corners, and keep the edges and the centre plain and even, with no picture or gradient in the middle. All are 96×96, rounded corners about 12px, transparent outside the corners.
+
+| File | Used for | How it should look |
+|---|---|---|
+| `panel.png` | The big boxes: enemy panel, your panel, combat log, side panels | Dark slate fill (`#222636`), thick dark navy outline, a thin lighter inner edge (`#464E68`) with a hard-edged lighter band along the top edge |
+| `card.png` | Item cards and enemy ability boxes | Like the panel, a bit lighter (`#2C3042`), with small corner details. The game draws it slightly dimmed and brightens it on mouse-over |
+| `tooltip.png` | The mouse-over info box | Near-black fill (`#10121C`), thin outline. The game adds a coloured border on top |
+| `button.png` | Buttons | Raised slab: blue-grey top face (`#343A52`) with a darker hard-edged bottom lip so it looks pressable |
+| `button_hover.png` | Button under the mouse | Same shape, brighter face (`#46506E`) and a light outline |
+| `button_selected.png` | Chosen option (e.g. the active speed button) | Same shape, warm gold face (`#5C4E1E`) with a gold outline (`#FFC440`) |
+| `button_disabled.png` | Button you can't press | Same shape, flat and dull (`#282A36`), low contrast |
+
+### Small icons (4)
+
+Shown next to numbers, as small as 20×20, so one simple bold shape each. 128×128, transparent background.
+
+| File | Used for | Picture idea |
+|---|---|---|
+| `gold.png` | Gold amount in runs | Single gold coin, slightly tilted, with a bright glint |
+| `heart.png` | Start of every health bar | Chunky red heart (`#CC3840`) |
+| `shield.png` | Shield amount on health bars | Small blue kite shield (`#78AAE6`) |
+| `clock.png` | Fight time left | Simple stopwatch or hourglass |
+
+### Screen art (2)
+
+| File | Size | Used for | How it should look |
+|---|---|---|---|
+| `background.png` | 1920×1080 | Behind every screen | Very dark, quiet backdrop (`#14161F` to `#1E2130`): a few large flat shapes, like distant hills or stone blocks in two or three close dark tones. No detail in the middle third, where the panels sit. Not transparent |
+| `logo.png` | 1024×256 | Title on the main menu | "ItemFighter" in chunky bold letters with the thick dark outline, gold (`#FFC440`) with a hard-edged orange shadow, maybe a small sword or shield worked in. Transparent background |
 
 ## Where the images appear in a fight
 
@@ -201,7 +238,7 @@ Status and passive icons sit inside the UI frame. The smallest sizes on screen a
 
 ## Checklist
 
-- 28 items, 12 enemy abilities, 7 passives, 8 statuses, 10 enemies, 1 character, 1 shop, 2 UI frame pieces: 69 PNGs. The statuses and passives are done already.
+- 28 items, 12 enemy abilities, 7 passives, 8 statuses, 10 enemies, 1 character, 1 shop, 15 UI pieces: 82 PNGs. The statuses and passives are done already.
 - File names exactly as in the tables (lower case, underscores).
-- Square, transparent background except portraits, the shop and the frame background.
+- Square, transparent background except portraits, the shop, the frame background and `background.png`. The logo and the background are the only non-square images.
 - No text, numbers, frames or rarity borders in the images.

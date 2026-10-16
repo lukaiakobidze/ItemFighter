@@ -59,7 +59,7 @@ public abstract class RunScreen(Game1 game, RunSession session) : Screen(game)
             if (ui.Hover(r)) ui.Tooltip(bossDef.Name, [$"{bossDef.MaxHp} HP", "Waits at the end of this mission."], Palette.Damage);
             y += 30;
         }
-        ui.Text($"Gold: {Run.Gold}", new Vector2(x, y), 24, Palette.Accent, bold: true);
+        ui.IconText("gold", "Gold: ", $"{Run.Gold}", new Vector2(x, y), 24, Palette.Accent, bold: true);
         y += 40;
         // Passives come from passive shops (not built yet), so the list only shows once there are some.
         if (Run.Passives.Count > 0)

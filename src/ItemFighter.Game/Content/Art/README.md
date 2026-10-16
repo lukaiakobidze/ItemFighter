@@ -10,6 +10,7 @@ Drop PNG files here. The file name is the content id:
 - `Statuses/burn.png` (burn, poison, chill, freeze, haste, pain, nail, power)
 - `Encounters/shop.png`
 - `UI/icon_frame_bg.png` and `UI/icon_frame_border.png` (the frame behind and around status and passive icons; the border is white and tinted in game)
+- `UI/panel.png`, `card.png`, `tooltip.png`, `button*.png` (stretched with fixed corners), `gold.png`, `heart.png`, `shield.png`, `clock.png`, `background.png`, `logo.png`. The full list is in the art brief.
 
 The full list of every image the game wants is in [docs/art/codex-art-brief.md](../../../../docs/art/codex-art-brief.md).
 

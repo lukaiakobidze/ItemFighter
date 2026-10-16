@@ -129,6 +129,7 @@ public sealed class Game1 : Game
         GraphicsDevice.SetRenderTarget(_target);
         GraphicsDevice.Clear(Palette.Background);
         _batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: Matrix.CreateScale(scale, scale, 1));
+        _ui.Picture("background", _screen.Bounds, cover: true);
         _current?.Draw(_ui);
         _ui.DrawTooltip();
         _batch.End();

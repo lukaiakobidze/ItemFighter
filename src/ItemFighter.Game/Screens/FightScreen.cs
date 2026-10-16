@@ -148,7 +148,7 @@ public sealed class FightScreen : Screen
     {
         bool flash = _firedAt.TryGetValue(a.Id, out double t) && _time - t < 0.3;
         bool hover = ui.Hover(r);
-        ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
+        if (!ui.NineSlice("card", r, 10, hover ? new Color(255, 255, 255) : new Color(215, 215, 225))) ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
         var art = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, 62);
         Color? tint = a.FreezeTicks > 0 ? new Color(120, 200, 255) * 0.45f : null;
         ui.Art("EnemyAbilities", a.Def.Id, a.Def.Name, art, tint);
@@ -196,7 +196,7 @@ public sealed class FightScreen : Screen
         int ticksLeft = Math.Max(0, Battle.TimeLimitTicks - Battle.Tick);
         int secondsLeft = (ticksLeft + 9) / 10;
         var color = secondsLeft <= 15 ? Palette.Damage : Palette.TextDim;
-        ui.Text($"Time left {secondsLeft / 60}:{secondsLeft % 60:00}", pos, 17, color, bold: secondsLeft <= 15);
+        ui.IconText("clock", "Time left ", $"{secondsLeft / 60}:{secondsLeft % 60:00}", pos, 17, color, bold: secondsLeft <= 15);
         ui.Text("Out of time = defeat", pos + new Vector2(0, 22), 14, Palette.TextDim);
     }
 
@@ -225,7 +225,7 @@ public sealed class FightScreen : Screen
         bool fired = _firedAt.TryGetValue(item.Id, out double t) && _time - t < 0.25;
         bool hover = ui.Hover(r);
 
-        ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
+        if (!ui.NineSlice("card", r, 10, hover ? new Color(255, 255, 255) : new Color(215, 215, 225))) ui.Rect(r, hover ? Palette.PanelLight : new Color(40, 44, 60));
         var art = new Rectangle(r.X + 4, r.Y + 4, r.Width - 8, 112);
         Color? tint = item.FreezeTicks > 0 ? new Color(120, 200, 255) * 0.45f : null;
         ui.Art("Items", def.Id, def.Name, art, tint);
@@ -322,7 +322,11 @@ public sealed class FightScreen : Screen
             ui.Rect(new Rectangle(bar.X, bar.Y, w, 8), Palette.Shield);
         }
         ui.Border(bar, Palette.Border, 1);
-        string text = $"{Math.Max(0, c.Hp)} / {c.MaxHp}" + (c.Shield > 0 ? $"   +{c.Shield} shield" : "");
+        int icon = bar.Height - 4;
+        ui.Icon("heart", new Rectangle(bar.X + 4, bar.Y + 2, icon, icon));
+        bool shieldIcon = c.Shield > 0 && ui.Icon("shield", new Rectangle(bar.Right - icon - 52, bar.Y + 2, icon, icon));
+        if (shieldIcon) ui.Text($"{c.Shield}", new Vector2(bar.Right - 50, bar.Y + 4), 17, Color.White, bold: true);
+        string text = $"{Math.Max(0, c.Hp)} / {c.MaxHp}" + (c.Shield > 0 && !shieldIcon ? $"   +{c.Shield} shield" : "");
         ui.TextIn(text, bar, 17, Color.White, bold: true);
     }
 

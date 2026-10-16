@@ -37,8 +37,61 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
 
     public void Panel(Rectangle r, Color? fill = null, Color? border = null)
     {
+        if (fill is null && border is null && NineSlice("panel", r)) return;
         Rect(r, fill ?? Palette.Panel);
         Border(r, border ?? Palette.Border, 1);
+    }
+
+    /// <summary>
+    /// Draws UI/&lt;id&gt;.png stretched over a rectangle of any size without stretching its corners: the outer quarter of
+    /// the image on each side stays as drawn (shown <paramref name="corner"/> virtual pixels wide), the middle stretches.
+    /// Returns false (and draws nothing) when the PNG isn't there, so callers fall back to plain shapes.
+    /// </summary>
+    public bool NineSlice(string id, Rectangle r, int corner = 12, Color? tint = null)
+    {
+        var tex = assets.Texture("UI", id);
+        if (tex is null) return false;
+        int sx = tex.Width / 4, sy = tex.Height / 4;
+        int c = Math.Min(corner, Math.Min(r.Width, r.Height) / 2);
+        int[] srcX = [0, sx, tex.Width - sx, tex.Width], srcY = [0, sy, tex.Height - sy, tex.Height];
+        int[] dstX = [r.X, r.X + c, r.Right - c, r.Right], dstY = [r.Y, r.Y + c, r.Bottom - c, r.Bottom];
+        for (int row = 0; row < 3; row++)
+        for (int col = 0; col < 3; col++)
+        {
+            var dst = new Rectangle(dstX[col], dstY[row], dstX[col + 1] - dstX[col], dstY[row + 1] - dstY[row]);
+            if (dst.Width <= 0 || dst.Height <= 0) continue;
+            var src = new Rectangle(srcX[col], srcY[row], srcX[col + 1] - srcX[col], srcY[row + 1] - srcY[row]);
+            batch.Draw(tex, dst, src, tint ?? Color.White);
+        }
+        return true;
+    }
+
+    /// <summary>A small UI icon (UI/&lt;id&gt;.png, e.g. "gold") in a square; false when there is no PNG.</summary>
+    public bool Icon(string id, Rectangle r)
+    {
+        var tex = assets.Texture("UI", id);
+        if (tex is null) return false;
+        batch.Draw(tex, r, Color.White);
+        return true;
+    }
+
+    /// <summary>A UI picture (logo, background) fitted inside a rectangle keeping its shape; false when there is no PNG.</summary>
+    public bool Picture(string id, Rectangle r, bool cover = false)
+    {
+        var tex = assets.Texture("UI", id);
+        if (tex is null) return false;
+        float scale = cover ? Math.Max(r.Width / (float)tex.Width, r.Height / (float)tex.Height) : Math.Min(r.Width / (float)tex.Width, r.Height / (float)tex.Height);
+        int w = (int)(tex.Width * scale), h = (int)(tex.Height * scale);
+        batch.Draw(tex, new Rectangle(r.Center.X - w / 2, r.Center.Y - h / 2, w, h), Color.White);
+        return true;
+    }
+
+    /// <summary>"[icon] text": the UI icon when its PNG exists, otherwise <paramref name="fallback"/> before the text.</summary>
+    public void IconText(string icon, string fallback, string text, Vector2 pos, int size, Color color, bool bold = false)
+    {
+        int s = (int)(size * 1.15f);
+        if (Icon(icon, new Rectangle((int)pos.X, (int)(pos.Y + size * 0.6f - s / 2f), s, s))) Text(text, new Vector2(pos.X + s + 6, pos.Y), size, color, bold);
+        else Text(fallback + text, pos, size, color, bold);
     }
 
     /// <summary>
@@ -198,9 +251,13 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
     public bool Button(Rectangle r, string label, int size = 20, bool enabled = true, bool selected = false)
     {
         bool hover = enabled && Hover(r);
-        var fill = !enabled ? new Color(40, 42, 54) : selected ? new Color(92, 78, 30) : hover ? Palette.PanelLight : Palette.Panel;
-        Rect(r, fill);
-        Border(r, selected ? Palette.Accent : hover ? Palette.Text : Palette.Border, selected ? 2 : 1);
+        string skin = !enabled ? "button_disabled" : selected ? "button_selected" : hover ? "button_hover" : "button";
+        if (!NineSlice(skin, r, 10))
+        {
+            var fill = !enabled ? new Color(40, 42, 54) : selected ? new Color(92, 78, 30) : hover ? Palette.PanelLight : Palette.Panel;
+            Rect(r, fill);
+            Border(r, selected ? Palette.Accent : hover ? Palette.Text : Palette.Border, selected ? 2 : 1);
+        }
         TextIn(label, r, size, enabled ? Palette.Text : Palette.TextDim, bold: true);
         return enabled && Clicked(r);
     }
@@ -226,8 +283,12 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         x = Math.Max(4, x);
         y = Math.Max(4, y);
         var r = new Rectangle(x, y, width, height);
-        Rect(r, new Color(14, 15, 22, 245));
-        Border(r, _tipAccent, 2);
+        if (NineSlice("tooltip", r, 10)) Border(r, _tipAccent, 2);
+        else
+        {
+            Rect(r, new Color(14, 15, 22, 245));
+            Border(r, _tipAccent, 2);
+        }
         float cy = y + pad;
         cy += Wrapped(_tipTitle, new Vector2(x + pad, cy), width - pad * 2, 18, _tipAccent, true) + 4;
         foreach (var l in _tipLines)

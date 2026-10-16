@@ -24,7 +24,8 @@ public sealed class MainMenuScreen : Screen
 
     public override void Draw(Ui ui)
     {
-        ui.TextIn("ItemFighter", new Rectangle(0, 140, 1280, 90), 72, Palette.Accent, bold: true);
+        if (!ui.Picture("logo", new Rectangle(340, 110, 600, 130)))
+            ui.TextIn("ItemFighter", new Rectangle(0, 140, 1280, 90), 72, Palette.Accent, bold: true);
         ui.TextIn("test build", new Rectangle(0, 230, 1280, 40), 22, Palette.TextDim);
         if (_saved is not null)
         {
