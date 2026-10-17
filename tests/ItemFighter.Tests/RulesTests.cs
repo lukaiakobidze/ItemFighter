@@ -22,7 +22,7 @@ public class RulesTests
         Assert.DoesNotContain(content.Errors, e => e.File == GameContent.RulesFile);
         var r = content.Database.Rules;
         Assert.Equal(1200, r.TimeLimitTicks);
-        Assert.Equal(5, r.BurnTickInterval);
+        Assert.Equal(10, r.BurnTickInterval); // Luka 2026-10-17: burn ticks every 1s
         Assert.Equal(10, r.PoisonThreshold);
         Assert.Equal(5, r.ChillFreezeAtStacks);
     }

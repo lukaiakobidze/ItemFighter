@@ -105,7 +105,7 @@ Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's
 |---|---|---|
 | `missions`, `encountersPerMission`, `choicesPerPick` | 5, 10, 3 | Run length, and how many encounters you choose from |
 | `hotbarSize`, `backpackSize` | 6, 12 | Items that fight, and items you can carry besides |
-| `startingGold` | 10 | Gold at the start of a run |
+| `startingGold` | 0 | Gold at the start of a run |
 | `fightGold` | [5 … 14] | Gold for a normal win, by the enemy's difficulty 1 to 10 |
 | `bossGold` | 15 | Gold for beating the mission boss |
 | `prices` | Common 4 … Legendary 25 | Buy price per rarity (× level). Selling gives `sellPercent` of it |

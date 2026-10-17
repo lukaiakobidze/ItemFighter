@@ -9,8 +9,13 @@ public class RunStateTests
 {
     internal static readonly LoadedContent Content = GameContent.Load();
 
-    internal static RunState NewRun(ulong seed = 7, RunConfig? config = null) =>
-        RunState.New(seed, "silver_knight", config ?? Content.Run, Content.Database);
+    /// <summary>A new run with 10 gold, so the gold sums below don't depend on run.json's startingGold.</summary>
+    internal static RunState NewRun(ulong seed = 7, RunConfig? config = null)
+    {
+        var run = RunState.New(seed, "silver_knight", config ?? Content.Run, Content.Database);
+        run.Gold = 10;
+        return run;
+    }
 
     private static Encounter FirstFight(RunState run) => new(EncounterKind.Fight, "squire_zombie");
 
@@ -25,8 +30,8 @@ public class RunStateTests
     [Fact]
     public void New_StartsWithStartingItemsAndGold()
     {
-        var run = NewRun();
-        Assert.Equal(10, run.Gold);
+        var run = RunState.New(7, "silver_knight", Content.Run, Content.Database);
+        Assert.Equal(Content.Run.StartingGold, run.Gold);
         Assert.Equal(new OwnedItem("sword", 1), run.Hotbar[0]);
         Assert.Equal(new OwnedItem("metal_plating", 1), run.Hotbar[1]);
         Assert.All(run.Hotbar.Skip(2), Assert.Null);
