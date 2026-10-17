@@ -69,18 +69,28 @@ public class StatusTests
     }
 
     [Fact]
-    public void Poison_BurstsAtTen_ShieldBlocksIt_Resets()
+    public void Poison_BurstsAtTen_ForAFlatAmount_ShieldBlocksIt_ExtraCarriesOver()
     {
         var b = Dummy();
         b.Enemy.Shield = 100;
         b.ApplyStatus(Side.Enemy, StatusType.Poison, 4, null, 0);
-        b.ApplyStatus(Side.Enemy, StatusType.Poison, 4, null, 0);
+        b.ApplyStatus(Side.Enemy, StatusType.Poison, 5, null, 0);
         Assert.Empty(b.Of<PoisonBurst>());
-        b.ApplyStatus(Side.Enemy, StatusType.Poison, 4, null, 0);
-        Assert.Equal(36, Assert.Single(b.Of<PoisonBurst>()).Damage);
+        b.ApplyStatus(Side.Enemy, StatusType.Poison, 3, null, 0); // 9 + 3: bursts once, 2 left over (Luka 2026-10-17)
+        Assert.Equal(20, Assert.Single(b.Of<PoisonBurst>()).Damage);
         Assert.Equal(1000, b.Enemy.Hp);
-        Assert.Equal(100 - 36, b.Enemy.Shield);
-        Assert.Equal(0, b.Enemy.Statuses.Poison);
+        Assert.Equal(100 - 20, b.Enemy.Shield);
+        Assert.Equal(2, b.Enemy.Statuses.Poison);
+    }
+
+    [Fact]
+    public void Poison_PastTwoThresholds_BurstsTwice()
+    {
+        var b = Dummy();
+        b.ApplyStatus(Side.Enemy, StatusType.Poison, 23, null, 0);
+        Assert.Equal(2, b.Of<PoisonBurst>().Count());
+        Assert.Equal(1000 - 40, b.Enemy.Hp);
+        Assert.Equal(3, b.Enemy.Statuses.Poison);
     }
 
     [Fact]

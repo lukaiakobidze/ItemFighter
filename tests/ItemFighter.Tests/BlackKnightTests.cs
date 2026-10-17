@@ -55,7 +55,7 @@ public class BlackKnightTests
         b.ApplyStatus(Side.Enemy, StatusType.Poison, b.Rules.PoisonThreshold, null, 0);
         b.Steps(6);
         var poison = b.Of<DamageDealt>().Single(d => d.Kind == DamageKind.Poison);
-        Assert.Equal(b.Rules.PoisonThreshold * b.Rules.PoisonBurstPerStack, poison.Total);
+        Assert.Equal(b.Rules.PoisonBurstDamage, poison.Total);
         Assert.Equal(2, b.Of<DamageDealt>().First(d => d.Kind == DamageKind.Burn).Total);
     }
 

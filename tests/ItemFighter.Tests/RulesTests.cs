@@ -61,7 +61,7 @@ public class RulesTests
     [Fact]
     public void Poison_ThresholdAndBurst_FromRules()
     {
-        var b = Dummy(CombatRules.Parse("""{ "poisonThreshold": 4, "poisonBurstPerStack": 5 }""", out _));
+        var b = Dummy(CombatRules.Parse("""{ "poisonThreshold": 4, "poisonBurstDamage": 20 }""", out _));
         b.ApplyStatus(Side.Enemy, StatusType.Poison, 4, null, 0);
         Assert.Equal(980, b.Enemy.Hp);
     }

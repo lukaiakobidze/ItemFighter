@@ -90,7 +90,7 @@ public sealed class BurnRule : IStatusRule
     }
 }
 
-/// <summary>Builds up silently; at the threshold it bursts for 3 per stack (shield blocks it like any hit) and resets (numbers in rules.json).</summary>
+/// <summary>Builds up silently; each time it reaches the threshold it bursts for a flat poisonBurstDamage (shield blocks it like any hit) and keeps what went past the threshold (numbers in rules.json).</summary>
 public sealed class PoisonRule : IStatusRule
 {
     public StatusType Type => StatusType.Poison;
@@ -99,11 +99,14 @@ public sealed class PoisonRule : IStatusRule
     {
         target.Statuses.Poison += amount;
         int threshold = Math.Max(1, battle.Modify("PoisonThreshold", battle.Rules.PoisonThreshold, source));
-        if (target.Statuses.Poison < threshold) return;
-        int damage = target.Statuses.Poison * battle.Rules.PoisonBurstPerStack;
-        target.Statuses.Poison = 0;
-        battle.Emit(new PoisonBurst(battle.Tick, target.Side, damage), depth, source);
-        battle.DealDamage(target.Side, damage, DamageKind.Poison, source, depth);
+        // Each full threshold bursts once for the flat burst damage; poison past it stays for the next burst.
+        while (target.Statuses.Poison >= threshold && target.Hp > 0)
+        {
+            target.Statuses.Poison -= threshold;
+            int damage = battle.Rules.PoisonBurstDamage;
+            battle.Emit(new PoisonBurst(battle.Tick, target.Side, damage), depth, source);
+            battle.DealDamage(target.Side, damage, DamageKind.Poison, source, depth);
+        }
     }
 
     public void OnTick(Battle battle, Combatant target) { }

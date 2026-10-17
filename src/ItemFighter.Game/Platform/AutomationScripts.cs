@@ -21,6 +21,7 @@ public static class AutomationScripts
         "nails" => Nails(),
         "boxer" => Boxer(),
         "knight" => Knight(),
+        "poison" => Poison(),
         "run" => RunLoop(),
         _ => throw new ArgumentException($"unknown automation script '{name}'"),
     };
@@ -103,6 +104,22 @@ public static class AutomationScripts
         new(Wait: 0.4, Shot: "boxer-mid"),
         new(Wait: 0.2, Do: Automation.Hover(FightScreen.PassiveIcon(FightScreen.EnemyPassiveGrid, 0)), Shot: "boxer-passive"),
         new(Wait: 0.2, Do: Automation.Hover(FightScreen.AbilityCard(0)), Shot: "boxer-ability"),
+    ];
+
+    /// <summary>Luka's 2026-10-17 poison report: every burst is a flat amount, one log line each.</summary>
+    private static Step[] Poison() =>
+    [
+        .. ToLab("sword", "metal_plating", "fang_knife", "venom_fang", "fang_knife", "venom_fang"),
+        new(Wait: 0.1, Do: g =>
+        {
+            var lab = (FightLabScreen)g.Current!;
+            lab.Setup.EnemyId = "grizzly_bear";
+            lab.StartFight();
+        }),
+        new(Do: g => FightOf(g).Speed = 4),
+        new(Until: g => FightOf(g).Battle.Events.OfType<Core.Engine.PoisonBurst>().Count() >= 3),
+        new(Do: g => FightOf(g).Speed = 1),
+        new(Wait: 0.3, Shot: "poison-bursts"),
     ];
 
     /// <summary>Luka's 2026-10-17 Black Knight, mission 1 boss, whose Crushing Blow leaves you Vulnerable.</summary>

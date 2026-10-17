@@ -30,8 +30,8 @@ public sealed class CombatRules
 
     /// <summary>Poison bursts when it reaches this many stacks (PoisonThreshold modifiers change it per source).</summary>
     public int PoisonThreshold { get; init; } = 10;
-    /// <summary>A burst deals this much per stack (shield blocks it).</summary>
-    public int PoisonBurstPerStack { get; init; } = 3;
+    /// <summary>Damage of every poison burst, however much poison went in (Luka 2026-10-17). Shield blocks it.</summary>
+    public int PoisonBurstDamage { get; init; } = 20;
 
     /// <summary>Chill stacks last this long; every new stack restarts the timer.</summary>
     public decimal ChillSeconds { get; init; } = 5;
@@ -102,7 +102,7 @@ public sealed class CombatRules
         Check(new[] { FightTimeLimitSeconds, MinCooldownSeconds, BurnTickSeconds, ChillSeconds, FreezeSeconds }.All(t => t > 0 && t <= max),
             $"times must be above 0 and at most {max} seconds");
         Check(BurnLossPerTick >= 0 && BurnShieldMultiplier >= 1, "'burnLossPerTick' can't be negative and 'burnShieldMultiplier' must be at least 1");
-        Check(PoisonThreshold >= 1 && PoisonBurstPerStack >= 0, "'poisonThreshold' must be at least 1 and 'poisonBurstPerStack' can't be negative");
+        Check(PoisonThreshold >= 1 && PoisonBurstDamage >= 0, "'poisonThreshold' must be at least 1 and 'poisonBurstDamage' can't be negative");
         Check(ChillCooldownPercentPerStack >= 0 && ChillFreezeAtStacks >= 1, "'chillCooldownPercentPerStack' can't be negative and 'chillFreezeAtStacks' must be at least 1");
         Check(NailDamage >= 0 && PowerDamagePerStack >= 0, "'nailDamage' and 'powerDamagePerStack' can't be negative");
         Check(VulnerableDamagePercent >= 0, "'vulnerableDamagePercent' can't be negative");

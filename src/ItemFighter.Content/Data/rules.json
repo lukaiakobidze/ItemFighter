@@ -6,7 +6,7 @@
   "burnShieldMultiplier": 2,
 
   "poisonThreshold": 10,
-  "poisonBurstPerStack": 2,
+  "poisonBurstDamage": 20,
 
   "chillSeconds": 5,
   "chillCooldownPercentPerStack": 5,

@@ -13,7 +13,7 @@ public class ShieldRulesTests
         b.Enemy.Shield = 20;
         b.ApplyStatus(Side.Enemy, StatusType.Poison, b.Rules.PoisonThreshold, null, 0);
         var burst = Assert.Single(b.Of<DamageDealt>());
-        int total = b.Rules.PoisonThreshold * b.Rules.PoisonBurstPerStack;
+        int total = b.Rules.PoisonBurstDamage;
         Assert.Equal(20, burst.ShieldDamage);
         Assert.Equal(total - 20, burst.HpDamage);
         Assert.Equal(0, b.Enemy.Shield);

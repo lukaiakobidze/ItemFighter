@@ -70,7 +70,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 The numbers below are the defaults; all of them are in `Data/rules.json` (see [balancing.md](balancing.md)).
 
 - **Burn:** every 0.5s deals its stacks as damage (double against shield), then loses 1 stack.
-- **Poison:** no damage until 10 stacks, then bursts for 3 per stack (shield blocks it, like all damage) and resets.
+- **Poison:** no damage until 10 stacks (`poisonThreshold`), then bursts for a flat 20 (`poisonBurstDamage`; shield blocks it, like all damage). Stacks past the threshold carry over: 9 + 3 bursts once and leaves 2. Damage-taken modifiers such as Thick Skin still apply to the burst.
 - **Chill:** each stack makes all the target's cooldowns 5% longer. Stacks last 5s, and each new stack refreshes the timer; when it runs out the cooldowns go back to normal. 5 stacks freeze the target for 1s.
 - **Pain:** stays all fight. Each time that side's item or ability fires (on its own or by click, not as a reaction), that side takes damage equal to its Pain. Shield blocks it, and it counts as taking damage.
 - **Nail:** does nothing alone. Uproot pulls them all out for `nailDamage` (4) each.

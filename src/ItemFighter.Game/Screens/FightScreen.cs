@@ -408,7 +408,7 @@ public sealed class FightScreen : Screen
         if (s.Burn > 0)
             Chip("burn", "Burn", s.Burn, Palette.Burn, $"Every {rules.BurnTickSeconds:0.##}s deals its stacks as damage (x{rules.BurnShieldMultiplier} against shield), then loses {rules.BurnLossPerTick} {(rules.BurnLossPerTick == 1 ? "stack" : "stacks")}.",
                 rules.BurnTickInterval - tick % rules.BurnTickInterval, rules.BurnTickInterval);
-        if (s.Poison > 0) Chip("poison", "Poison", s.Poison, Palette.Poison, $"{s.Poison}/{rules.PoisonThreshold} stacks. At {rules.PoisonThreshold} it bursts for {rules.PoisonBurstPerStack} damage per stack (shield blocks it), then resets.");
+        if (s.Poison > 0) Chip("poison", "Poison", s.Poison, Palette.Poison, $"{s.Poison}/{rules.PoisonThreshold} stacks. At {rules.PoisonThreshold} it bursts for {rules.PoisonBurstDamage} damage (shield blocks it); stacks past {rules.PoisonThreshold} carry over to the next burst.");
         if (s.Chill > 0)
             Chip("chill", "Chill", s.Chill, Palette.Chill,
                 $"{s.Chill}/{rules.ChillFreezeAtStacks} stacks. Each stack makes every cooldown {rules.ChillCooldownPercentPerStack}% longer. Stacks last {rules.ChillSeconds:0.#}s, refreshed by each new stack. At {rules.ChillFreezeAtStacks} stacks: frozen for {rules.FreezeSeconds:0.#}s.",
