@@ -1,0 +1,13 @@
+{
+  "id": "dark_slash",
+  "kind": "EnemyAbility",
+  "name": "Dark Slash",
+  "cooldown": 4,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Damage", "amount": 9 }
+      ]
+    }
+  ]
+}

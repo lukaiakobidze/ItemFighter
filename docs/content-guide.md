@@ -53,7 +53,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `Damage` | `amount`; optional `hits` (2 = two separate hits), `percentOfShield` (adds that % of your current shield; 100 = equal to it), `perItem` + `perItemTag` (adds `perItem` for each board item with that tag, itself included) | Enemy |
 | `Shield` | `amount` and/or `percentOfMaxHp` | Self |
 | `Heal` | `amount` | Self |
-| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail/Power (give `"target": "Self"` to power yourself up); items for Freeze/Haste |
+| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste/Vulnerable use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail/Power/Vulnerable (give `"target": "Self"` to power yourself up); items for Freeze/Haste |
 | `RemoveStatus` | `statuses`, e.g. `["Poison", "Burn"]` | Self. Removes every stack |
 | `Uproot` | | Enemy. Pulls out every Nail for `nailDamage` each (rules.json, plus `NailDamage` modifiers), as one hit |
 | `Charge` | `seconds` | Chosen. Takes time off the current cooldown; if that passes zero the item fires and the rest carries into its next cooldown |
@@ -75,6 +75,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 - **Pain:** stays all fight. Each time that side's item or ability fires (on its own or by click, not as a reaction), that side takes damage equal to its Pain. Shield blocks it, and it counts as taking damage.
 - **Nail:** does nothing alone. Uproot pulls them all out for `nailDamage` (4) each.
 - **Power:** stays all fight. Each stack adds `powerDamagePerStack` (1) to every hit its owner deals. Burn, poison and pain are not boosted.
+- **Vulnerable:** a timer, not stacks: `{ "type": "ApplyStatus", "status": "Vulnerable", "seconds": 4 }`. While it lasts, every hit and pain tick the target takes does `vulnerableDamagePercent` (50) more damage, rounded half up (9 becomes 14). Burn and poison are not boosted. A new application keeps the longer of the time left and the new duration.
 - **Freeze / Haste:** on single items or abilities, for some `seconds`. Haste ×2 speed, Freeze stops. A frozen item that gets charged or reset to full waits and fires when the freeze ends.
 - **Slow** is an effect, not a status: it adds seconds to the current cooldown.
 
@@ -92,7 +93,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 
 Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) `CooldownPercent` (−20 = 20% faster) and `CooldownSeconds` (−1 = 1 second faster). A filter can name a `kind` (Item, Passive, Character...), a `tag` and/or a `slot` (1 = the first hotbar slot). `"perItemTag": "Weapon"` multiplies the amount by how many Weapon items you have (Vanguard).
 
-A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (its abilities, files in `enemies/abilities/` with `"kind": "EnemyAbility"`), `passiveIds` (its passives, from the shared `passives/` pool with `"kind": "Passive"`; the passive shop sells everything in `passives/`) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
+A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (its abilities, files in `enemies/abilities/` with `"kind": "EnemyAbility"`), `passiveIds` (its passives, from the shared `passives/` pool with `"kind": "Passive"`; the passive shop sells everything in `passives/`) optional `"boss": true` (a boss only appears as a mission boss, never on a fight day) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 
 Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's passives. Give an enemy ability `"tags": ["Weapon"]` when other effects should treat it as a weapon (the Blur's Rifle Shot).
 
@@ -115,7 +116,7 @@ Enemy abilities with no `cooldown` (like Venomous or Thick Skin) are the enemy's
 | `shops` | "Shop", "Passive Shop" | `{ "id", "name", "tags": [], "sells": "Items" }` per shop. Tags limit an item shop to items with any of those tags; empty sells everything. `"sells": "Passives"` makes it a passive shop: it sells passives from `passives/` you don't have yet, priced by their `rarity` |
 | `daysPerDifficulty` | 5 | The run's difficulty goes up by 1 every 5 days: 1 in the first half of mission 1, 2 in the second half, … 10 in the second half of mission 5 |
 | `harderEnemyPercent` | [5, 15, 25, 35, 40] | Chance (%) that each fight option is one difficulty above the run's, by day within each half-mission (day 1 to 5, then again for days 6 to 10). Every other option is the run's difficulty, never easier. If no enemy of that difficulty is left, the nearest one is used |
-| `bosses` | 5 entries | `{ "enemy": id }` per mission (missing missions reuse the last). Enemies always keep their base stats |
+| `bosses` | 5 entries | `{ "pool": [ids] }` per mission: each run picks one boss from that mission's pool at random (missing missions reuse the last). Mission 1 is the Black Knight; missions 2 to 5 still use normal enemies as placeholders. Enemies always keep their base stats |
 | `dropRarityWeights` | one row per difficulty | Rarity odds of the 3 items offered after beating an enemy of that difficulty |
 | `shopRarityWeights` | one row per mission | Rarity odds of shop items |
 | `tagBonusPercent` | 15 | Each item you own that shares a tag with an offer makes it 15% more likely |

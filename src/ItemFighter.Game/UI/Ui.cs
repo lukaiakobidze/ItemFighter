@@ -194,7 +194,7 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         int pad = frame is not null ? 0 : padding ?? Math.Max(2, r.Width / 10);
         var inner = new Rectangle(r.X + pad, r.Y + pad, r.Width - pad * 2, r.Height - pad * 2);
         if (assets.Texture(kind, id) is not null) Art(kind, id, name, inner);
-        else TextIn(name, r, Math.Max(10, r.Height / 3), Palette.TextDim, bold: true);
+        else Placeholder(name, inner);
         underFrame?.Invoke(); // cooldown shades and flashes go under the frame (Luka 2026-10-16)
         if (frame is not null)
         {
@@ -232,6 +232,25 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         Rect(badge, new Color(8, 9, 14, 220));
         if (!Icon("gold", new Rectangle(badge.X + 4, badge.Y + 3, coin, coin))) Text("$", new Vector2(badge.X + 8, badge.Y + 2), size, Palette.Accent, bold: true);
         Text(text, new Vector2(badge.X + coin + 8, badge.Y + 2), size, affordable ? Palette.Accent : Palette.Damage, bold: true);
+    }
+
+    /// <summary>A missing picture: its name, wrapped and shrunk until it fits the square.</summary>
+    private void Placeholder(string name, Rectangle r)
+    {
+        for (int size = Math.Min(22, Math.Max(10, r.Height / 4)); size >= 9; size--)
+        {
+            var font = Font(size, bold: true);
+            var lines = Wrap(s => TextWidth(font, s), name, r.Width - 8);
+            float lh = font.LineHeight / Scale;
+            if (size > 9 && (lines.Count * lh > r.Height - 4 || lines.Any(l => TextWidth(font, l) > r.Width - 4))) continue;
+            float y = r.Center.Y - lines.Count * lh / 2;
+            foreach (var l in lines)
+            {
+                DrawText(font, l, new Vector2(r.Center.X - TextWidth(font, l) / 2, y), Palette.TextDim);
+                y += lh;
+            }
+            return;
+        }
     }
 
     /// <summary>A content picture, or a placeholder (colour + name) when there is no PNG.</summary>

@@ -23,11 +23,11 @@
   "daysPerDifficulty": 5,
   "harderEnemyPercent": [5, 15, 25, 35, 40],
   "bosses": [
-    { "enemy": "flaming_rock" },
-    { "enemy": "green_snake" },
-    { "enemy": "grizzly_bear" },
-    { "enemy": "flaming_rock" },
-    { "enemy": "grizzly_bear" }
+    { "pool": ["black_knight"] },
+    { "pool": ["green_snake"] },
+    { "pool": ["grizzly_bear"] },
+    { "pool": ["flaming_rock"] },
+    { "pool": ["grizzly_bear"] }
   ],
   "dropRarityWeights": [
     [100, 15,  3,  0,  0],

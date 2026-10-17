@@ -45,6 +45,8 @@ public sealed class SourceDefinition
 
     /// <summary>Enemies only, never shown: 1 to 10. Harder enemies are met later in a run.</summary>
     public int Difficulty { get; init; } = 1;
+    /// <summary>Enemies only: a boss is met only as a mission boss (run.json "bosses"), never on a fight day.</summary>
+    public bool IsBoss { get; init; }
 
     /// <summary>Items only: gold earned for each fight won with this item on the board (run loop, not the fight).</summary>
     public ValueRef? GoldOnWin { get; init; }

@@ -78,7 +78,7 @@ public static class Offers
     /// </summary>
     public static IReadOnlyList<Encounter> FightChoices(Rng rng, RunView view, int runDifficulty, int harderPercent, IReadOnlySet<string>? fought = null)
     {
-        var all = view.Db.OfKind(SourceKind.Enemy).OrderBy(e => e.Id, StringComparer.Ordinal).ToList();
+        var all = view.Db.OfKind(SourceKind.Enemy).Where(e => !e.IsBoss).OrderBy(e => e.Id, StringComparer.Ordinal).ToList();
         var left = all.Where(e => fought is null || !fought.Contains(e.Id)).ToList();
         var repeats = all.Except(left).ToList();
         var picks = new List<Encounter>();

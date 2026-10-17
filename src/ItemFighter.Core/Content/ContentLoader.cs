@@ -126,6 +126,7 @@ public static class ContentLoader
             GoldOnWin = ctx.Has("goldOnWin") ? ctx.ReadValue("goldOnWin") : null,
             MaxHpPerWin = ctx.ReadInt("maxHpPerWin", 0),
             Difficulty = ctx.ReadInt("difficulty", 1),
+            IsBoss = ctx.ReadBool("boss", false),
         };
     }
 

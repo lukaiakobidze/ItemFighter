@@ -1,0 +1,15 @@
+{
+  "id": "black_bulwark",
+  "kind": "Passive",
+  "name": "Black Bulwark",
+  "rarity": "Rare",
+  "tags": ["Shield"],
+  "abilities": [
+    {
+      "trigger": { "type": "OnDamageTaken", "every": 5 },
+      "effects": [
+        { "type": "Shield", "percentOfMaxHp": 10 }
+      ]
+    }
+  ]
+}

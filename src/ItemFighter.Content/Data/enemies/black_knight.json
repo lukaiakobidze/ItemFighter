@@ -1,0 +1,9 @@
+{
+  "id": "black_knight",
+  "name": "Black Knight",
+  "boss": true,
+  "difficulty": 3,
+  "maxHp": 200,
+  "abilityIds": ["crushing_blow", "dark_slash"],
+  "passiveIds": ["black_bulwark"]
+}

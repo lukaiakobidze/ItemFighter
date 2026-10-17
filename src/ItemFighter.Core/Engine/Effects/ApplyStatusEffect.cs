@@ -13,6 +13,7 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
         var status = ctx.ReadEnum<StatusType>("status");
         if (status.IsCombatantStatus())
         {
+            if (status.IsTimed()) return new(status, ctx.ReadDuration(), CombatantTarget.Read(ctx, TargetSpec.Enemy));
             var percent = ctx.Has("percentOfCurrent") ? ctx.ReadValue("percentOfCurrent") : (ValueRef?)null;
             return new(status, ctx.ReadValue("amount", percent is null ? null : 0), CombatantTarget.Read(ctx, TargetSpec.Enemy), percent);
         }
@@ -31,7 +32,7 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
             var side = CombatantTarget.Resolve(target, ctx.Source);
             if (percentOfCurrent is ValueRef p)
                 value += ctx.Battle.Get(side).Statuses.Get(status) * p.Resolve(ctx.Source) / 100;
-            value += ctx.Source.BonusFor(status.ToString());
+            if (!status.IsTimed()) value += ctx.Source.BonusFor(status.ToString());
             ctx.Battle.ApplyStatus(side, status, value, ctx.Source, ctx.Depth);
             return;
         }
@@ -51,6 +52,7 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
                 string how = pct == 100 ? $"{status} equal to the {status} already on {whom}" : $"{pct}% of the {status} already on {whom} as more {status}";
                 return flat == 0 ? $"apply {how}" : $"apply {flat} {status} plus {how}";
             }
+            if (status.IsTimed()) return $"make {whom} {status} for {ctx.Seconds(amount)}";
             return $"apply {ctx.Value(amount)} {status} to {whom}";
         }
         return $"{status.ToString().ToLowerInvariant()} {ctx.Items(target)} for {ctx.Seconds(amount)}";

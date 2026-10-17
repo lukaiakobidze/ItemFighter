@@ -20,6 +20,7 @@ public static class AutomationScripts
         "blur" => Blur(),
         "nails" => Nails(),
         "boxer" => Boxer(),
+        "knight" => Knight(),
         "run" => RunLoop(),
         _ => throw new ArgumentException($"unknown automation script '{name}'"),
     };
@@ -102,6 +103,23 @@ public static class AutomationScripts
         new(Wait: 0.4, Shot: "boxer-mid"),
         new(Wait: 0.2, Do: Automation.Hover(FightScreen.PassiveIcon(FightScreen.EnemyPassiveGrid, 0)), Shot: "boxer-passive"),
         new(Wait: 0.2, Do: Automation.Hover(FightScreen.AbilityCard(0)), Shot: "boxer-ability"),
+    ];
+
+    /// <summary>Luka's 2026-10-17 Black Knight, mission 1 boss, whose Crushing Blow leaves you Vulnerable.</summary>
+    private static Step[] Knight() =>
+    [
+        .. ToLab("sword", "twin_blades", "metal_plating", "tower_shield"),
+        new(Wait: 0.1, Do: g =>
+        {
+            var lab = (FightLabScreen)g.Current!;
+            lab.Setup.EnemyId = "black_knight";
+            lab.StartFight();
+        }),
+        new(Do: g => FightOf(g).Speed = 4),
+        new(Until: g => FightOf(g).Battle.Player.Statuses.Vulnerable > 0),
+        new(Do: g => FightOf(g).Speed = 1),
+        new(Wait: 0.3, Shot: "knight-mid"),
+        new(Wait: 0.2, Do: Automation.Hover(new Microsoft.Xna.Framework.Rectangle(244, 596, 60, 60)), Shot: "knight-vulnerable"),
     ];
 
     /// <summary>Luka's 2026-10-12 rares against the Blur, whose rifle speeds up with every shot.</summary>

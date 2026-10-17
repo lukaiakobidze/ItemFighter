@@ -48,6 +48,9 @@ public sealed class CombatRules
     /// <summary>Each Power stack adds this much to every hit its owner deals.</summary>
     public int PowerDamagePerStack { get; init; } = 1;
 
+    /// <summary>While Vulnerable, hits and pain ticks taken do this much more damage, in percent (not burn or poison).</summary>
+    public int VulnerableDamagePercent { get; init; } = 50;
+
     /// <summary>Cooldowns never run slower than this percent of normal speed, however much they are chilled.</summary>
     public int SlowestCooldownSpeedPercent { get; init; } = 10;
 
@@ -102,6 +105,7 @@ public sealed class CombatRules
         Check(PoisonThreshold >= 1 && PoisonBurstPerStack >= 0, "'poisonThreshold' must be at least 1 and 'poisonBurstPerStack' can't be negative");
         Check(ChillCooldownPercentPerStack >= 0 && ChillFreezeAtStacks >= 1, "'chillCooldownPercentPerStack' can't be negative and 'chillFreezeAtStacks' must be at least 1");
         Check(NailDamage >= 0 && PowerDamagePerStack >= 0, "'nailDamage' and 'powerDamagePerStack' can't be negative");
+        Check(VulnerableDamagePercent >= 0, "'vulnerableDamagePercent' can't be negative");
         Check(SlowestCooldownSpeedPercent is >= 1 and <= 100, "'slowestCooldownSpeedPercent' must be 1 to 100");
     }
 }

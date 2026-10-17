@@ -1,11 +1,14 @@
 namespace ItemFighter.Core.Engine;
 
-public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power }
+public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power, Vulnerable }
 
 public static class StatusTypes
 {
-    /// <summary>Burn, poison, chill, pain, nail and power stack on a combatant; freeze and haste are timers on one item or ability.</summary>
-    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power;
+    /// <summary>Burn, poison, chill, pain, nail, power and vulnerable sit on a combatant; freeze and haste are timers on one item or ability.</summary>
+    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power or StatusType.Vulnerable;
+
+    /// <summary>Combatant statuses applied as a duration in seconds rather than as stacks.</summary>
+    public static bool IsTimed(this StatusType s) => s is StatusType.Vulnerable;
 }
 
 /// <summary>Stacking statuses on a combatant.</summary>
@@ -18,6 +21,9 @@ public sealed class StatusSet
     public int Pain { get; set; }
     public int Nail { get; set; }
     public int Power { get; set; }
+    /// <summary>Ticks of Vulnerable left (0 = not vulnerable), and how long the latest application was, for the UI.</summary>
+    public int Vulnerable { get; set; }
+    public int VulnerableFull { get; set; }
 
     /// <summary>Stacks of a combatant status.</summary>
     public int Get(StatusType s) => s switch
@@ -28,6 +34,7 @@ public sealed class StatusSet
         StatusType.Pain => Pain,
         StatusType.Nail => Nail,
         StatusType.Power => Power,
+        StatusType.Vulnerable => Vulnerable,
         _ => 0,
     };
 
@@ -42,6 +49,7 @@ public sealed class StatusSet
             case StatusType.Pain: Pain = 0; break;
             case StatusType.Nail: Nail = 0; break;
             case StatusType.Power: Power = 0; break;
+            case StatusType.Vulnerable: Vulnerable = 0; break;
         }
     }
 
@@ -158,4 +166,26 @@ public sealed class PowerRule : IStatusRule
         target.Statuses.Power += amount;
 
     public void OnTick(Battle battle, Combatant target) { }
+}
+
+/// <summary>
+/// A timer, not stacks (Luka 2026-10-17): while it lasts, every hit and pain tick the target takes does
+/// vulnerableDamagePercent (rules.json) more damage; burn and poison are not boosted. A new application sets the timer to
+/// the longer of what is left and the new duration.
+/// </summary>
+public sealed class VulnerableRule : IStatusRule
+{
+    public StatusType Type => StatusType.Vulnerable;
+
+    public void OnApply(Battle battle, Combatant target, int ticks, SourceInstance? source, int depth)
+    {
+        if (ticks <= target.Statuses.Vulnerable) return;
+        target.Statuses.Vulnerable = ticks;
+        target.Statuses.VulnerableFull = ticks;
+    }
+
+    public void OnTick(Battle battle, Combatant target)
+    {
+        if (target.Statuses.Vulnerable > 0) target.Statuses.Vulnerable--;
+    }
 }

@@ -416,6 +416,9 @@ public sealed class FightScreen : Screen
         if (s.Pain > 0) Chip("pain", "Pain", s.Pain, Palette.Pain, $"Each time one of {(c.Side == Side.Player ? "your items" : "its abilities")} fires, {(c.Side == Side.Player ? "you take" : "it takes")} {s.Pain} damage. Lasts all fight.");
         if (s.Nail > 0) Chip("nail", "Nail", s.Nail, Palette.Nail, $"Does nothing alone. Uproot pulls every Nail out for {rules.NailDamage} damage each (more with bonuses).");
         if (s.Power > 0) Chip("power", "Power", s.Power, Palette.Power, $"Every hit {(c.Side == Side.Player ? "you deal" : "it deals")} does {s.Power * rules.PowerDamagePerStack} more damage. Lasts all fight.");
+        if (s.Vulnerable > 0)
+            Chip("vulnerable", "Vulnerable", null, Palette.Vulnerable, $"Hits and pain {(c.Side == Side.Player ? "you take" : "it takes")} do {rules.VulnerableDamagePercent}% more damage (not burn or poison).",
+                s.Vulnerable, Math.Max(s.Vulnerable, s.VulnerableFull));
         if (c.IsFrozenAt(tick)) Chip("freeze", "Frozen", null, Palette.Freeze, "Nothing charges or fires until it thaws.", s.FrozenUntilTick - tick + 1, rules.FreezeTicks);
     }
 

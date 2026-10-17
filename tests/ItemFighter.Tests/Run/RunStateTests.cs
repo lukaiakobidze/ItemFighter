@@ -219,7 +219,7 @@ public class RunStateTests
             run.LeaveShop();
         }
         var boss = Assert.Single(run.EncounterChoices());
-        Assert.Equal(new Encounter(EncounterKind.Boss, "flaming_rock"), boss);
+        Assert.Equal(new Encounter(EncounterKind.Boss, "black_knight"), boss);
         WinFight(run, boss);
         Assert.Equal(10 + 15, run.Gold);
         run.SkipDrop();

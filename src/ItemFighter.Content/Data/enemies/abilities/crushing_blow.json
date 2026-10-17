@@ -1,0 +1,14 @@
+{
+  "id": "crushing_blow",
+  "kind": "EnemyAbility",
+  "name": "Crushing Blow",
+  "cooldown": 7,
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Damage", "amount": 15 },
+        { "type": "ApplyStatus", "status": "Vulnerable", "seconds": 4 }
+      ]
+    }
+  ]
+}

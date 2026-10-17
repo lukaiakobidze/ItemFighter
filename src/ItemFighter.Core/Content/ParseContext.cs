@@ -81,6 +81,14 @@ public sealed class ParseContext
         return n;
     }
 
+    public bool ReadBool(string prop, bool defaultValue)
+    {
+        var v = Prop(prop);
+        if (v is null) return defaultValue;
+        if (v.Value.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) throw new ContentException($"'{prop}' must be true or false");
+        return v.Value.GetBoolean();
+    }
+
     public T ReadEnum<T>(string prop, T defaultValue) where T : struct, Enum => Has(prop) ? ReadEnum<T>(prop) : defaultValue;
 
     public T ReadEnum<T>(string prop) where T : struct, Enum

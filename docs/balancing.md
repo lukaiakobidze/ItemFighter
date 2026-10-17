@@ -31,6 +31,7 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 | `freezeSeconds` | 1 | How long that freeze lasts |
 | `nailDamage` | 4 | Damage per Nail when Uproot pulls them out (passives with `NailDamage` add to it) |
 | `powerDamagePerStack` | 1 | Each Power stack adds this much to every hit (not burn, poison or pain) |
+| `vulnerableDamagePercent` | 50 | While Vulnerable, hits and pain ticks taken do this much % more damage (not burn or poison) |
 | `minCooldownSeconds` | 0.5 | Cooldown cuts during a fight (Fast Reload, faster-cooldown passives) stop here |
 | `slowestCooldownSpeedPercent` | 10 | However chilled, cooldowns never run slower than this % of normal speed |
 

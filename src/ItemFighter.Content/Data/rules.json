@@ -17,6 +17,8 @@
 
   "powerDamagePerStack": 1,
 
+  "vulnerableDamagePercent": 50,
+
   "minCooldownSeconds": 0.5,
   "slowestCooldownSpeedPercent": 10
 }

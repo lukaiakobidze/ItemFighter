@@ -10,8 +10,16 @@ public enum EncounterKind { Fight, Shop, Boss }
 /// <summary>What a day offers: a fight day shows different enemies, a shop day shows the shops.</summary>
 public enum DayKind { Fight, Shop }
 
-/// <summary>A mission's boss. Enemies always keep their base stats.</summary>
-public sealed record BossConfig(string Enemy);
+/// <summary>
+/// A mission's boss: one enemy picked at random from <see cref="Pool"/> each run (Luka 2026-10-17), or the single
+/// <see cref="Enemy"/>. Enemies always keep their base stats.
+/// </summary>
+public sealed record BossConfig(string? Enemy = null)
+{
+    public List<string> Pool { get; init; } = [];
+
+    public IReadOnlyList<string> Candidates => Pool.Count > 0 ? Pool : Enemy is null ? [] : [Enemy];
+}
 
 /// <summary>What a shop sells: items, or passives from Data/passives/.</summary>
 public enum ShopSells { Items, Passives }
@@ -175,8 +183,12 @@ public sealed class RunConfig
             Check(w is { Length: 5 } && w.All(x => x >= 0), "rarity weights must be 5 numbers (Common..Legendary), none negative");
         foreach (var boss in Bosses)
         {
-            if (boss is null || !db.TryGet(boss.Enemy ?? "", out var def)) errors.Add($"unknown boss enemy '{boss?.Enemy}'");
-            else if (def.Kind != SourceKind.Enemy) errors.Add($"boss '{boss.Enemy}' is not an enemy");
+            if (boss is null || boss.Candidates.Count == 0) { errors.Add("every boss entry needs a 'pool' of enemy ids"); continue; }
+            foreach (string id in boss.Candidates)
+            {
+                if (!db.TryGet(id, out var def)) errors.Add($"unknown boss enemy '{id}'");
+                else if (def.Kind != SourceKind.Enemy) errors.Add($"boss '{id}' is not an enemy");
+            }
         }
     }
 }

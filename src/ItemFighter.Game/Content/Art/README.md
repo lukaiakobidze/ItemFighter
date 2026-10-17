@@ -12,7 +12,7 @@ Drop PNG files here. The file name is the content id:
 - `UI/icon_frame_bg.png` and `UI/icon_frame_border.png` (the frame behind and around status and passive icons; the border is white and tinted in game)
 - `UI/panel.png`, `card.png`, `tooltip.png`, `button*.png` (stretched with fixed corners), `gold.png`, `heart.png`, `shield.png`, `clock.png`, `background.png`, `logo.png`. The full list is in the art brief.
 
-The full list of every image the game wants is in [docs/art/codex-art-brief.md](../../../../docs/art/codex-art-brief.md).
+The art rules and every image the game wants are in [docs/art/AGENTS.md](../../../../docs/art/AGENTS.md); what still needs making is in [docs/art/ART-TODO.md](../../../../docs/art/ART-TODO.md).
 
 Square images work best (for example 256×256); they are scaled to fit and keep their shape. Transparent backgrounds are fine. A missing or broken file shows a coloured placeholder with the name, so the game never crashes over art.
 

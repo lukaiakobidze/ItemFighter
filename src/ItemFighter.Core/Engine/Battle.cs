@@ -187,6 +187,7 @@ public sealed class Battle
         [StatusType.Pain] = new PainRule(),
         [StatusType.Nail] = new NailRule(),
         [StatusType.Power] = new PowerRule(),
+        [StatusType.Vulnerable] = new VulnerableRule(),
     };
 
     /// <summary>Adds burn, poison or chill stacks to a combatant.</summary>
@@ -505,6 +506,8 @@ public sealed class Battle
             amount = Modify("DamageDealt", amount, source);
             if (source is not null) amount += Get(source.Owner).Statuses.Power * Rules.PowerDamagePerStack;
         }
+        if (kind is DamageKind.Direct or DamageKind.Pain && amount > 0 && Get(target).Statuses.Vulnerable > 0)
+            amount = (amount * (100 + Rules.VulnerableDamagePercent) + 50) / 100; // rounds halves up
         if (amount <= 0) return;
         int shieldDamage = ignoreShield ? 0 : Math.Min(Get(target).Shield, amount);
         ApplyRawDamage(target, amount - shieldDamage, shieldDamage, kind, source, depth);

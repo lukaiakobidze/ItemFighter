@@ -36,6 +36,7 @@ public sealed class CombatLog
             DamageDealt d => ($"{d.Kind} deals {d.Total} to {Side(d.Target)}" + Absorbed(d), Palette.For(d.Kind)),
             ShieldGained g => ($"{Name(g.SourceId)}: +{g.Amount} shield" + (g.Target == Core.Engine.Side.Enemy && b.FindSource(g.SourceId ?? 0)?.Owner != Core.Engine.Side.Enemy ? $" for {Side(g.Target)}" : ""), Palette.Shield),
             Healed h => ($"{Name(h.SourceId)}: {(h.Target == Core.Engine.Side.Player ? "you heal" : Side(h.Target) + " heals")} {h.Amount}", Palette.Heal),
+            StatusApplied { TargetSide: Side side, Status: StatusType.Vulnerable } s => ($"{Name(s.SourceId)}: {Side(side)} {(side == Core.Engine.Side.Player ? "are" : "is")} Vulnerable for {Words(s.Amount)}", Palette.Vulnerable),
             StatusApplied { TargetSide: Side side } s => ($"{Name(s.SourceId)}: {s.Amount} {s.Status} on {Side(side)}", Palette.For(s.Status)),
             StatusApplied { TargetSourceId: int id } s => ($"{Name(s.SourceId)}: {s.Status} on {Name(id)} for {Words(s.Amount)}", Palette.For(s.Status)),
             StatusRemoved r => ($"{Name(r.SourceId)}: removes {r.Amount} {r.Status} from {Side(r.Target)}", Palette.For(r.Status)),

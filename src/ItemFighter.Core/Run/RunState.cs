@@ -83,11 +83,15 @@ public sealed class RunState
             : Offers.FightChoices(rng, View, Config.RunDifficulty(Mission, Encounter), Config.HarderEnemyChance(Mission, Encounter), FoughtEnemies.ToHashSet());
     }
 
-    /// <summary>The mission's boss from run.json, or the enemy with the most HP when none is listed.</summary>
+    /// <summary>
+    /// The mission's boss: picked from that mission's pool in run.json, the same every time for this run; the enemy
+    /// with the most HP when none is listed.
+    /// </summary>
     public Encounter Boss(int mission)
     {
-        string? id = Config.Boss(mission)?.Enemy;
-        if (id is null || !Db.TryGet(id, out var def) || def.Kind != SourceKind.Enemy)
+        var pool = (Config.Boss(mission)?.Candidates ?? []).Where(e => Db.TryGet(e, out var d) && d.Kind == SourceKind.Enemy).ToList();
+        string? id = pool.Count == 0 ? null : pool[RngFor($"boss:{mission}").NextInt(pool.Count)];
+        if (id is null)
             id = Db.OfKind(SourceKind.Enemy).OrderByDescending(e => e.MaxHp).ThenBy(e => e.Id, StringComparer.Ordinal).First().Id;
         return new Encounter(EncounterKind.Boss, id);
     }

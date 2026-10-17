@@ -53,6 +53,9 @@ public sealed class FloatingTexts
                 case Healed h:
                     Add($"+{h.Amount}", Palette.Heal, FloatAnchor.ForSide(h.Target));
                     break;
+                case StatusApplied { TargetSide: Side side, Status: StatusType.Vulnerable }:
+                    Add("Vulnerable!", Palette.Vulnerable, FloatAnchor.ForSide(side));
+                    break;
                 case StatusApplied { TargetSide: Side side } s:
                     Add($"+{s.Amount} {s.Status}", Palette.For(s.Status), FloatAnchor.ForSide(side));
                     break;
