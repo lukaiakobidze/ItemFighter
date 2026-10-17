@@ -2,7 +2,7 @@
   "id": "right_hook",
   "kind": "EnemyAbility",
   "name": "Right Hook",
-  "cooldown": 10,
+  "cooldown": 8,
   "abilities": [
     {
       "effects": [
