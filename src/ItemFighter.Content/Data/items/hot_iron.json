@@ -1,0 +1,24 @@
+{
+  "id": "hot_iron",
+  "name": "Hot Iron",
+  "rarity": "Common",
+  "tags": ["Weapon", "Heat"],
+  "cooldown": 8,
+  "activation": "Passive",
+  "levels": {
+    "damage": [5, 6, 8, 9]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": "{damage}",
+          "perStatusOf": "Heat",
+          "perStatus": 1,
+          "perStatusEvery": 5
+        }
+      ]
+    }
+  ]
+}

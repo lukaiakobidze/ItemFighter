@@ -32,6 +32,11 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 | `nailDamage` | 4 | Damage per Nail when Uproot pulls them out (passives with `NailDamage` add to it) |
 | `powerDamagePerStack` | 1 | Each Power stack adds this much to every hit (not burn, poison or pain) |
 | `vulnerableDamagePercent` | 50 | While Vulnerable, hits and pain ticks taken do this much % more damage (not burn or poison) |
+| `overheatAt` | 100 | Heat at which a side overheats; Heat then goes back to 0 |
+| `overheatDamage` | 10 | Damage an overheat deals (to yourself, or to the enemy for the Locomotive Engineer) |
+| `overheatStallSeconds` | 2 | How long an overheat stalls every item (the Engineer's passive halves it) |
+| `heatCoolingPerSecond` | 0 | Heat lost every second (0 = never cools, Luka 2026-10-19) |
+| `heatFreezeImmunityAt` | 50 | At this much Heat or more, 5 chill still slows but can't freeze |
 | `minCooldownSeconds` | 0.5 | Cooldown cuts during a fight (Fast Reload, faster-cooldown passives) stop here |
 | `slowestCooldownSpeedPercent` | 10 | However chilled, cooldowns never run slower than this % of normal speed |
 

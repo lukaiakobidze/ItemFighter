@@ -33,7 +33,7 @@ What that style is:
 
 Don't use: soft airbrushed gradients, painterly texture, scratches, grain, rust, noise, fine realistic detail, engravings, photo-like materials, thin or broken outlines, glows that smear outside the outline, drop shadows on the canvas, or any text and numbers inside an image.
 
-**Colour language** (use the colour of what a thing does): burn orange `#FF8C28`, poison purple `#B060E6`, chill cyan `#6EDCF0`, freeze pale blue `#AAE6FF`, pain pink `#E84682`, nail steel grey `#AAB4C3`, power red-orange `#F05028`, vulnerable yellow `#FADC50`, shield blue `#78AAE6`, heal green `#5AD26E`, damage red `#FF5A50`.
+**Colour language** (use the colour of what a thing does): burn orange `#FF8C28`, poison purple `#B060E6`, chill cyan `#6EDCF0`, freeze pale blue `#AAE6FF`, pain pink `#E84682`, nail steel grey `#AAB4C3`, power red-orange `#F05028`, vulnerable yellow `#FADC50`, heat fiery orange `#FF6E1E`, shield blue `#78AAE6`, heal green `#5AD26E`, damage red `#FF5A50`.
 
 ## Square pictures
 
@@ -143,6 +143,8 @@ What each existing picture shows, for remakes and to keep new art consistent. Ne
 | `spiked_buckler.png` | Spiked Buckler | Rare | Hits for your shield | Small round buckler with a central spike |
 | `spiky_club.png` | Spiky Club | Rare | Hit and Pain | Wooden club studded with spikes |
 | `sword.png` | Sword | Common | Steady hit | Classic knight's longsword |
+| `shovel_of_coal.png` | Shovel of Coal | Common | Adds Heat | Coal shovel heaped with coal, some lumps glowing orange |
+| `hot_iron.png` | Hot Iron | Common | Hit that grows with your Heat | Iron bar or brand glowing red-orange at the tip, heat shimmer |
 | `tasty_cleanser.png` | Tasty Cleanser | Rare | Removes your poison and burn | Fizzy green drink with a straw and a lemon slice |
 | `tower_shield.png` | Tower Shield | Common | Big shield | Tall rectangular tower shield |
 | `twin_blades.png` | Twin Blades | Rare | Two hits | Two short curved blades crossed |
@@ -197,6 +199,7 @@ All passives are one shared pool: enemies use some and the player can buy any of
 | `fast_reload.png` | Fast Reload | The Blur | Each rifle shot makes the next one faster | Bullets with speed lines |
 | `fury.png` | Fury | Furious Boxer | Each time it's hit, gains 1 Power | Angry vein symbol over a clenched fist |
 | `silver_knight.png` | Silver Knight's passive | Silver Knight (player) | Every 5 times you're hit, gain shield | Silver shield with a glowing knight's crest |
+| `locomotive_engineer.png` | Locomotive Engineer's passive | Locomotive Engineer (player) | Overheating hurts the enemy instead, stall is half as long | Pressure gauge in the red, steam burst, orange sparks |
 | `thick_skin.png` | Thick Skin | Grizzly Bear | Takes 1 less damage from each hit | Thick leathery hide patch with a deflected scratch |
 | `venomous.png` | Venomous | Green Snake | Its hits poison you | Venom drop with a snake-eye pupil |
 | `shield_mastery.png` | Shield Mastery | Shop | Shield items shield 5 more | Shield with a bright upward chevron on it |
@@ -226,12 +229,14 @@ All passives are one shared pool: enemies use some and the player can buy any of
 | `nail.png` | Nail | steel grey | Single iron nail |
 | `power.png` | Power | red-orange | Flexed arm or upward fist |
 | `vulnerable.png` | Vulnerable | yellow `#FADC50` | Cracked shield or a target with a crack through it |
+| `overheat.png` | Overheated (items stalled) | orange `#FF6E1E` | Steaming cracked pressure valve or a bursting thermometer |
 
 ### Characters (`Characters\`)
 
 | File | Name | Picture idea |
 |---|---|---|
 | `silver_knight.png` | Silver Knight | Knight in polished silver armour with a sword and shield |
+| `locomotive_engineer.png` | Locomotive Engineer | Steam-train engineer in sooty overalls, cap and goggles, holding a coal shovel, glowing firebox behind |
 
 ### Map encounters (`Encounters\`)
 

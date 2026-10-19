@@ -1,0 +1,11 @@
+{
+  "id": "locomotive_engineer",
+  "name": "Locomotive Engineer",
+  "maxHp": 120,
+  "startingItems": ["shovel_of_coal", "hot_iron"],
+  "description": "When you overheat, the enemy takes the overheat damage instead of you, and your items stall half as long.",
+  "modifiers": [
+    { "stat": "OverheatHitsEnemy", "amount": 1 },
+    { "stat": "OverheatStallPercent", "amount": -50 }
+  ]
+}

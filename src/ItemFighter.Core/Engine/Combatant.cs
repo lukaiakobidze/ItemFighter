@@ -20,6 +20,11 @@ public sealed class Combatant
 
     public bool IsFrozenAt(int tick) => tick <= Statuses.FrozenUntilTick;
 
+    public bool IsStalledAt(int tick) => tick <= Statuses.StalledUntilTick;
+
+    /// <summary>Frozen or stalled: nothing charges, fires or can be clicked.</summary>
+    public bool IsHaltedAt(int tick) => IsFrozenAt(tick) || IsStalledAt(tick);
+
     /// <summary>All sources in canonical order: board items by slot, then slotless sources by id.</summary>
     public IReadOnlyList<SourceInstance> Sources => _sources;
 

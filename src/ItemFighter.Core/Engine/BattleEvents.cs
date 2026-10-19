@@ -1,6 +1,6 @@
 namespace ItemFighter.Core.Engine;
 
-public enum DamageKind { Direct, Burn, Poison, Pain }
+public enum DamageKind { Direct, Burn, Poison, Pain, Overheat }
 
 /// <summary>Something that happened during a battle. The frontend animates from these, in order.</summary>
 public abstract record BattleEvent(int Tick);
@@ -53,3 +53,6 @@ public sealed record SourceAdded(int Tick, int SourceId, Side Owner) : BattleEve
 public sealed record StatusRemoved(int Tick, Side Target, StatusType Status, int Amount, int? SourceId) : BattleEvent(Tick);
 
 public sealed record NailsUprooted(int Tick, Side Target, int Nails, int Damage, int? SourceId) : BattleEvent(Tick);
+
+/// <summary>A side overheated: its Heat went back to 0, Damage went to DamageTarget and its items stall for StallTicks.</summary>
+public sealed record Overheated(int Tick, Side Side, Side DamageTarget, int Damage, int StallTicks) : BattleEvent(Tick);

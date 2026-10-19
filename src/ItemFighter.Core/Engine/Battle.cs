@@ -170,7 +170,7 @@ public sealed class Battle
     public int CooldownSpeed(SourceInstance s)
     {
         var owner = Get(s.Owner);
-        if (s.FreezeTicks > 0 || owner.IsFrozenAt(Tick)) return 0;
+        if (s.FreezeTicks > 0 || owner.IsHaltedAt(Tick)) return 0;
         int speed = SourceInstance.ProgressPerTick;
         if (s.HasteTicks > 0) speed *= 2;
         int lengthen = 100 + Rules.ChillCooldownPercentPerStack * owner.Statuses.Chill;
@@ -188,6 +188,7 @@ public sealed class Battle
         [StatusType.Nail] = new NailRule(),
         [StatusType.Power] = new PowerRule(),
         [StatusType.Vulnerable] = new VulnerableRule(),
+        [StatusType.Heat] = new HeatRule(),
     };
 
     /// <summary>Adds burn, poison or chill stacks to a combatant.</summary>
@@ -266,7 +267,7 @@ public sealed class Battle
         return true;
     }
 
-    private bool IsFrozen(SourceInstance s) => s.FreezeTicks > 0 || Get(s.Owner).IsFrozenAt(Tick);
+    private bool IsFrozen(SourceInstance s) => s.FreezeTicks > 0 || Get(s.Owner).IsHaltedAt(Tick);
 
     private readonly List<ICommand> _pending = [];
 
@@ -304,6 +305,7 @@ public sealed class Battle
         if (source is null || source.Owner != Side.Player) { Reject(c, RejectReasons.UnknownSource); return; }
         if (source.Def.Activation != Activation.Active) { Reject(c, RejectReasons.NotActive); return; }
         if (source.FreezeTicks > 0 || Player.IsFrozenAt(Tick)) { Reject(c, RejectReasons.Frozen); return; }
+        if (Player.IsStalledAt(Tick)) { Reject(c, RejectReasons.Stalled); return; }
         if (!source.Ready) { Reject(c, RejectReasons.NotReady); return; }
         SourceInstance? target = null;
         if (source.Def.RequiresTarget)
@@ -448,6 +450,25 @@ public sealed class Battle
         int each = Math.Max(0, Modify("NailDamage", Rules.NailDamage, source));
         Emit(new NailsUprooted(Tick, target, nails, nails * each, source?.Id), depth, source);
         DealDamage(target, nails * each, DamageKind.Direct, source, depth);
+    }
+
+    /// <summary>
+    /// A side overheats: Heat back to 0, every item and ability stalls, and overheatDamage goes to the side itself or,
+    /// with an OverheatHitsEnemy modifier, to its opponent. OverheatStallPercent modifiers change the stall.
+    /// </summary>
+    public void Overheat(Side side, SourceInstance? source, int depth)
+    {
+        var c = Get(side);
+        c.Statuses.Heat = 0;
+        int stall = Rules.OverheatStallTicks * Math.Max(0, 100 + SideModifier(side, "OverheatStallPercent")) / 100;
+        if (stall > 0)
+        {
+            c.Statuses.StalledUntilTick = Math.Max(c.Statuses.StalledUntilTick, Tick + stall);
+            c.Statuses.StallFull = stall;
+        }
+        var damageTarget = SideModifier(side, "OverheatHitsEnemy") > 0 ? OpponentOf(side).Side : side;
+        Emit(new Overheated(Tick, side, damageTarget, Rules.OverheatDamage, stall), depth, source);
+        DealDamage(damageTarget, Rules.OverheatDamage, DamageKind.Overheat, source, depth);
     }
 
     /// <summary>Runs one ability because its trigger matched. Counts as a use and lets others react in turn.</summary>

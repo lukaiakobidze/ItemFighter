@@ -25,6 +25,8 @@ public sealed class FightScreen : Screen
     private static Rectangle HpBarIn(Rectangle panel) => new(panel.X + 204, panel.Y + 54, panel.Width - 228, 40);
     private static Vector2 PassiveGridIn(Rectangle panel) => new(panel.X + 24, panel.Y + 196);
     private static Vector2 StatusRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 108);
+    // Luka 2026-10-19: a vertical Heat bar right of the item squares, with its number underneath.
+    private static Rectangle HeatBarIn(Rectangle panel) => new(panel.X + 984, panel.Y + 174, 34, 132);
     private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 190, 112, 112);
     private static readonly Color FrostTint = new Color(120, 200, 255) * 0.35f;
     private const int PassiveSize = 34, PassiveGap = 7, PassiveColumns = 4, PassiveMax = 16;
@@ -150,6 +152,7 @@ public sealed class FightScreen : Screen
 
         ui.Text(def.Name, new Vector2(EnemyHpBar.X, EnemyPanel.Y + 18), 22, Palette.Text, bold: true);
         DrawHp(ui, Battle.Enemy, EnemyHpBar);
+        DrawHeat(ui, Battle.Enemy, HeatBarIn(EnemyPanel));
         var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
         for (int i = 0; i < passives.Count && i < PassiveMax; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveGrid, i), enemy: true);
         DrawStatuses(ui, Battle.Enemy, StatusRowIn(EnemyPanel));
@@ -185,9 +188,10 @@ public sealed class FightScreen : Screen
             if (covered > 0) ui.Rect(new Rectangle(inner.X, inner.Y, inner.Width, covered), new Color(0, 0, 0, 140));
         }
         if (flash is Color f) ui.Rect(inner, f);
-        string? label = !s.HasCooldown ? null : s.Ready ? readyText : Battle.CooldownSpeed(s) == 0 ? "frozen" : $"{SecondsLeft(s):0.0}";
+        bool stalled = s.FreezeTicks == 0 && Battle.Get(s.Owner) is var owner && owner.IsStalledAt(Battle.Tick) && !owner.IsFrozenAt(Battle.Tick);
+        string? label = !s.HasCooldown ? null : s.Ready ? readyText : Battle.CooldownSpeed(s) == 0 ? (stalled ? "stalled" : "frozen") : $"{SecondsLeft(s):0.0}";
         if (label is null) return;
-        var color = s.Ready ? Palette.Ready : label == "frozen" ? Palette.Freeze : Color.White;
+        var color = s.Ready ? Palette.Ready : label == "frozen" ? Palette.Freeze : label == "stalled" ? Palette.Heat : Color.White;
         int size = r.Width >= 100 ? 22 : 19;
         ui.TextIn(label, new Rectangle(inner.X + 2, inner.Y + 2, inner.Width, inner.Height), size, Color.Black * 0.8f, bold: true);
         ui.TextIn(label, inner, size, color, bold: true);
@@ -240,6 +244,7 @@ public sealed class FightScreen : Screen
             ui.Tooltip(title, lines, Palette.Accent);
         }
         DrawHp(ui, Battle.Player, PlayerHpBar);
+        DrawHeat(ui, Battle.Player, HeatBarIn(PlayerPanel));
         DrawStatuses(ui, Battle.Player, StatusRowIn(PlayerPanel));
 
         foreach (var item in Battle.Player.Items) DrawCard(ui, item, CardRect(item.Slot!.Value));
@@ -358,6 +363,59 @@ public sealed class FightScreen : Screen
         Shadowed(ui, shieldText, new Vector2(shield.Right + 6, textY));
     }
 
+    /// <summary>
+    /// The Heat bar (Luka 2026-10-19): vertical, right of the items, filling from the bottom in a green to yellow to red
+    /// gradient, a line every <see cref="HeatTickEvery"/> Heat, and the number underneath. Shown for either side once it
+    /// has anything tagged Heat or any Heat at all. A light blue line marks where Heat stops chill from freezing.
+    /// </summary>
+    private void DrawHeat(Ui ui, Combatant c, Rectangle bar)
+    {
+        var rules = Battle.Rules;
+        if (c.Statuses.Heat <= 0 && !c.IsStalledAt(Battle.Tick) && !c.Sources.Any(s => s.Def.HasTag("Heat"))) return;
+        int max = rules.OverheatAt;
+        ui.Rect(bar, Palette.HeatBack);
+        int filled = (int)(bar.Height * Math.Clamp(c.Statuses.Heat / (float)max, 0, 1));
+        const int slice = 2;
+        for (int y = 0; y < filled; y += slice)
+        {
+            int h = Math.Min(slice, filled - y);
+            ui.Rect(new Rectangle(bar.X, bar.Bottom - y - h, bar.Width, h), HeatColor((y + h / 2f) / bar.Height));
+        }
+        for (int heat = HeatTickEvery; heat < max; heat += HeatTickEvery)
+        {
+            int y = bar.Bottom - (int)Math.Round(bar.Height * heat / (double)max);
+            ui.Rect(new Rectangle(bar.X, y, bar.Width, 1), Color.Black * 0.5f);
+        }
+        if (rules.HeatFreezeImmunityAt < max)
+        {
+            int y = bar.Bottom - (int)Math.Round(bar.Height * rules.HeatFreezeImmunityAt / (double)max);
+            ui.Rect(new Rectangle(bar.X, y - 1, bar.Width, 2), Palette.Freeze);
+        }
+        ui.Border(bar, Palette.Border, 1);
+        string text = c.Statuses.Heat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var label = new Rectangle(bar.X - 20, bar.Bottom + 4, bar.Width + 40, 24);
+        ui.TextIn(text, new Rectangle(label.X + 2, label.Y + 2, label.Width, label.Height), 20, Color.Black * 0.8f, bold: true);
+        ui.TextIn(text, label, 20, HeatColor(c.Statuses.Heat / (float)max), bold: true);
+        if (ui.Hover(bar) || ui.Hover(label))
+            ui.Tooltip("Heat", [
+                $"{c.Statuses.Heat}/{max}. At {max} {(c.Side == Side.Player ? "you overheat" : "it overheats")}: {rules.OverheatDamage} damage, every item stalls for {rules.OverheatStallSeconds:0.#}s, and Heat goes back to 0.",
+                $"At {rules.HeatFreezeImmunityAt} Heat or more (the blue line), chill still slows but can't freeze.",
+                rules.HeatCoolingPerSecond > 0 ? $"Cools {rules.HeatCoolingPerSecond} per second." : "Heat doesn't cool down.",
+            ], Palette.Heat);
+    }
+
+    /// <summary>Green at 0, yellow halfway, red at the top.</summary>
+    private static Color HeatColor(float t)
+    {
+        t = Math.Clamp(t, 0, 1);
+        return t < 0.5f ? Color.Lerp(HeatLow, HeatMid, t * 2) : Color.Lerp(HeatMid, HeatHigh, (t - 0.5f) * 2);
+    }
+
+    private static readonly Color HeatLow = new(80, 200, 90), HeatMid = new(250, 220, 60), HeatHigh = new(230, 50, 40);
+
+    /// <summary>A line on the Heat bar every this much Heat.</summary>
+    private const int HeatTickEvery = 10;
+
     /// <summary>A thin line on the HP bar every this many HP.</summary>
     private const int HpTickEvery = 10;
 
@@ -419,6 +477,7 @@ public sealed class FightScreen : Screen
         if (s.Vulnerable > 0)
             Chip("vulnerable", "Vulnerable", null, Palette.Vulnerable, $"Hits and pain {(c.Side == Side.Player ? "you take" : "it takes")} do {rules.VulnerableDamagePercent}% more damage (not burn or poison).",
                 s.Vulnerable, Math.Max(s.Vulnerable, s.VulnerableFull));
+        if (c.IsStalledAt(tick)) Chip("overheat", "Overheated", null, Palette.Heat, "Every item is stalled until it cools off.", s.StalledUntilTick - tick + 1, Math.Max(1, s.StallFull));
         if (c.IsFrozenAt(tick)) Chip("freeze", "Frozen", null, Palette.Freeze, "Nothing charges or fires until it thaws.", s.FrozenUntilTick - tick + 1, rules.FreezeTicks);
     }
 

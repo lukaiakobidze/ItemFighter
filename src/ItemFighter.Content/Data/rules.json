@@ -19,6 +19,12 @@
 
   "vulnerableDamagePercent": 50,
 
+  "overheatAt": 100,
+  "overheatDamage": 10,
+  "overheatStallSeconds": 2,
+  "heatCoolingPerSecond": 0,
+  "heatFreezeImmunityAt": 50,
+
   "minCooldownSeconds": 0.5,
   "slowestCooldownSpeedPercent": 10
 }

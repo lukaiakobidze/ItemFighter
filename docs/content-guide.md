@@ -50,10 +50,10 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 
 | effect | fields | default target |
 |---|---|---|
-| `Damage` | `amount`; optional `hits` (2 = two separate hits), `percentOfShield` (adds that % of your current shield; 100 = equal to it), `perItem` + `perItemTag` (adds `perItem` for each board item with that tag, itself included) | Enemy |
+| `Damage` | `amount`; optional `hits` (2 = two separate hits), `percentOfShield` (adds that % of your current shield; 100 = equal to it), `perItem` + `perItemTag` (adds `perItem` for each board item with that tag, itself included), `perStatus` + `perStatusOf` + `perStatusEvery` (adds `perStatus` for every `perStatusEvery` stacks of that status on yourself; Hot Iron: 1 per 5 Heat) | Enemy |
 | `Shield` | `amount` and/or `percentOfMaxHp` | Self |
 | `Heal` | `amount` | Self |
-| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste/Vulnerable use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail/Power/Vulnerable (give `"target": "Self"` to power yourself up); items for Freeze/Haste |
+| `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste/Vulnerable use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail/Power/Vulnerable/Heat (give `"target": "Self"` to power yourself up, or to heat yourself up); items for Freeze/Haste |
 | `RemoveStatus` | `statuses`, e.g. `["Poison", "Burn"]` | Self. Removes every stack |
 | `Uproot` | | Enemy. Pulls out every Nail for `nailDamage` each (rules.json, plus `NailDamage` modifiers), as one hit |
 | `Charge` | `seconds` | Chosen. Takes time off the current cooldown; if that passes zero the item fires and the rest carries into its next cooldown |
@@ -75,6 +75,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 - **Pain:** stays all fight. Each time that side's item or ability fires (on its own or by click, not as a reaction), that side takes damage equal to its Pain. Shield blocks it, and it counts as taking damage.
 - **Nail:** does nothing alone. Uproot pulls them all out for `nailDamage` (4) each.
 - **Power:** stays all fight. Each stack adds `powerDamagePerStack` (1) to every hit its owner deals. Burn, poison and pain are not boosted.
+- **Heat:** builds up on the side that gains it (`{ "type": "ApplyStatus", "status": "Heat", "amount": 5, "target": "Self" }`). At `overheatAt` (100) that side overheats: Heat goes back to 0, it takes `overheatDamage` (10) and every item stalls for `overheatStallSeconds` (2). Cools by `heatCoolingPerSecond` (0 for now). At `heatFreezeImmunityAt` (50) or more, chill still slows but can't freeze. Only items that say so use Heat. Tag Heat items `Heat` so the Heat bar shows up (for enemies too).
 - **Vulnerable:** a timer, not stacks: `{ "type": "ApplyStatus", "status": "Vulnerable", "seconds": 4 }`. While it lasts, every hit and pain tick the target takes does `vulnerableDamagePercent` (50) more damage, rounded half up (9 becomes 14). Burn and poison are not boosted. A new application keeps the longer of the time left and the new duration.
 - **Freeze / Haste:** on single items or abilities, for some `seconds`. Haste ×2 speed, Freeze stops. A frozen item that gets charged or reset to full waits and fires when the freeze ends.
 - **Slow** is an effect, not a status: it adds seconds to the current cooldown.
@@ -91,7 +92,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 { "id": "iron_skin", "modifiers": [ { "stat": "ShieldGained", "amount": 5, "filter": { "kind": "Item" } } ] }
 ```
 
-Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) `CooldownPercent` (−20 = 20% faster) and `CooldownSeconds` (−1 = 1 second faster). A filter can name a `kind` (Item, Passive, Character...), a `tag` and/or a `slot` (1 = the first hotbar slot). `"perItemTag": "Weapon"` multiplies the amount by how many Weapon items you have (Vanguard).
+Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `HeatApplied`, `OverheatHitsEnemy` (1 = your overheat damage goes to the enemy), `OverheatStallPercent` (−50 = stall half as long), `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) `CooldownPercent` (−20 = 20% faster) and `CooldownSeconds` (−1 = 1 second faster). A filter can name a `kind` (Item, Passive, Character...), a `tag` and/or a `slot` (1 = the first hotbar slot). `"perItemTag": "Weapon"` multiplies the amount by how many Weapon items you have (Vanguard).
 
 A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (its abilities, files in `enemies/abilities/` with `"kind": "EnemyAbility"`), `passiveIds` (its passives, from the shared `passives/` pool with `"kind": "Passive"`; the passive shop sells everything in `passives/`) optional `"boss": true` (a boss only appears as a mission boss, never on a fight day) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 

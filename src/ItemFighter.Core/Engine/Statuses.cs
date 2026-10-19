@@ -1,11 +1,13 @@
+using ItemFighter.Core.Content;
+
 namespace ItemFighter.Core.Engine;
 
-public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power, Vulnerable }
+public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power, Vulnerable, Heat }
 
 public static class StatusTypes
 {
-    /// <summary>Burn, poison, chill, pain, nail, power and vulnerable sit on a combatant; freeze and haste are timers on one item or ability.</summary>
-    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power or StatusType.Vulnerable;
+    /// <summary>Burn, poison, chill, pain, nail, power, vulnerable and heat sit on a combatant; freeze and haste are timers on one item or ability.</summary>
+    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power or StatusType.Vulnerable or StatusType.Heat;
 
     /// <summary>Combatant statuses applied as a duration in seconds rather than as stacks.</summary>
     public static bool IsTimed(this StatusType s) => s is StatusType.Vulnerable;
@@ -24,6 +26,8 @@ public sealed class StatusSet
     /// <summary>Ticks of Vulnerable left (0 = not vulnerable), and how long the latest application was, for the UI.</summary>
     public int Vulnerable { get; set; }
     public int VulnerableFull { get; set; }
+    /// <summary>Heat, 0 up to rules overheatAt, where it overheats and goes back to 0.</summary>
+    public int Heat { get; set; }
 
     /// <summary>Stacks of a combatant status.</summary>
     public int Get(StatusType s) => s switch
@@ -35,6 +39,7 @@ public sealed class StatusSet
         StatusType.Nail => Nail,
         StatusType.Power => Power,
         StatusType.Vulnerable => Vulnerable,
+        StatusType.Heat => Heat,
         _ => 0,
     };
 
@@ -50,11 +55,17 @@ public sealed class StatusSet
             case StatusType.Nail: Nail = 0; break;
             case StatusType.Power: Power = 0; break;
             case StatusType.Vulnerable: Vulnerable = 0; break;
+            case StatusType.Heat: Heat = 0; break;
         }
     }
 
     /// <summary>The whole combatant is frozen through this tick (from 5 chill).</summary>
     public int FrozenUntilTick { get; set; } = -1;
+
+    /// <summary>Every item and ability is stalled through this tick (from overheating).</summary>
+    public int StalledUntilTick { get; set; } = -1;
+    /// <summary>How long the latest stall was, in ticks, for the UI.</summary>
+    public int StallFull { get; set; }
 }
 
 /// <summary>
@@ -114,7 +125,8 @@ public sealed class PoisonRule : IStatusRule
 
 /// <summary>
 /// Each stack makes all the target's cooldowns 5% longer while it lasts. New stacks refresh the 5s timer;
-/// 5 stacks freeze the target for 1s (numbers in rules.json).
+/// 5 stacks freeze the target for 1s (numbers in rules.json). At heatFreezeImmunityAt Heat or more the target
+/// can't freeze (Luka 2026-10-19): chill stays at 5 and keeps slowing, and the freeze lands as soon as Heat drops below.
 /// </summary>
 public sealed class ChillRule : IStatusRule
 {
@@ -125,16 +137,28 @@ public sealed class ChillRule : IStatusRule
         var rules = battle.Rules;
         target.Statuses.Chill += amount;
         target.Statuses.ChillExpiresAtTick = battle.Tick + rules.ChillTicks;
-        if (target.Statuses.Chill < rules.ChillFreezeAtStacks) return;
-        target.Statuses.Chill = 0;
-        target.Statuses.FrozenUntilTick = battle.Tick + rules.FreezeTicks;
-        battle.Emit(new ChillFroze(battle.Tick, target.Side), depth, source);
+        TryFreeze(battle, target, source, depth);
     }
 
     public void OnTick(Battle battle, Combatant target)
     {
         if (target.Statuses.Chill > 0 && battle.Tick >= target.Statuses.ChillExpiresAtTick)
             target.Statuses.Chill = 0;
+        TryFreeze(battle, target, null, 0);
+    }
+
+    private static void TryFreeze(Battle battle, Combatant target, SourceInstance? source, int depth)
+    {
+        var rules = battle.Rules;
+        if (target.Statuses.Chill < rules.ChillFreezeAtStacks) return;
+        if (target.Statuses.Heat >= rules.HeatFreezeImmunityAt)
+        {
+            target.Statuses.Chill = rules.ChillFreezeAtStacks;
+            return;
+        }
+        target.Statuses.Chill = 0;
+        target.Statuses.FrozenUntilTick = battle.Tick + rules.FreezeTicks;
+        battle.Emit(new ChillFroze(battle.Tick, target.Side), depth, source);
     }
 }
 
@@ -190,5 +214,29 @@ public sealed class VulnerableRule : IStatusRule
     public void OnTick(Battle battle, Combatant target)
     {
         if (target.Statuses.Vulnerable > 0) target.Statuses.Vulnerable--;
+    }
+}
+
+/// <summary>
+/// Builds up from items that add it (Luka 2026-10-19) and cools by heatCoolingPerSecond. At overheatAt the side
+/// overheats: Heat goes back to 0, it takes overheatDamage and every item and ability stalls for overheatStallSeconds
+/// (numbers in rules.json). OverheatHitsEnemy modifiers send the damage to the opponent instead; OverheatStallPercent
+/// modifiers lengthen or shorten the stall.
+/// </summary>
+public sealed class HeatRule : IStatusRule
+{
+    public StatusType Type => StatusType.Heat;
+
+    public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth)
+    {
+        target.Statuses.Heat += amount;
+        if (target.Statuses.Heat >= battle.Rules.OverheatAt) battle.Overheat(target.Side, source, depth);
+    }
+
+    public void OnTick(Battle battle, Combatant target)
+    {
+        int cooling = battle.Rules.HeatCoolingPerSecond;
+        if (cooling <= 0 || target.Statuses.Heat <= 0 || battle.Tick % ContentLoader.TicksPerSecond != 0) return;
+        target.Statuses.Heat = Math.Max(0, target.Statuses.Heat - cooling);
     }
 }

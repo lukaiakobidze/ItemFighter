@@ -18,9 +18,11 @@ internal static class CombatantTarget
 
 /// <summary>
 /// Deals "amount" damage, plus "percentOfShield" of the owner's current shield, plus "perItem" for each of the owner's
-/// board items with tag "perItemTag" (this item included). "hits" repeats it as separate hits.
+/// board items with tag "perItemTag" (this item included), plus "perStatus" for every "perStatusEvery" stacks of the
+/// owner's own "perStatusOf" status (Hot Iron: 1 per 5 Heat). "hits" repeats it as separate hits.
 /// </summary>
-public sealed class DamageEffect(ValueRef amount, TargetSpec target, ValueRef hits, ValueRef percentOfShield, ValueRef perItem, string? perItemTag) : IEffect
+public sealed class DamageEffect(ValueRef amount, TargetSpec target, ValueRef hits, ValueRef percentOfShield, ValueRef perItem, string? perItemTag,
+    StatusType? perStatusOf = null, ValueRef perStatus = default, int perStatusEvery = 1) : IEffect
 {
     public static DamageEffect Parse(ParseContext ctx)
     {
@@ -30,8 +32,17 @@ public sealed class DamageEffect(ValueRef amount, TargetSpec target, ValueRef hi
             throw new ContentException("'Damage' needs 'amount', 'percentOfShield' or 'perItem'");
         var hits = ctx.ReadValue("hits", 1);
         if (hits.Literal is < 1) throw new ContentException("'hits' must be at least 1");
+        StatusType? perStatusOf = null;
+        if ((ctx.Has("perStatusOf")) != ctx.Has("perStatus")) throw new ContentException("'perStatus' and 'perStatusOf' go together");
+        if (ctx.Has("perStatusOf"))
+        {
+            perStatusOf = ctx.ReadEnum<StatusType>("perStatusOf");
+            if (!perStatusOf.Value.IsCombatantStatus()) throw new ContentException($"'perStatusOf' must be a status on a fighter, not {perStatusOf}");
+        }
+        int every = ctx.ReadInt("perStatusEvery", 1);
+        if (every < 1) throw new ContentException("'perStatusEvery' must be at least 1");
         return new(ctx.ReadValue("amount", 0), CombatantTarget.Read(ctx, TargetSpec.Enemy), hits,
-            ctx.ReadValue("percentOfShield", 0), ctx.ReadValue("perItem", 0), tag);
+            ctx.ReadValue("percentOfShield", 0), ctx.ReadValue("perItem", 0), tag, perStatusOf, ctx.ReadValue("perStatus", 0), every);
     }
 
     public void Apply(EffectContext ctx)
@@ -42,6 +53,8 @@ public sealed class DamageEffect(ValueRef amount, TargetSpec target, ValueRef hi
         if (percent != 0) value += (int)Math.Round(battle.Get(source.Owner).Shield * percent / 100.0, MidpointRounding.AwayFromZero);
         if (perItemTag is not null)
             value += perItem.Resolve(source) * Targeting.Targetable(battle.Get(source.Owner)).Count(i => i.Def.HasTag(perItemTag));
+        if (perStatusOf is StatusType st)
+            value += perStatus.Resolve(source) * (battle.Get(source.Owner).Statuses.Get(st) / perStatusEvery);
         var side = CombatantTarget.Resolve(target, source);
         for (int i = hits.Resolve(source); i > 0; i--)
             battle.DealDamage(side, value, DamageKind.Direct, source, ctx.Depth);
@@ -54,7 +67,8 @@ public sealed class DamageEffect(ValueRef amount, TargetSpec target, ValueRef hi
         string shield = percent == 100 ? $"{your} shield" : $"{percent}% of {your} shield";
         string how = flat == 0 && percent != 0 && perItemTag is null ? $"damage equal to {shield}"
             : $"{flat} damage" + (percent != 0 ? $" plus {shield}" : "")
-              + (perItemTag is not null ? $" plus {per} for each {perItemTag} item {(ctx.IsEnemy ? "it has" : "on your board")}" : "");
+              + (perItemTag is not null ? $" plus {per} for each {perItemTag} item {(ctx.IsEnemy ? "it has" : "on your board")}" : "")
+              + (perStatusOf is StatusType st ? $" plus {ctx.Value(perStatus)} for every {(perStatusEvery == 1 ? "" : perStatusEvery + " ")}{st} {(ctx.IsEnemy ? "it has" : "you have")}" : "");
         string who = ctx.Combatant(target);
         string whom = who == "the enemy" ? "" : $" to {(who == "you" && !ctx.IsEnemy ? "yourself" : who)}";
         string repeat = times switch { 1 => "", 2 => " twice", _ => $" {times} times" };

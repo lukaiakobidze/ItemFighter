@@ -71,6 +71,9 @@ public sealed class FloatingTexts
                 case PoisonBurst p:
                     Add("Poison burst!", Palette.Poison, FloatAnchor.ForSide(p.Target));
                     break;
+                case Overheated o:
+                    Add("OVERHEAT!", Palette.Heat, FloatAnchor.ForSide(o.Side));
+                    break;
                 case ChillFroze c:
                     Add("FROZEN!", Palette.Freeze, FloatAnchor.ForSide(c.Target));
                     break;

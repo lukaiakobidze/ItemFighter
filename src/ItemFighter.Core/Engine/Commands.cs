@@ -15,6 +15,7 @@ public static class RejectReasons
     public const string UnknownSource = "unknown_source";
     public const string NotActive = "not_active";
     public const string Frozen = "frozen";
+    public const string Stalled = "stalled";
     public const string NotReady = "not_ready";
     public const string TargetRequired = "target_required";
     public const string InvalidTarget = "invalid_target";

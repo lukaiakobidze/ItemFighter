@@ -51,6 +51,17 @@ public sealed class CombatRules
     /// <summary>While Vulnerable, hits and pain ticks taken do this much more damage, in percent (not burn or poison).</summary>
     public int VulnerableDamagePercent { get; init; } = 50;
 
+    /// <summary>At this much Heat a side overheats (Luka 2026-10-19) and its Heat goes back to 0.</summary>
+    public int OverheatAt { get; init; } = 100;
+    /// <summary>Damage an overheat deals (to yourself, or to the enemy with an OverheatHitsEnemy modifier).</summary>
+    public int OverheatDamage { get; init; } = 10;
+    /// <summary>How long an overheat stalls every item and ability of the side that overheated.</summary>
+    public decimal OverheatStallSeconds { get; init; } = 2;
+    /// <summary>Heat lost every second. 0 = Heat never cools (Luka 2026-10-19, for now).</summary>
+    public int HeatCoolingPerSecond { get; init; } = 0;
+    /// <summary>At this much Heat or more, 5 chill still slows but never freezes.</summary>
+    public int HeatFreezeImmunityAt { get; init; } = 50;
+
     /// <summary>Cooldowns never run slower than this percent of normal speed, however much they are chilled.</summary>
     public int SlowestCooldownSpeedPercent { get; init; } = 10;
 
@@ -69,6 +80,7 @@ public sealed class CombatRules
     public int BurnTickInterval => ContentLoader.SecondsToTicks(BurnTickSeconds);
     public int ChillTicks => ContentLoader.SecondsToTicks(ChillSeconds);
     public int FreezeTicks => ContentLoader.SecondsToTicks(FreezeSeconds);
+    public int OverheatStallTicks => ContentLoader.SecondsToTicks(OverheatStallSeconds);
 
     public static CombatRules Parse(string json, out List<string> errors)
     {
@@ -106,6 +118,9 @@ public sealed class CombatRules
         Check(ChillCooldownPercentPerStack >= 0 && ChillFreezeAtStacks >= 1, "'chillCooldownPercentPerStack' can't be negative and 'chillFreezeAtStacks' must be at least 1");
         Check(NailDamage >= 0 && PowerDamagePerStack >= 0, "'nailDamage' and 'powerDamagePerStack' can't be negative");
         Check(VulnerableDamagePercent >= 0, "'vulnerableDamagePercent' can't be negative");
+        Check(OverheatAt >= 1 && OverheatDamage >= 0 && HeatCoolingPerSecond >= 0 && HeatFreezeImmunityAt >= 1,
+            "'overheatAt' and 'heatFreezeImmunityAt' must be at least 1, 'overheatDamage' and 'heatCoolingPerSecond' can't be negative");
+        Check(OverheatStallSeconds >= 0 && OverheatStallSeconds <= max, $"'overheatStallSeconds' must be 0 to {max}");
         Check(SlowestCooldownSpeedPercent is >= 1 and <= 100, "'slowestCooldownSpeedPercent' must be 1 to 100");
     }
 }

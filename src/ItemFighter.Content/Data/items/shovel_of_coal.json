@@ -1,0 +1,23 @@
+{
+  "id": "shovel_of_coal",
+  "name": "Shovel of Coal",
+  "rarity": "Common",
+  "tags": ["Heat"],
+  "cooldown": 5,
+  "activation": "Passive",
+  "levels": {
+    "heat": [5, 6, 8, 9]
+  },
+  "abilities": [
+    {
+      "effects": [
+        {
+          "type": "ApplyStatus",
+          "status": "Heat",
+          "amount": "{heat}",
+          "target": "Self"
+        }
+      ]
+    }
+  ]
+}

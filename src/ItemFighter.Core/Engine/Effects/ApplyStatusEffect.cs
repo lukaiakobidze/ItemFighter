@@ -53,6 +53,7 @@ public sealed class ApplyStatusEffect(StatusType status, ValueRef amount, Target
                 return flat == 0 ? $"apply {how}" : $"apply {flat} {status} plus {how}";
             }
             if (status.IsTimed()) return $"make {whom} {status} for {ctx.Seconds(amount)}";
+            if (status == StatusType.Heat && target.Kind == TargetKind.Self) return $"{(ctx.IsEnemy ? "gains" : "gain")} {ctx.Value(amount)} Heat";
             return $"apply {ctx.Value(amount)} {status} to {whom}";
         }
         return $"{status.ToString().ToLowerInvariant()} {ctx.Items(target)} for {ctx.Seconds(amount)}";

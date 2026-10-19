@@ -15,7 +15,7 @@ public sealed class TargetingState
 
     public bool CanActivate(SourceInstance item, Battle battle) =>
         battle.Result == BattleResult.Ongoing && item.Owner == Side.Player && item.Def.Activation == Activation.Active
-        && item.Ready && item.FreezeTicks == 0 && !battle.Player.IsFrozenAt(battle.Tick)
+        && item.Ready && item.FreezeTicks == 0 && !battle.Player.IsHaltedAt(battle.Tick)
         && !(_sentForTick.TryGetValue(item.Id, out int tick) && tick > battle.Tick);
 
     public bool IsValidTarget(SourceInstance target) => Selecting is { } s && Battle.IsValidTarget(s, target);
