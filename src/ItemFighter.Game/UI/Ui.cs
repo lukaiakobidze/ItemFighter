@@ -27,6 +27,14 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
 
     public void Rect(Rectangle r, Color c) => batch.Draw(assets.Pixel, r, c);
 
+    /// <summary>A line exactly one real screen pixel thick at any window size, snapped so every line looks the same.</summary>
+    public void HairlineV(float x, float y, float height, Color c) =>
+        batch.Draw(assets.Pixel, new Vector2(Snap(x), y), null, c, 0f, Vector2.Zero, new Vector2(1f / Scale, height), SpriteEffects.None, 0f);
+
+    /// <inheritdoc cref="HairlineV"/>
+    public void HairlineH(float x, float y, float width, Color c) =>
+        batch.Draw(assets.Pixel, new Vector2(x, Snap(y)), null, c, 0f, Vector2.Zero, new Vector2(width, 1f / Scale), SpriteEffects.None, 0f);
+
     public void Border(Rectangle r, Color c, int t = 2)
     {
         Rect(new Rectangle(r.X, r.Y, r.Width, t), c);

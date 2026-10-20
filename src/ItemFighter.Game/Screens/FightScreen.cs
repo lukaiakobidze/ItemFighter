@@ -41,6 +41,7 @@ public sealed class FightScreen : Screen
     private readonly TargetingState _targeting = new();
     private readonly FloatingTexts _floats = new();
     private readonly CombatLog _log = new();
+    private readonly BarAnimator _playerBars = new(), _enemyBars = new();
     private readonly Dictionary<int, double> _firedAt = [];
     private double _time;
     private double _endedAt = -1;
@@ -102,6 +103,8 @@ public sealed class FightScreen : Screen
         _floats.Consume(events, Battle);
         _log.Consume(events, Battle);
         _floats.Update(seconds);
+        _playerBars.Update(Battle.Player, Battle.Rules.OverheatAt, seconds);
+        _enemyBars.Update(Battle.Enemy, Battle.Rules.OverheatAt, seconds);
         _targeting.Update(Battle);
         if (Battle.Result != BattleResult.Ongoing && _endedAt < 0) _endedAt = _time;
     }
@@ -151,8 +154,8 @@ public sealed class FightScreen : Screen
         if (ui.Hover(portrait)) ui.Tooltip(def.Name, [$"{def.MaxHp} HP", "Its abilities and passives are listed beside it."], Palette.Damage);
 
         ui.Text(def.Name, new Vector2(EnemyHpBar.X, EnemyPanel.Y + 18), 22, Palette.Text, bold: true);
-        DrawHp(ui, Battle.Enemy, EnemyHpBar);
-        DrawHeat(ui, Battle.Enemy, HeatBarIn(EnemyPanel));
+        DrawHp(ui, Battle.Enemy, EnemyHpBar, _enemyBars);
+        DrawHeat(ui, Battle.Enemy, HeatBarIn(EnemyPanel), _enemyBars);
         var passives = Battle.Enemy.Sources.Where(s => s.Def.IsPassive).ToList();
         for (int i = 0; i < passives.Count && i < PassiveMax; i++) DrawPassive(ui, passives[i], PassiveIcon(EnemyPassiveGrid, i), enemy: true);
         DrawStatuses(ui, Battle.Enemy, StatusRowIn(EnemyPanel));
@@ -243,8 +246,8 @@ public sealed class FightScreen : Screen
             var (title, lines) = Tooltips.For(character, 1, Game.Data.Database);
             ui.Tooltip(title, lines, Palette.Accent);
         }
-        DrawHp(ui, Battle.Player, PlayerHpBar);
-        DrawHeat(ui, Battle.Player, HeatBarIn(PlayerPanel));
+        DrawHp(ui, Battle.Player, PlayerHpBar, _playerBars);
+        DrawHeat(ui, Battle.Player, HeatBarIn(PlayerPanel), _playerBars);
         DrawStatuses(ui, Battle.Player, StatusRowIn(PlayerPanel));
 
         foreach (var item in Battle.Player.Items) DrawCard(ui, item, CardRect(item.Slot!.Value));
@@ -333,25 +336,29 @@ public sealed class FightScreen : Screen
     /// <see cref="HpTickEvery"/> HP so a bigger health pool shows as more segments, the shield number with its icon on
     /// the left and the HP number with the heart on the right.
     /// </summary>
-    private static void DrawHp(Ui ui, Combatant c, Rectangle bar)
+    private static void DrawHp(Ui ui, Combatant c, Rectangle bar, BarAnimator shown)
     {
-        // Luka 2026-10-20: textured when UI/hp_bar_back, hp_bar_fill, shield_bar_fill and hp_bar_frame exist.
-        float hp = Math.Max(0, c.Hp) / (float)c.MaxHp, shieldPart = Math.Min(1f, c.Shield / (float)c.MaxHp);
+        // Luka 2026-10-20: textured when UI/hp_bar_back, hp_bar_fill, shield_bar_fill and hp_bar_frame exist. HP drops at
+        // once and leaves a white trail that drains; shield glides.
+        float hp = Math.Max(0, c.Hp) / (float)c.MaxHp, shieldPart = Math.Min(1f, shown.Shield / c.MaxHp);
         if (!ui.NineSlice("hp_bar_back", bar, HpBarCorner)) ui.Rect(bar, Palette.HpBack);
+        float trail = Math.Min(1f, shown.Trail / c.MaxHp);
+        if (trail > hp)
+        {
+            int from = bar.X + (int)(bar.Width * hp), to = bar.X + (int)Math.Ceiling(bar.Width * trail);
+            ui.Rect(new Rectangle(from, bar.Y, to - from, bar.Height), Color.White * 0.9f);
+        }
         if (!ui.BarFill("hp_bar_fill", bar, hp)) ui.Bar(bar, hp, Palette.Hp, Color.Transparent);
-        if (c.Shield > 0)
+        if (shieldPart > 0.001f)
         {
             int w = (int)(bar.Width * shieldPart);
             if (!ui.BarFill("shield_bar_fill", bar, shieldPart, tint: Color.White * 0.8f))
                 ui.Rect(new Rectangle(bar.X, bar.Y, w, bar.Height), Palette.Shield * 0.6f);
             ui.Rect(new Rectangle(bar.X + w - 2, bar.Y, 3, bar.Height), Palette.Shield); // where the shield ends
         }
+        // Luka 2026-10-20: every line the same, one screen pixel thin, across the whole bar.
         for (int t = HpTickEvery; t < c.MaxHp; t += HpTickEvery)
-        {
-            int x = bar.X + (int)Math.Round(bar.Width * t / (double)c.MaxHp);
-            bool big = t % (HpTickEvery * 10) == 0;
-            ui.Rect(new Rectangle(x, bar.Y, big ? 2 : 1, big ? bar.Height : bar.Height * 2 / 3), Color.Black * (big ? 0.55f : 0.35f));
-        }
+            ui.HairlineV(bar.X + bar.Width * t / (float)c.MaxHp, bar.Y, bar.Height, Color.Black * 0.5f);
         if (!ui.NineSlice("hp_bar_frame", Outset(bar, HpFrameOutset), HpBarCorner)) ui.Border(bar, Palette.Border, 1);
 
         int icon = 26, iconY = bar.Center.Y - icon / 2, textY = bar.Center.Y - 11;
@@ -372,12 +379,12 @@ public sealed class FightScreen : Screen
     /// gradient, a line every <see cref="HeatTickEvery"/> Heat, and the number underneath. Shown for either side once it
     /// has anything tagged Heat or any Heat at all. A light blue line marks where Heat stops chill from freezing.
     /// </summary>
-    private void DrawHeat(Ui ui, Combatant c, Rectangle bar)
+    private void DrawHeat(Ui ui, Combatant c, Rectangle bar, BarAnimator shown)
     {
         var rules = Battle.Rules;
         if (c.Statuses.Heat <= 0 && !c.IsStalledAt(Battle.Tick) && !c.Sources.Any(s => s.Def.HasTag("Heat"))) return;
         int max = rules.OverheatAt;
-        float part = Math.Clamp(c.Statuses.Heat / (float)max, 0, 1);
+        float part = Math.Clamp(shown.Heat / max, 0, 1); // glides up and down (Luka 2026-10-20)
         // Luka 2026-10-20: textured when UI/heat_bar_back, heat_bar_fill and heat_bar_frame exist.
         if (!ui.NineSlice("heat_bar_back", bar, HpBarCorner)) ui.Rect(bar, Palette.HeatBack);
         if (!ui.BarFill("heat_bar_fill", bar, part, vertical: true))
@@ -391,10 +398,7 @@ public sealed class FightScreen : Screen
             }
         }
         for (int heat = HeatTickEvery; heat < max; heat += HeatTickEvery)
-        {
-            int y = bar.Bottom - (int)Math.Round(bar.Height * heat / (double)max);
-            ui.Rect(new Rectangle(bar.X, y, bar.Width, 1), Color.Black * 0.5f);
-        }
+            ui.HairlineH(bar.X, bar.Bottom - bar.Height * heat / (float)max, bar.Width, Color.Black * 0.5f);
         if (rules.HeatFreezeImmunityAt < max)
         {
             int y = bar.Bottom - (int)Math.Round(bar.Height * rules.HeatFreezeImmunityAt / (double)max);

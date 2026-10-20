@@ -140,6 +140,8 @@ public static class AutomationScripts
         new(Wait: 0.2, Do: Automation.Hover(new Microsoft.Xna.Framework.Rectangle(244, 596, 60, 60)), Shot: "knight-vulnerable"),
     ];
 
+    private static int _hpBefore;
+
     /// <summary>Luka's 2026-10-19 Locomotive Engineer: the Heat bar filling, then an overheat that hits the enemy.</summary>
     private static Step[] Heat() =>
     [
@@ -155,6 +157,9 @@ public static class AutomationScripts
         new(Until: g => FightOf(g).Battle.Player.Statuses.Heat >= 60),
         new(Do: g => FightOf(g).Speed = 1),
         new(Wait: 0.3, Shot: "heat-mid"),
+        new(Do: g => _hpBefore = FightOf(g).Battle.Player.Hp),
+        new(Until: g => FightOf(g).Battle.Player.Hp < _hpBefore),
+        new(Wait: 0.2, Shot: "heat-hp-trail"),
         new(Do: g => FightOf(g).Speed = 4),
         new(Until: g => FightOf(g).Battle.Events.OfType<Core.Engine.Overheated>().Any()),
         new(Do: g => FightOf(g).Speed = 1),
