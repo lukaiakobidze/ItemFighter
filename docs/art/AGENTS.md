@@ -63,7 +63,7 @@ On screen (the game draws its frame on top): items 112×112 in a fight and 96×9
 
 ## UI pieces
 
-Same cel style as the content (bold dark navy outline, flat colours, one hard-edged shadow and one highlight, no texture or gradients), but calmer and darker so items and enemies stand out. **Every frame, panel, card, tooltip and button has sharp square corners, never rounded** (Luka 2026-10-17).
+**The same style as the items and characters** (Luka 2026-10-20): bold dark navy outline, bright saturated flat colours, one hard-edged shadow and one hard-edged highlight, harsh crisp lines, no texture or soft gradients. Nothing greyed out or washed out: backgrounds of panels are deep and rich (indigo, navy, wine), trims and highlights are bright. Items and enemies still stand out because they sit on dark fills inside bright frames. **Every frame, panel, card, tooltip, button and bar has sharp square corners, never rounded** (Luka 2026-10-17).
 
 ### Square frame
 
@@ -88,13 +88,29 @@ Stretched to many sizes: the game keeps the **outer quarter of each side** as dr
 
 | File | Used for | How it should look |
 |---|---|---|
-| `panel.png` | The big boxes: enemy panel, your panel, combat log, side panels | Dark slate fill (`#222636`), thick dark navy outline, a thin lighter inner edge (`#464E68`) with a hard-edged lighter band along the top edge |
-| `card.png` | Cards and boxes | Like the panel, a bit lighter (`#2C3042`), with small corner details |
-| `tooltip.png` | The mouse-over info box | Near-black fill (`#10121C`), thin outline. The game adds a coloured border on top |
-| `button.png` | Buttons | Raised slab: blue-grey top face (`#343A52`) with a darker hard-edged bottom lip |
-| `button_hover.png` | Button under the mouse | Same shape, brighter face (`#46506E`) and a light outline |
-| `button_selected.png` | Chosen option | Same shape, warm gold face (`#5C4E1E`) with a gold outline (`#FFC440`) |
-| `button_disabled.png` | Button you can't press | Same shape, flat and dull (`#282A36`), low contrast |
+| `panel.png` | Big boxes: combat log, side panels, any panel without its own picture | Deep indigo fill (`#24204A`), thick dark navy outline, a bright violet-blue trim band (`#5A6CF0`) just inside the outline with a hard-edged lighter band along its top, chunky corner plates |
+| `panel_enemy.png` | The enemy's side of a fight | Like `panel.png` with a deep wine fill (`#3A1626`) and a bright red trim (`#E8463C`), bolt-like corner plates |
+| `panel_player.png` | Your side of a fight | Like `panel.png` with a deep indigo fill (`#1E2450`) and a bright gold trim (`#FFC440`), bolt-like corner plates |
+| `card.png` | Cards and boxes | Like the panel, a bit lighter (`#2E2A5C`), with small bright corner details |
+| `tooltip.png` | The mouse-over info box | Very dark indigo fill (`#14122C`), thick dark outline with a thin bright violet edge. The game adds a coloured border on top |
+| `button.png` | Buttons | Raised slab: saturated blue top face (`#3A5CD0`) with a hard-edged lighter band on top and a dark navy bottom lip |
+| `button_hover.png` | Button under the mouse | Same shape, brighter face (`#5A80F0`) and a white-blue edge |
+| `button_selected.png` | Chosen option | Same shape, bright gold face (`#F0B030`) with a darker orange lip |
+| `button_disabled.png` | Button you can't press | Same shape, muted slate-blue (`#3A3E5A`), lower contrast but still the same bold outline |
+
+### Bars
+
+The game draws tick lines and numbers on top, so the pictures have **no lines, marks or numbers**. Sharp square corners. Fills are cut, not squashed: the game shows only the filled part of the picture, so keep a fill even along its length (for the HP fill) or put the colours exactly where they should be on the bar (for the heat fill).
+
+| File | Size | Used for | How it should look |
+|---|---|---|---|
+| `hp_bar_back.png` | 256×64 | Empty part of every HP bar (stretched like a panel: keep the outer quarter plain) | Dark wine trough (`#3C1A22`), a hard-edged darker band along the top as an inner shadow. Opaque |
+| `hp_bar_fill.png` | 1024×64 | The health in the bar | Bright red (`#E03A3A`): flat base, a hard-edged lighter band along the top third (`#FF6A5A`), a hard-edged darker band along the bottom (`#A82030`). The same all the way along, no outline, opaque |
+| `shield_bar_fill.png` | 1024×64 | Shield, drawn over the health | Like the HP fill in shield blue (`#78AAE6`, light band `#B4D8FF`, dark band `#4A78C0`). The game draws it slightly see-through |
+| `hp_bar_frame.png` | 256×64 | Frame around every HP bar, drawn a little outside it | A ring about 8px thick: thick dark navy outline, a bright gold or steel band inside it with a hard-edged highlight, small square rivets in the corners. **Everything inside the ring transparent** |
+| `heat_bar_back.png` | 64×256 | Empty part of the heat tube | Dark ember-brown trough (`#3C2014`), hard-edged darker band down the left as an inner shadow. Opaque |
+| `heat_bar_fill.png` | 64×512 | The heat, filling from the bottom | Hard-edged colour bands, not a soft gradient: green (`#50C85A`) at the bottom, through yellow (`#FADC3C`) in the middle, orange, to red (`#E6322A`) at the top, about 6 to 8 flat bands. A lighter hard-edged stripe down the left third. Opaque |
+| `heat_bar_frame.png` | 64×256 | Frame around the heat tube, drawn a little outside it | Like the HP frame, upright: thick dark navy outline, a bright copper or brass band (`#E08A3C`) with a hard-edged highlight, rivets in the corners. **Everything inside the ring transparent** |
 
 ### Small icons
 
@@ -111,7 +127,7 @@ Shown next to numbers, as small as 20×20: one simple bold shape each. 128×128,
 
 | File | Size | Used for | How it should look |
 |---|---|---|---|
-| `background.png` | 1920×1080 | Behind every screen | Very dark, quiet backdrop (`#14161F` to `#1E2130`): a few large flat shapes, like distant hills or stone blocks in two or three close dark tones. No detail in the middle third, where the panels sit. Not transparent |
+| `background.png` | 1920×1080 | Behind every screen | A rich dusk scene in the cel style: big flat shapes (mountains, a fortress or arena silhouette) in deep purples, indigos and wine reds with a few bright hard-edged accents (a warm sunset band, glints). Darker and simpler in the middle, where the panels sit. Not transparent |
 | `logo.png` | 1024×256 | Title on the main menu | "ItemFighter" in chunky bold letters with the thick dark outline, gold (`#FFC440`) with a hard-edged orange shadow, maybe a small sword or shield worked in. Transparent background |
 
 ## Catalogue of every picture

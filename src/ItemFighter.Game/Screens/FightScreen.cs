@@ -25,8 +25,8 @@ public sealed class FightScreen : Screen
     private static Rectangle HpBarIn(Rectangle panel) => new(panel.X + 204, panel.Y + 54, panel.Width - 228, 40);
     private static Vector2 PassiveGridIn(Rectangle panel) => new(panel.X + 24, panel.Y + 196);
     private static Vector2 StatusRowIn(Rectangle panel) => new(panel.X + 204, panel.Y + 108);
-    // Luka 2026-10-19: a vertical Heat bar right of the item squares, with its number underneath.
-    private static Rectangle HeatBarIn(Rectangle panel) => new(panel.X + 984, panel.Y + 174, 34, 132);
+    // Luka 2026-10-19: a vertical Heat bar right of the item squares, with its number underneath; 2026-10-20: taller.
+    private static Rectangle HeatBarIn(Rectangle panel) => new(panel.X + 990, panel.Y + 112, 44, 222);
     private static Rectangle SquareIn(Rectangle panel, int index) => new(panel.X + 204 + index * 128, panel.Y + 190, 112, 112);
     private static readonly Color FrostTint = new Color(120, 200, 255) * 0.35f;
     private const int PassiveSize = 34, PassiveGap = 7, PassiveColumns = 4, PassiveMax = 16;
@@ -143,7 +143,7 @@ public sealed class FightScreen : Screen
 
     private void DrawEnemy(Ui ui)
     {
-        ui.Panel(EnemyPanel);
+        ui.Panel(EnemyPanel, skin: "panel_enemy");
         var def = Battle.EnemyDefinition;
         var portrait = PortraitIn(EnemyPanel);
         ui.Square("Enemies", def.Id, def.Name, portrait, Palette.Damage * 0.8f,
@@ -232,7 +232,7 @@ public sealed class FightScreen : Screen
 
     private void DrawPlayer(Ui ui)
     {
-        ui.Panel(PlayerPanel);
+        ui.Panel(PlayerPanel, skin: "panel_player");
         // The character's portrait where the enemy's is; no name needed.
         var portrait = PortraitIn(PlayerPanel);
         var character = _battleSetup.Player.CharacterId is string c && Game.Data.Database.TryGet(c, out var ch) ? ch : null;
@@ -335,20 +335,24 @@ public sealed class FightScreen : Screen
     /// </summary>
     private static void DrawHp(Ui ui, Combatant c, Rectangle bar)
     {
-        ui.Bar(bar, Math.Max(0, c.Hp) / (float)c.MaxHp, Palette.Hp, Palette.HpBack);
+        // Luka 2026-10-20: textured when UI/hp_bar_back, hp_bar_fill, shield_bar_fill and hp_bar_frame exist.
+        float hp = Math.Max(0, c.Hp) / (float)c.MaxHp, shieldPart = Math.Min(1f, c.Shield / (float)c.MaxHp);
+        if (!ui.NineSlice("hp_bar_back", bar, HpBarCorner)) ui.Rect(bar, Palette.HpBack);
+        if (!ui.BarFill("hp_bar_fill", bar, hp)) ui.Bar(bar, hp, Palette.Hp, Color.Transparent);
         if (c.Shield > 0)
         {
-            int w = (int)(bar.Width * Math.Min(1f, c.Shield / (float)c.MaxHp));
-            ui.Rect(new Rectangle(bar.X, bar.Y, w, bar.Height), Palette.Shield * 0.6f);
+            int w = (int)(bar.Width * shieldPart);
+            if (!ui.BarFill("shield_bar_fill", bar, shieldPart, tint: Color.White * 0.8f))
+                ui.Rect(new Rectangle(bar.X, bar.Y, w, bar.Height), Palette.Shield * 0.6f);
             ui.Rect(new Rectangle(bar.X + w - 2, bar.Y, 3, bar.Height), Palette.Shield); // where the shield ends
         }
-        for (int hp = HpTickEvery; hp < c.MaxHp; hp += HpTickEvery)
+        for (int t = HpTickEvery; t < c.MaxHp; t += HpTickEvery)
         {
-            int x = bar.X + (int)Math.Round(bar.Width * hp / (double)c.MaxHp);
-            bool big = hp % (HpTickEvery * 10) == 0;
+            int x = bar.X + (int)Math.Round(bar.Width * t / (double)c.MaxHp);
+            bool big = t % (HpTickEvery * 10) == 0;
             ui.Rect(new Rectangle(x, bar.Y, big ? 2 : 1, big ? bar.Height : bar.Height * 2 / 3), Color.Black * (big ? 0.55f : 0.35f));
         }
-        ui.Border(bar, Palette.Border, 1);
+        if (!ui.NineSlice("hp_bar_frame", Outset(bar, HpFrameOutset), HpBarCorner)) ui.Border(bar, Palette.Border, 1);
 
         int icon = 26, iconY = bar.Center.Y - icon / 2, textY = bar.Center.Y - 11;
         string hpText = $"{Math.Max(0, c.Hp)} / {c.MaxHp}";
@@ -373,13 +377,18 @@ public sealed class FightScreen : Screen
         var rules = Battle.Rules;
         if (c.Statuses.Heat <= 0 && !c.IsStalledAt(Battle.Tick) && !c.Sources.Any(s => s.Def.HasTag("Heat"))) return;
         int max = rules.OverheatAt;
-        ui.Rect(bar, Palette.HeatBack);
-        int filled = (int)(bar.Height * Math.Clamp(c.Statuses.Heat / (float)max, 0, 1));
-        const int slice = 2;
-        for (int y = 0; y < filled; y += slice)
+        float part = Math.Clamp(c.Statuses.Heat / (float)max, 0, 1);
+        // Luka 2026-10-20: textured when UI/heat_bar_back, heat_bar_fill and heat_bar_frame exist.
+        if (!ui.NineSlice("heat_bar_back", bar, HpBarCorner)) ui.Rect(bar, Palette.HeatBack);
+        if (!ui.BarFill("heat_bar_fill", bar, part, vertical: true))
         {
-            int h = Math.Min(slice, filled - y);
-            ui.Rect(new Rectangle(bar.X, bar.Bottom - y - h, bar.Width, h), HeatColor((y + h / 2f) / bar.Height));
+            int filled = (int)(bar.Height * part);
+            const int slice = 2;
+            for (int y = 0; y < filled; y += slice)
+            {
+                int h = Math.Min(slice, filled - y);
+                ui.Rect(new Rectangle(bar.X, bar.Bottom - y - h, bar.Width, h), HeatColor((y + h / 2f) / bar.Height));
+            }
         }
         for (int heat = HeatTickEvery; heat < max; heat += HeatTickEvery)
         {
@@ -391,9 +400,9 @@ public sealed class FightScreen : Screen
             int y = bar.Bottom - (int)Math.Round(bar.Height * rules.HeatFreezeImmunityAt / (double)max);
             ui.Rect(new Rectangle(bar.X, y - 1, bar.Width, 2), Palette.Freeze);
         }
-        ui.Border(bar, Palette.Border, 1);
+        if (!ui.NineSlice("heat_bar_frame", Outset(bar, HeatFrameOutset), HpBarCorner)) ui.Border(bar, Palette.Border, 1);
         string text = c.Statuses.Heat.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        var label = new Rectangle(bar.X - 20, bar.Bottom + 4, bar.Width + 40, 24);
+        var label = new Rectangle(bar.X - 20, bar.Bottom + 8, bar.Width + 40, 24);
         ui.TextIn(text, new Rectangle(label.X + 2, label.Y + 2, label.Width, label.Height), 20, Color.Black * 0.8f, bold: true);
         ui.TextIn(text, label, 20, HeatColor(c.Statuses.Heat / (float)max), bold: true);
         if (ui.Hover(bar) || ui.Hover(label))
@@ -415,6 +424,12 @@ public sealed class FightScreen : Screen
 
     /// <summary>A line on the Heat bar every this much Heat.</summary>
     private const int HeatTickEvery = 10;
+
+    private static Rectangle Outset(Rectangle r, int by) => new(r.X - by, r.Y - by, r.Width + 2 * by, r.Height + 2 * by);
+
+    /// <summary>The bar frames are drawn this far outside the bar, so their outline doesn't cover the fill.</summary>
+    private const int HpFrameOutset = 4, HeatFrameOutset = 4;
+    private const int HpBarCorner = 12;
 
     /// <summary>A thin line on the HP bar every this many HP.</summary>
     private const int HpTickEvery = 10;

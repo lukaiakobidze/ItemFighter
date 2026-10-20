@@ -35,9 +35,10 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
         Rect(new Rectangle(r.Right - t, r.Y, t, r.Height), c);
     }
 
-    public void Panel(Rectangle r, Color? fill = null, Color? border = null)
+    /// <summary>A panel: UI/&lt;skin&gt;.png when there is one, else UI/panel.png, else a plain box.</summary>
+    public void Panel(Rectangle r, Color? fill = null, Color? border = null, string? skin = null)
     {
-        if (fill is null && border is null && NineSlice("panel", r)) return;
+        if (fill is null && border is null && ((skin is not null && NineSlice(skin, r)) || NineSlice("panel", r))) return;
         Rect(r, fill ?? Palette.Panel);
         Border(r, border ?? Palette.Border, 1);
     }
@@ -62,6 +63,29 @@ public sealed class Ui(SpriteBatch batch, Assets assets, Input input, VirtualScr
             if (dst.Width <= 0 || dst.Height <= 0) continue;
             var src = new Rectangle(srcX[col], srcY[row], srcX[col + 1] - srcX[col], srcY[row + 1] - srcY[row]);
             batch.Draw(tex, dst, src, tint ?? Color.White);
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Draws the filled part of a bar picture (UI/&lt;id&gt;.png stretched over <paramref name="r"/>): the left
+    /// <paramref name="fraction"/> of it, or the bottom part when <paramref name="vertical"/>. The picture is cut, not
+    /// squashed, so its colours stay where they are (a gradient keeps red at the top). False when there is no PNG.
+    /// </summary>
+    public bool BarFill(string id, Rectangle r, float fraction, bool vertical = false, Color? tint = null)
+    {
+        var tex = assets.Texture("UI", id);
+        if (tex is null) return false;
+        fraction = Math.Clamp(fraction, 0f, 1f);
+        if (vertical)
+        {
+            int h = (int)(r.Height * fraction), srcH = (int)(tex.Height * fraction);
+            if (h > 0 && srcH > 0) batch.Draw(tex, new Rectangle(r.X, r.Bottom - h, r.Width, h), new Rectangle(0, tex.Height - srcH, tex.Width, srcH), tint ?? Color.White);
+        }
+        else
+        {
+            int w = (int)(r.Width * fraction), srcW = (int)(tex.Width * fraction);
+            if (w > 0 && srcW > 0) batch.Draw(tex, new Rectangle(r.X, r.Y, w, r.Height), new Rectangle(0, 0, srcW, tex.Height), tint ?? Color.White);
         }
         return true;
     }

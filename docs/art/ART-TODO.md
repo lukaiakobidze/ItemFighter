@@ -31,8 +31,33 @@ Same style as the other enemies, but grander: it is the first boss of the game. 
 
 A new character built around Heat: his items heat him up, and when Heat reaches 100 he overheats, which hurts the enemy instead of him. Heat colour is a fiery orange `#FF6E1E`.
 
-- [ ] `Characters\locomotive_engineer.png` (512×512 portrait): a sturdy steam-train engineer in soot-stained blue overalls, a striped engineer's cap and goggles pushed up, a red neckerchief, sleeves rolled up, holding a coal shovel. Behind him the glowing open firebox of a locomotive, orange `#FF6E1E` hard-edged glow and puffs of steam.
-- [ ] `Passives\locomotive_engineer.png` (256×256): the Engineer's passive, overheating damages the enemy instead of him and stalls his items half as long. A locomotive pressure gauge with the needle in the red, a burst of steam and orange `#FF6E1E` sparks shooting outward. Orange-dark backdrop.
-- [ ] `Items\shovel_of_coal.png` (256×256): Shovel of Coal, adds Heat. A coal shovel heaped with black coal lumps, a few of them glowing orange `#FF6E1E`. Orange-dark backdrop.
-- [ ] `Items\hot_iron.png` (256×256): Hot Iron, a hit that gets stronger the more Heat you have. A blacksmith's iron bar or brand glowing red-orange at the tip, heat shimmer lines around it. Red-dark backdrop.
-- [ ] `Statuses\overheat.png` (128×128, transparent background like the other statuses): Overheated, every item is stalled for a moment. A steaming, cracked pressure valve or a thermometer bursting at the top, in orange `#FF6E1E` with the bold dark outline. Match `power.png` and `pain.png` in size and weight.
+- [x] `Characters\locomotive_engineer.png` (512×512 portrait): a sturdy steam-train engineer in soot-stained blue overalls, a striped engineer's cap and goggles pushed up, a red neckerchief, sleeves rolled up, holding a coal shovel. Behind him the glowing open firebox of a locomotive, orange `#FF6E1E` hard-edged glow and puffs of steam.
+- [x] `Passives\locomotive_engineer.png` (256×256): the Engineer's passive, overheating damages the enemy instead of him and stalls his items half as long. A locomotive pressure gauge with the needle in the red, a burst of steam and orange `#FF6E1E` sparks shooting outward. Orange-dark backdrop.
+- [x] `Items\shovel_of_coal.png` (256×256): Shovel of Coal, adds Heat. A coal shovel heaped with black coal lumps, a few of them glowing orange `#FF6E1E`. Orange-dark backdrop.
+- [x] `Items\hot_iron.png` (256×256): Hot Iron, a hit that gets stronger the more Heat you have. A blacksmith's iron bar or brand glowing red-orange at the tip, heat shimmer lines around it. Red-dark backdrop.
+- [x] `Statuses\overheat.png` (128×128, transparent background like the other statuses): Overheated, every item is stalled for a moment. A steaming, cracked pressure valve or a thermometer bursting at the top, in orange `#FF6E1E` with the bold dark outline. Match `power.png` and `pain.png` in size and weight.
+
+## 5. Bolder UI: textured bars and colourful panels (Luka 2026-10-20)
+
+Luka wants the whole UI in the same art style as the items and characters: bright colours and harsh, hard-edged lines, nothing greyed out. Follow the updated "UI pieces" section in `AGENTS.md` (it replaces the old "calmer and darker" rule). The game draws tick lines and numbers on the bars itself, so put none in the pictures.
+
+Health bar (the game stretches these along each side's long HP bar):
+
+- [ ] `UI\hp_bar_back.png` (256×64): the empty bar trough.
+- [ ] `UI\hp_bar_fill.png` (1024×64): the red health fill.
+- [ ] `UI\shield_bar_fill.png` (1024×64): the blue shield layer drawn over the health.
+- [ ] `UI\hp_bar_frame.png` (256×64): the frame around the bar, see-through in the middle.
+
+Heat bar (tall and thin, right of the items):
+
+- [ ] `UI\heat_bar_back.png` (64×256): the empty heat tube.
+- [ ] `UI\heat_bar_fill.png` (64×512): the heat fill, green at the bottom through yellow to red at the top.
+- [ ] `UI\heat_bar_frame.png` (64×256): the frame around the tube, see-through in the middle.
+
+Panels and buttons, redone with colour (same file names, so they replace the current ones):
+
+- [ ] `UI\panel_enemy.png` (96×96, new): the enemy's side of a fight, with red trim.
+- [ ] `UI\panel_player.png` (96×96, new): your side of a fight, with gold trim.
+- [ ] `UI\panel.png`, `UI\card.png`, `UI\tooltip.png` (96×96 each): redo with colour.
+- [ ] `UI\button.png`, `UI\button_hover.png`, `UI\button_selected.png`, `UI\button_disabled.png` (96×96 each): redo with colour.
+- [ ] `UI\background.png` (1920×1080): redo with colour.
