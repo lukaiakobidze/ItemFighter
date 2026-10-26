@@ -62,7 +62,7 @@ Panels and buttons, redone with colour (same file names, so they replace the cur
 - [x] `UI\button.png`, `UI\button_hover.png`, `UI\button_selected.png`, `UI\button_disabled.png` (96×96 each): redo with colour.
 - [x] `UI\background.png` (1920×1080): redo with colour.
 
-## 6. More Heat: three items, three passives, a status (Luka 2026-10-26)
+## 6. More Heat: three items, four passives, a status (Luka 2026-10-26)
 
 All Rare. Heat is fiery orange `#FF6E1E`. The passive names are placeholders, so keep their pictures about what they do.
 
@@ -72,4 +72,5 @@ All Rare. Heat is fiery orange `#FF6E1E`. The passive names are placeholders, so
 - [ ] `Passives\stoker.png` (256×256): Stoker, every 5 times you gain Heat it Burns the enemy. A coal shovel flinging flaming coals forward. Orange-dark backdrop.
 - [ ] `Passives\firebox.png` (256×256): Firebox, every Heat gain is 1 bigger. An open locomotive firebox door with roaring flames inside. Orange-dark backdrop.
 - [ ] `Passives\big_boiler.png` (256×256): Big Boiler, you can hold 10 more Heat before overheating. A fat riveted steam boiler with a pressure gauge, a puff of steam on top. Orange-dark backdrop.
+- [ ] `Passives\hot_nails.png` (256×256): Hot Nails, Uproot hits harder the more Heat you have. Three iron nails glowing red-orange `#FF6E1E` at the tips, heat shimmer around them. Orange-dark backdrop.
 - [ ] `Statuses\no_heat_gain.png` (128×128, transparent background like the other statuses): No Heat Gain, your Heat is locked. A flame inside a padlock, or a flame with a bold bar across it, in pale blue `#AAE6FF` with the bold dark outline. Match `power.png` and `pain.png` in size and weight.

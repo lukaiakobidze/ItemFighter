@@ -82,16 +82,20 @@ public class HeatContentTests
     }
 
     [Fact]
-    public void Uproot_DoesOnePercentMorePerHeat()
+    public void Uproot_IgnoresHeat_WithoutHotNails() => Assert.Equal(5 * 4, UprootWith50Heat([]));
+
+    [Fact]
+    public void HotNails_UprootDoesOnePercentMorePerHeat() => Assert.Equal(5 * 4 * 3 / 2, UprootWith50Heat(["hot_nails"]));
+
+    private static int UprootWith50Heat(string[] passives)
     {
-        var b = Fight([], ("magnetized_glove", 0));
+        var b = Fight(passives, ("magnetized_glove", 0));
         var glove = b.Player.Items.Single();
         b.ApplyStatus(Side.Enemy, StatusType.Nail, 5, null, 0);
         b.ApplyStatus(Side.Player, StatusType.Heat, 50, null, 0);
         b.Steps(40);
         b.Enqueue(new ActivateCommand(b.Tick + 1, glove.Id, null));
         b.Steps(1);
-        var u = Assert.Single(b.Of<NailsUprooted>());
-        Assert.Equal(5 * b.Rules.NailDamage * 3 / 2, u.Damage);
+        return Assert.Single(b.Of<NailsUprooted>()).Damage;
     }
 }

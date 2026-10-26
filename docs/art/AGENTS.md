@@ -220,6 +220,7 @@ All passives are one shared pool: enemies use some and the player can buy any of
 | `silver_knight.png` | Silver Knight's passive | Silver Knight (player) | Every 5 times you're hit, gain shield | Silver shield with a glowing knight's crest |
 | `stoker.png` | Stoker | Player passive | Every 5 Heat gains, Burns the enemy | Shovel flinging flaming coals |
 | `firebox.png` | Firebox | Player passive | Every Heat gain is 1 bigger | Open firebox door with roaring flames |
+| `hot_nails.png` | Hot Nails | Player passive | Uproot does 1% more per Heat you have | Three nails glowing red-orange at the tips |
 | `big_boiler.png` | Big Boiler | Player passive | 10 more Heat before overheating | Fat riveted boiler with a gauge and steam |
 | `locomotive_engineer.png` | Locomotive Engineer's passive | Locomotive Engineer (player) | Overheating hurts the enemy instead, stall is half as long | Pressure gauge in the red, steam burst, orange sparks |
 | `thick_skin.png` | Thick Skin | Grizzly Bear | Takes 1 less damage from each hit | Thick leathery hide patch with a deflected scratch |

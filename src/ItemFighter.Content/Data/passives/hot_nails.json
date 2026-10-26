@@ -1,0 +1,11 @@
+{
+  "id": "hot_nails",
+  "kind": "Passive",
+  "name": "Hot Nails",
+  "rarity": "Rare",
+  "tags": ["Heat", "Nail"],
+  "description": "Uproot does 1% more damage for every Heat you have (50 Heat = 50% more).",
+  "modifiers": [
+    { "stat": "UprootPercentPerHeat", "amount": 1 }
+  ]
+}

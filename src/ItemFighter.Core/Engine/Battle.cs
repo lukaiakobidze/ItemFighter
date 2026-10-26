@@ -454,9 +454,13 @@ public sealed class Battle
         c.Statuses.Nail = 0;
         int each = Math.Max(0, Modify("NailDamage", Rules.NailDamage, source));
         int total = nails * each;
-        // Luka 2026-10-26: the uprooting side's Heat adds uprootDamagePercentPerHeat % each (50 Heat = +50%), rounded half up.
-        int heat = source is null ? 0 : Get(source.Owner).Statuses.Heat;
-        total = (total * (100 + heat * Rules.UprootDamagePercentPerHeat) + 50) / 100;
+        // Luka 2026-10-26 (a passive, Hot Nails): UprootPercentPerHeat modifiers add that % per Heat the uprooting side
+        // has (1 at 50 Heat = +50%), rounded half up.
+        if (source is not null)
+        {
+            int perHeat = SideModifier(source.Owner, "UprootPercentPerHeat");
+            total = (total * (100 + Get(source.Owner).Statuses.Heat * perHeat) + 50) / 100;
+        }
         Emit(new NailsUprooted(Tick, target, nails, total, source?.Id), depth, source);
         DealDamage(target, total, DamageKind.Direct, source, depth);
     }
