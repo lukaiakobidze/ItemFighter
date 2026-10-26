@@ -43,21 +43,33 @@ Luka wants the whole UI in the same art style as the items and characters: brigh
 
 Health bar (the game stretches these along each side's long HP bar):
 
-- [ ] `UI\hp_bar_back.png` (256×64): the empty bar trough.
-- [ ] `UI\hp_bar_fill.png` (1024×64): the red health fill.
-- [ ] `UI\shield_bar_fill.png` (1024×64): the blue shield layer drawn over the health.
-- [ ] `UI\hp_bar_frame.png` (256×64): the frame around the bar, see-through in the middle.
+- [x] `UI\hp_bar_back.png` (256×64): the empty bar trough.
+- [x] `UI\hp_bar_fill.png` (1024×64): the red health fill.
+- [x] `UI\shield_bar_fill.png` (1024×64): the blue shield layer drawn over the health.
+- [x] `UI\hp_bar_frame.png` (256×64): the frame around the bar, see-through in the middle.
 
 Heat bar (tall and thin, right of the items):
 
-- [ ] `UI\heat_bar_back.png` (64×256): the empty heat tube.
-- [ ] `UI\heat_bar_fill.png` (64×512): the heat fill, green at the bottom through yellow to red at the top.
-- [ ] `UI\heat_bar_frame.png` (64×256): the frame around the tube, see-through in the middle.
+- [x] `UI\heat_bar_back.png` (64×256): the empty heat tube.
+- [x] `UI\heat_bar_fill.png` (64×512): the heat fill, green at the bottom through yellow to red at the top.
+- [x] `UI\heat_bar_frame.png` (64×256): the frame around the tube, see-through in the middle.
 
 Panels and buttons, redone with colour (same file names, so they replace the current ones):
 
-- [ ] `UI\panel_enemy.png` (96×96, new): the enemy's side of a fight, with red trim.
-- [ ] `UI\panel_player.png` (96×96, new): your side of a fight, with gold trim.
-- [ ] `UI\panel.png`, `UI\card.png`, `UI\tooltip.png` (96×96 each): redo with colour.
-- [ ] `UI\button.png`, `UI\button_hover.png`, `UI\button_selected.png`, `UI\button_disabled.png` (96×96 each): redo with colour.
-- [ ] `UI\background.png` (1920×1080): redo with colour.
+- [x] `UI\panel_enemy.png` (96×96, new): the enemy's side of a fight, with red trim.
+- [x] `UI\panel_player.png` (96×96, new): your side of a fight, with gold trim.
+- [x] `UI\panel.png`, `UI\card.png`, `UI\tooltip.png` (96×96 each): redo with colour.
+- [x] `UI\button.png`, `UI\button_hover.png`, `UI\button_selected.png`, `UI\button_disabled.png` (96×96 each): redo with colour.
+- [x] `UI\background.png` (1920×1080): redo with colour.
+
+## 6. More Heat: three items, three passives, a status (Luka 2026-10-26)
+
+All Rare. Heat is fiery orange `#FF6E1E`. The passive names are placeholders, so keep their pictures about what they do.
+
+- [ ] `Items\stabilizer.png` (256×256): Stabilizer, click to stop gaining Heat (click again to allow it). A brass steam valve wheel with a locked clamp or a pressure regulator, cool blue (`#78AAE6`) frost edging the brass. Blue-dark backdrop.
+- [ ] `Items\hot_plate.png` (256×256): Hot Plate, gives shield and Heat. A thick square iron plate, its centre glowing orange `#FF6E1E` with heat lines, shaped like a small shield. Orange-dark backdrop.
+- [ ] `Items\flaming_coal.png` (256×256): Flaming Coal, spends some of your Heat to Burn the enemy. A single big lump of coal cracked open with bright orange `#FF8C28` flames bursting out of it. Red-dark backdrop.
+- [ ] `Passives\stoker.png` (256×256): Stoker, every 5 times you gain Heat it Burns the enemy. A coal shovel flinging flaming coals forward. Orange-dark backdrop.
+- [ ] `Passives\firebox.png` (256×256): Firebox, every Heat gain is 1 bigger. An open locomotive firebox door with roaring flames inside. Orange-dark backdrop.
+- [ ] `Passives\big_boiler.png` (256×256): Big Boiler, you can hold 10 more Heat before overheating. A fat riveted steam boiler with a pressure gauge, a puff of steam on top. Orange-dark backdrop.
+- [ ] `Statuses\no_heat_gain.png` (128×128, transparent background like the other statuses): No Heat Gain, your Heat is locked. A flame inside a padlock, or a flame with a bold bar across it, in pale blue `#AAE6FF` with the bold dark outline. Match `power.png` and `pain.png` in size and weight.

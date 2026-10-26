@@ -1,0 +1,15 @@
+{
+  "id": "stoker",
+  "kind": "Passive",
+  "name": "Stoker",
+  "rarity": "Rare",
+  "tags": ["Heat", "Burn"],
+  "abilities": [
+    {
+      "trigger": { "type": "OnStatusApplied", "status": "Heat", "side": "Self", "every": 5 },
+      "effects": [
+        { "type": "ApplyStatus", "status": "Burn", "amount": 5 }
+      ]
+    }
+  ]
+}

@@ -189,7 +189,11 @@ public sealed class Battle
         [StatusType.Power] = new PowerRule(),
         [StatusType.Vulnerable] = new VulnerableRule(),
         [StatusType.Heat] = new HeatRule(),
+        [StatusType.NoHeatGain] = new NoHeatGainRule(),
     };
+
+    /// <summary>Heat at which a side overheats: rules overheatAt plus that side's MaxHeat modifiers.</summary>
+    public int MaxHeat(Side side) => Math.Max(1, Rules.OverheatAt + SideModifier(side, "MaxHeat"));
 
     /// <summary>Adds burn, poison or chill stacks to a combatant.</summary>
     public void ApplyStatus(Side target, StatusType status, int amount, SourceInstance? source, int depth)
@@ -198,6 +202,7 @@ public sealed class Battle
         amount = Modify(status + "Applied", amount, source);
         if (amount <= 0) return;
         var c = Get(target);
+        if (status == StatusType.Heat && c.Statuses.NoHeatGain > 0) return;
         Emit(new StatusApplied(Tick, target, null, status, amount, source?.Id), depth, source);
         StatusRules[status].OnApply(this, c, amount, source, depth);
     }
@@ -448,8 +453,12 @@ public sealed class Battle
         if (nails <= 0) return;
         c.Statuses.Nail = 0;
         int each = Math.Max(0, Modify("NailDamage", Rules.NailDamage, source));
-        Emit(new NailsUprooted(Tick, target, nails, nails * each, source?.Id), depth, source);
-        DealDamage(target, nails * each, DamageKind.Direct, source, depth);
+        int total = nails * each;
+        // Luka 2026-10-26: the uprooting side's Heat adds uprootDamagePercentPerHeat % each (50 Heat = +50%), rounded half up.
+        int heat = source is null ? 0 : Get(source.Owner).Statuses.Heat;
+        total = (total * (100 + heat * Rules.UprootDamagePercentPerHeat) + 50) / 100;
+        Emit(new NailsUprooted(Tick, target, nails, total, source?.Id), depth, source);
+        DealDamage(target, total, DamageKind.Direct, source, depth);
     }
 
     /// <summary>

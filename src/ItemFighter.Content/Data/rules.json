@@ -14,6 +14,7 @@
   "freezeSeconds": 1,
 
   "nailDamage": 4,
+  "uprootDamagePercentPerHeat": 1,
 
   "powerDamagePerStack": 1,
 

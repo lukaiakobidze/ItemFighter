@@ -1,0 +1,19 @@
+{
+  "id": "hot_plate",
+  "name": "Hot Plate",
+  "rarity": "Rare",
+  "tags": ["Heat", "Shield"],
+  "cooldown": 6,
+  "activation": "Passive",
+  "levels": {
+    "shield": [15, 19, 23, 26]
+  },
+  "abilities": [
+    {
+      "effects": [
+        { "type": "Shield", "amount": "{shield}" },
+        { "type": "ApplyStatus", "status": "Heat", "amount": 10, "target": "Self" }
+      ]
+    }
+  ]
+}

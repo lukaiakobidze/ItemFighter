@@ -123,7 +123,7 @@ public class NewPassivesTests
     public void EveryPassive_IsSoldInThePassiveShop_AndHasARarity()
     {
         var db = Content.Database;
-        Assert.Equal(19, db.OfKind(SourceKind.Passive).Count());
+        Assert.Equal(22, db.OfKind(SourceKind.Passive).Count());
         Assert.Equal(Rarity.Rare, db.Get("thick_skin").Rarity);
     }
 }

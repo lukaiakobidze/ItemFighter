@@ -134,13 +134,14 @@ public sealed class OnHpBelowTrigger(int percent) : ITrigger
 }
 
 /// <summary>Reacts when a status is applied to the owner's side ("Self") or the other side ("Enemy").</summary>
-public sealed class OnStatusAppliedTrigger(StatusType status, bool enemySide) : ITrigger
+/// "every": 5 reacts only every fifth time.
+public sealed class OnStatusAppliedTrigger(StatusType status, bool enemySide, int every = 1) : ITrigger
 {
     public static OnStatusAppliedTrigger Parse(ParseContext ctx)
     {
         string side = ctx.ReadString("side", "Enemy");
         if (side is not ("Enemy" or "Self")) throw new ContentException($"'side' must be Enemy or Self, not '{side}'");
-        return new(ctx.ReadEnum<StatusType>("status"), side == "Enemy");
+        return new(ctx.ReadEnum<StatusType>("status"), side == "Enemy", EveryCounter.Read(ctx));
     }
 
     public bool Matches(BattleEvent e, SourceInstance owner, Battle battle)
@@ -148,11 +149,14 @@ public sealed class OnStatusAppliedTrigger(StatusType status, bool enemySide) : 
         if (e is not StatusApplied a || a.Status != status) return false;
         Side? targetSide = a.TargetSide ?? (a.TargetSourceId is int id ? battle.FindSource(id)?.Owner : null);
         if (targetSide is null) return false;
-        return (targetSide != owner.Owner) == enemySide;
+        return (targetSide != owner.Owner) == enemySide && EveryCounter.Tick(owner, this, every);
     }
 
-    public string Describe(DescribeContext ctx) =>
-        $"When {status} is applied to {ctx.Combatant(enemySide ? TargetSpec.Enemy : TargetSpec.Self)}";
+    public string Describe(DescribeContext ctx)
+    {
+        if (status == StatusType.Heat && !enemySide) return EveryCounter.Phrase(every, ctx.IsEnemy ? "it gains Heat" : "you gain Heat");
+        return EveryCounter.Phrase(every, $"{status} is applied to {ctx.Combatant(enemySide ? TargetSpec.Enemy : TargetSpec.Self)}");
+    }
 }
 
 public sealed class OnShieldGainedTrigger : ITrigger

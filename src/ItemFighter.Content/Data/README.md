@@ -1,6 +1,6 @@
 # Game content
 
-Luka's content: 12 common items and 16 rare ones (2026-10-12 and 2026-10-15), 10 enemies, 6 passives, the Silver Knight and the Locomotive Engineer. See `docs/balancing.md` for where every number lives and `docs/content-guide.md` for how to write content.
+Luka's content: common and rare items (2026-10-12 and 2026-10-15), 10 enemies, 6 passives, the Silver Knight and the Locomotive Engineer. See `docs/balancing.md` for where every number lives and `docs/content-guide.md` for how to write content.
 
 - `items/` – board items (one file each)
 - `passives/` – the passive pool: passives enemies can have and the passive shop sells

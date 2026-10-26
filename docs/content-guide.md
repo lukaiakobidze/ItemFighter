@@ -41,7 +41,7 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `OnDamageTaken` | your side took damage: hits, burn ticks and poison bursts. Add `"every": 5` for every 5th time |
 | `OnDamageDealt` | your side hit the other side directly (not burn/poison). Also takes `"every"` |
 | `{ "type": "OnHpBelow", "percent": 50 }` | once, when your HP first drops below 50% |
-| `{ "type": "OnStatusApplied", "status": "Burn", "side": "Enemy" }` | burn was applied to the enemy (or `"Self"`) |
+| `{ "type": "OnStatusApplied", "status": "Burn", "side": "Enemy" }` | burn was applied to the enemy (or `"Self"`); `"every": 5` reacts every fifth time (Stoker: every 5th Heat gain) |
 | `OnShieldGained` | your side gained shield |
 | `{ "type": "EveryNthUse", "n": 3 }` | every 3rd time this item fires |
 | `{ "type": "OnNailsUprooted", "per": 2 }` | your side uprooted Nails from the enemy: runs once for every 2 Nails (rounded down; `per` 1 = once per Nail) |
@@ -55,6 +55,8 @@ Tooltips are written automatically from the item's triggers and effects, e.g. "E
 | `Heal` | `amount` | Self |
 | `ApplyStatus` | `status`, `amount` (stacks); for Freeze/Haste/Vulnerable use `seconds`. Optional `percentOfCurrent` adds that % of the stacks the target already has (100 = doubles them) | Enemy for Burn/Poison/Chill/Pain/Nail/Power/Vulnerable/Heat (give `"target": "Self"` to power yourself up, or to heat yourself up); items for Freeze/Haste |
 | `RemoveStatus` | `statuses`, e.g. `["Poison", "Burn"]` | Self. Removes every stack |
+| `ToggleStatus` | `status`: `NoHeatGain` (Stabilizer). Turns it on if off, off if on. While on, that side gains no Heat | Self |
+| `ConvertStatus` | `from`, `to`, `percent`: removes that % of your own `from` (rounded half up) and applies as much `to` to the enemy (Flaming Coal: 10% Heat into Burn) | Self → Enemy |
 | `Uproot` | | Enemy. Pulls out every Nail for `nailDamage` each (rules.json, plus `NailDamage` modifiers), as one hit |
 | `Charge` | `seconds` | Chosen. Takes time off the current cooldown; if that passes zero the item fires and the rest carries into its next cooldown |
 | `Slow` | `seconds` | AllEnemy. Adds time to the current cooldown |
@@ -92,7 +94,7 @@ The numbers below are the defaults; all of them are in `Data/rules.json` (see [b
 { "id": "iron_skin", "modifiers": [ { "stat": "ShieldGained", "amount": 5, "filter": { "kind": "Item" } } ] }
 ```
 
-Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `HeatApplied`, `OverheatHitsEnemy` (1 = your overheat damage goes to the enemy), `OverheatStallPercent` (−50 = stall half as long), `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) `CooldownPercent` (−20 = 20% faster) and `CooldownSeconds` (−1 = 1 second faster). A filter can name a `kind` (Item, Passive, Character...), a `tag` and/or a `slot` (1 = the first hotbar slot). `"perItemTag": "Weapon"` multiplies the amount by how many Weapon items you have (Vanguard).
+Modifier stats are `DamageTaken` (−1 = takes 1 less from every hit and tick), `ShieldGained`, `DamageDealt`, `HealGained`, `BurnApplied`, `PoisonApplied`, `ChillApplied`, `PainApplied`, `NailApplied`, `PowerApplied`, `HeatApplied`, `OverheatHitsEnemy` (1 = your overheat damage goes to the enemy), `OverheatStallPercent` (−50 = stall half as long), `MaxHeat` (+10 = overheat at 110), `NailDamage` (+ damage per Nail uprooted), `PoisonThreshold` (negative = bursts sooner) `CooldownPercent` (−20 = 20% faster) and `CooldownSeconds` (−1 = 1 second faster). A filter can name a `kind` (Item, Passive, Character...), a `tag` and/or a `slot` (1 = the first hotbar slot). `"perItemTag": "Weapon"` multiplies the amount by how many Weapon items you have (Vanguard).
 
 A character has `maxHp`, optional `modifiers` and `abilities`, and `startingItems`. An enemy has `maxHp`, a hidden `difficulty` from 1 to 10 (default 1; it decides when in a run the enemy shows up, how much gold it pays and how rare its rewards are), `abilityIds` (its abilities, files in `enemies/abilities/` with `"kind": "EnemyAbility"`), `passiveIds` (its passives, from the shared `passives/` pool with `"kind": "Passive"`; the passive shop sells everything in `passives/`) optional `"boss": true` (a boss only appears as a mission boss, never on a fight day) and optional `phases`: `[{ "hpBelowPercent": 50, "addAbilities": ["molten_rage"] }]`.
 

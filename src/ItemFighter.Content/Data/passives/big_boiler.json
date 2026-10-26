@@ -1,0 +1,10 @@
+{
+  "id": "big_boiler",
+  "kind": "Passive",
+  "name": "Big Boiler",
+  "rarity": "Rare",
+  "tags": ["Heat"],
+  "modifiers": [
+    { "stat": "MaxHeat", "amount": 10 }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "firebox",
+  "kind": "Passive",
+  "name": "Firebox",
+  "rarity": "Rare",
+  "tags": ["Heat"],
+  "modifiers": [
+    { "stat": "HeatApplied", "amount": 1 }
+  ]
+}

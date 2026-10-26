@@ -22,6 +22,7 @@ public static class AutomationScripts
         "boxer" => Boxer(),
         "knight" => Knight(),
         "heat" => Heat(),
+        "heat2" => HeatContent(),
         "poison" => Poison(),
         "run" => RunLoop(),
         _ => throw new ArgumentException($"unknown automation script '{name}'"),
@@ -141,6 +142,25 @@ public static class AutomationScripts
     ];
 
     private static int _hpBefore;
+
+    /// <summary>Luka's 2026-10-26 Heat content: Stabilizer clicked to lock Heat, Hot Plate, Flaming Coal, Big Boiler and Stoker.</summary>
+    private static Step[] HeatContent() =>
+    [
+        .. ToLab("shovel_of_coal", "hot_iron", "hot_plate", "flaming_coal", "stabilizer"),
+        new(Wait: 0.1, Do: g =>
+        {
+            var lab = (FightLabScreen)g.Current!;
+            lab.Setup.CharacterId = "locomotive_engineer";
+            lab.Setup.Passives = ["big_boiler", "stoker", "firebox"];
+            lab.Setup.EnemyId = "grizzly_bear";
+            lab.StartFight();
+        }),
+        new(Do: g => FightOf(g).Speed = 4),
+        new(Until: g => FightOf(g).Battle.Player.Items.Single(i => i.Def.Id == "stabilizer").Ready),
+        new(Do: g => FightOf(g).Speed = 1),
+        new(Do: Automation.Click(FightScreen.CardRect(4))),
+        new(Wait: 0.4, Shot: "heat-stabilized"),
+    ];
 
     /// <summary>Luka's 2026-10-19 Locomotive Engineer: the Heat bar filling, then an overheat that hits the enemy.</summary>
     private static Step[] Heat() =>

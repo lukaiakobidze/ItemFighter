@@ -30,6 +30,7 @@ When you run the game from the repo, it reads this folder directly. Press **F5**
 | `chillFreezeAtStacks` | 5 | Chill stacks that freeze the target |
 | `freezeSeconds` | 1 | How long that freeze lasts |
 | `nailDamage` | 4 | Damage per Nail when Uproot pulls them out (passives with `NailDamage` add to it) |
+| `uprootDamagePercentPerHeat` | 1 | Uproot does this % more damage per Heat the uprooter has (50 Heat = +50%) |
 | `powerDamagePerStack` | 1 | Each Power stack adds this much to every hit (not burn, poison or pain) |
 | `vulnerableDamagePercent` | 50 | While Vulnerable, hits and pain ticks taken do this much % more damage (not burn or poison) |
 | `overheatAt` | 100 | Heat at which a side overheats; Heat then goes back to 0 |

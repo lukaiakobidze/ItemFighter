@@ -1,0 +1,18 @@
+{
+  "id": "flaming_coal",
+  "name": "Flaming Coal",
+  "rarity": "Rare",
+  "tags": ["Heat", "Burn"],
+  "cooldown": 9,
+  "activation": "Passive",
+  "levels": {
+    "percent": [10, 13, 15, 18]
+  },
+  "abilities": [
+    {
+      "effects": [
+        { "type": "ConvertStatus", "from": "Heat", "percent": "{percent}", "to": "Burn" }
+      ]
+    }
+  ]
+}

@@ -45,6 +45,9 @@ public sealed class CombatRules
     /// <summary>Damage per nail when nails are uprooted (NailDamage modifiers add to it).</summary>
     public int NailDamage { get; init; } = 4;
 
+    /// <summary>Uproot does this much % more damage per Heat the uprooting side has (Luka 2026-10-26: 50 Heat = +50%).</summary>
+    public int UprootDamagePercentPerHeat { get; init; } = 1;
+
     /// <summary>Each Power stack adds this much to every hit its owner deals.</summary>
     public int PowerDamagePerStack { get; init; } = 1;
 
@@ -116,7 +119,7 @@ public sealed class CombatRules
         Check(BurnLossPerTick >= 0 && BurnShieldMultiplier >= 1, "'burnLossPerTick' can't be negative and 'burnShieldMultiplier' must be at least 1");
         Check(PoisonThreshold >= 1 && PoisonBurstDamage >= 0, "'poisonThreshold' must be at least 1 and 'poisonBurstDamage' can't be negative");
         Check(ChillCooldownPercentPerStack >= 0 && ChillFreezeAtStacks >= 1, "'chillCooldownPercentPerStack' can't be negative and 'chillFreezeAtStacks' must be at least 1");
-        Check(NailDamage >= 0 && PowerDamagePerStack >= 0, "'nailDamage' and 'powerDamagePerStack' can't be negative");
+        Check(NailDamage >= 0 && PowerDamagePerStack >= 0 && UprootDamagePercentPerHeat >= 0, "'nailDamage', 'powerDamagePerStack' and 'uprootDamagePercentPerHeat' can't be negative");
         Check(VulnerableDamagePercent >= 0, "'vulnerableDamagePercent' can't be negative");
         Check(OverheatAt >= 1 && OverheatDamage >= 0 && HeatCoolingPerSecond >= 0 && HeatFreezeImmunityAt >= 1,
             "'overheatAt' and 'heatFreezeImmunityAt' must be at least 1, 'overheatDamage' and 'heatCoolingPerSecond' can't be negative");

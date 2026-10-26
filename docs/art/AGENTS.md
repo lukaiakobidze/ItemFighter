@@ -161,6 +161,9 @@ What each existing picture shows, for remakes and to keep new art consistent. Ne
 | `sword.png` | Sword | Common | Steady hit | Classic knight's longsword |
 | `shovel_of_coal.png` | Shovel of Coal | Common | Adds Heat | Coal shovel heaped with coal, some lumps glowing orange |
 | `hot_iron.png` | Hot Iron | Common | Hit that grows with your Heat | Iron bar or brand glowing red-orange at the tip, heat shimmer |
+| `stabilizer.png` | Stabilizer | Rare | Click to lock or unlock your Heat | Brass valve wheel or regulator with a clamp, blue frost edging |
+| `hot_plate.png` | Hot Plate | Rare | Shield and Heat | Square iron plate, glowing orange centre, shield-shaped |
+| `flaming_coal.png` | Flaming Coal | Rare | Spends 10% of your Heat to Burn the enemy | Coal lump cracked open with flames bursting out |
 | `tasty_cleanser.png` | Tasty Cleanser | Rare | Removes your poison and burn | Fizzy green drink with a straw and a lemon slice |
 | `tower_shield.png` | Tower Shield | Common | Big shield | Tall rectangular tower shield |
 | `twin_blades.png` | Twin Blades | Rare | Two hits | Two short curved blades crossed |
@@ -215,6 +218,9 @@ All passives are one shared pool: enemies use some and the player can buy any of
 | `fast_reload.png` | Fast Reload | The Blur | Each rifle shot makes the next one faster | Bullets with speed lines |
 | `fury.png` | Fury | Furious Boxer | Each time it's hit, gains 1 Power | Angry vein symbol over a clenched fist |
 | `silver_knight.png` | Silver Knight's passive | Silver Knight (player) | Every 5 times you're hit, gain shield | Silver shield with a glowing knight's crest |
+| `stoker.png` | Stoker | Player passive | Every 5 Heat gains, Burns the enemy | Shovel flinging flaming coals |
+| `firebox.png` | Firebox | Player passive | Every Heat gain is 1 bigger | Open firebox door with roaring flames |
+| `big_boiler.png` | Big Boiler | Player passive | 10 more Heat before overheating | Fat riveted boiler with a gauge and steam |
 | `locomotive_engineer.png` | Locomotive Engineer's passive | Locomotive Engineer (player) | Overheating hurts the enemy instead, stall is half as long | Pressure gauge in the red, steam burst, orange sparks |
 | `thick_skin.png` | Thick Skin | Grizzly Bear | Takes 1 less damage from each hit | Thick leathery hide patch with a deflected scratch |
 | `venomous.png` | Venomous | Green Snake | Its hits poison you | Venom drop with a snake-eye pupil |
@@ -245,6 +251,7 @@ All passives are one shared pool: enemies use some and the player can buy any of
 | `nail.png` | Nail | steel grey | Single iron nail |
 | `power.png` | Power | red-orange | Flexed arm or upward fist |
 | `vulnerable.png` | Vulnerable | yellow `#FADC50` | Cracked shield or a target with a crack through it |
+| `no_heat_gain.png` | No Heat Gain | pale blue `#AAE6FF` | Flame in a padlock, or a flame with a bar across it |
 | `overheat.png` | Overheated (items stalled) | orange `#FF6E1E` | Steaming cracked pressure valve or a bursting thermometer |
 
 ### Characters (`Characters\`)

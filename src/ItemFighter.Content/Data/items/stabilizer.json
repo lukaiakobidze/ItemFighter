@@ -1,0 +1,15 @@
+{
+  "id": "stabilizer",
+  "name": "Stabilizer",
+  "rarity": "Rare",
+  "tags": ["Heat"],
+  "cooldown": 10,
+  "activation": "Active",
+  "abilities": [
+    {
+      "effects": [
+        { "type": "ToggleStatus", "status": "NoHeatGain", "target": "Self" }
+      ]
+    }
+  ]
+}

@@ -2,12 +2,12 @@ using ItemFighter.Core.Content;
 
 namespace ItemFighter.Core.Engine;
 
-public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power, Vulnerable, Heat }
+public enum StatusType { Burn, Poison, Chill, Freeze, Haste, Pain, Nail, Power, Vulnerable, Heat, NoHeatGain }
 
 public static class StatusTypes
 {
     /// <summary>Burn, poison, chill, pain, nail, power, vulnerable and heat sit on a combatant; freeze and haste are timers on one item or ability.</summary>
-    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power or StatusType.Vulnerable or StatusType.Heat;
+    public static bool IsCombatantStatus(this StatusType s) => s is StatusType.Burn or StatusType.Poison or StatusType.Chill or StatusType.Pain or StatusType.Nail or StatusType.Power or StatusType.Vulnerable or StatusType.Heat or StatusType.NoHeatGain;
 
     /// <summary>Combatant statuses applied as a duration in seconds rather than as stacks.</summary>
     public static bool IsTimed(this StatusType s) => s is StatusType.Vulnerable;
@@ -28,6 +28,8 @@ public sealed class StatusSet
     public int VulnerableFull { get; set; }
     /// <summary>Heat, 0 up to rules overheatAt, where it overheats and goes back to 0.</summary>
     public int Heat { get; set; }
+    /// <summary>1 while No Heat Gain is on (Stabilizer, Luka 2026-10-26): Heat can't go up. On or off, never more.</summary>
+    public int NoHeatGain { get; set; }
 
     /// <summary>Stacks of a combatant status.</summary>
     public int Get(StatusType s) => s switch
@@ -40,6 +42,7 @@ public sealed class StatusSet
         StatusType.Power => Power,
         StatusType.Vulnerable => Vulnerable,
         StatusType.Heat => Heat,
+        StatusType.NoHeatGain => NoHeatGain,
         _ => 0,
     };
 
@@ -56,6 +59,7 @@ public sealed class StatusSet
             case StatusType.Power: Power = 0; break;
             case StatusType.Vulnerable: Vulnerable = 0; break;
             case StatusType.Heat: Heat = 0; break;
+            case StatusType.NoHeatGain: NoHeatGain = 0; break;
         }
     }
 
@@ -230,7 +234,7 @@ public sealed class HeatRule : IStatusRule
     public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth)
     {
         target.Statuses.Heat += amount;
-        if (target.Statuses.Heat >= battle.Rules.OverheatAt) battle.Overheat(target.Side, source, depth);
+        if (target.Statuses.Heat >= battle.MaxHeat(target.Side)) battle.Overheat(target.Side, source, depth);
     }
 
     public void OnTick(Battle battle, Combatant target)
@@ -239,4 +243,15 @@ public sealed class HeatRule : IStatusRule
         if (cooling <= 0 || target.Statuses.Heat <= 0 || battle.Tick % ContentLoader.TicksPerSecond != 0) return;
         target.Statuses.Heat = Math.Max(0, target.Statuses.Heat - cooling);
     }
+}
+
+/// <summary>On or off (Luka 2026-10-26): while on, the side can't gain Heat. Stabilizer toggles it.</summary>
+public sealed class NoHeatGainRule : IStatusRule
+{
+    public StatusType Type => StatusType.NoHeatGain;
+
+    public void OnApply(Battle battle, Combatant target, int amount, SourceInstance? source, int depth) =>
+        target.Statuses.NoHeatGain = 1;
+
+    public void OnTick(Battle battle, Combatant target) { }
 }

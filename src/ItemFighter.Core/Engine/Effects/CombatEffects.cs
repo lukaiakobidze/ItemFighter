@@ -129,7 +129,7 @@ public sealed class RemoveStatusEffect(IReadOnlyList<StatusType> statuses, Targe
         foreach (string n in names)
         {
             if (!Enum.TryParse<StatusType>(n, out var s) || !Enum.IsDefined(s) || !s.IsCombatantStatus())
-                throw new ContentException($"'{n}' is not a status that sits on a fighter (Burn, Poison, Chill, Pain, Nail, Power, Vulnerable)");
+                throw new ContentException($"'{n}' is not a status that sits on a fighter (Burn, Poison, Chill, Pain, Nail, Power, Vulnerable, Heat, NoHeatGain)");
             list.Add(s);
         }
         return new(list, CombatantTarget.Read(ctx, TargetSpec.Self));
@@ -155,4 +155,73 @@ public sealed class UprootEffect(TargetSpec target) : IEffect
     public void Apply(EffectContext ctx) => ctx.Battle.Uproot(CombatantTarget.Resolve(target, ctx.Source), ctx.Source, ctx.Depth);
 
     public string Describe(DescribeContext ctx) => $"uproot every Nail on {ctx.Combatant(target)} (damage for each Nail)";
+}
+
+/// <summary>Turns an on/off status (No Heat Gain) on when it's off and off when it's on. Default target: Self.</summary>
+public sealed class ToggleStatusEffect(StatusType status, TargetSpec target) : IEffect
+{
+    public static ToggleStatusEffect Parse(ParseContext ctx)
+    {
+        var status = ctx.ReadEnum<StatusType>("status");
+        if (status != StatusType.NoHeatGain) throw new ContentException($"'ToggleStatus' works on NoHeatGain, not {status}");
+        return new(status, CombatantTarget.Read(ctx, TargetSpec.Self));
+    }
+
+    public void Apply(EffectContext ctx)
+    {
+        var side = CombatantTarget.Resolve(target, ctx.Source);
+        if (ctx.Battle.Get(side).Statuses.Get(status) > 0) ctx.Battle.RemoveStatuses(side, [status], ctx.Source, ctx.Depth);
+        else ctx.Battle.ApplyStatus(side, status, 1, ctx.Source, ctx.Depth);
+    }
+
+    public string Describe(DescribeContext ctx)
+    {
+        string who = ctx.Combatant(target);
+        string whom = who == "you" && !ctx.IsEnemy ? "yourself" : who;
+        return status == StatusType.NoHeatGain ? $"turn No Heat Gain on or off for {whom} (while on, no Heat can be gained)" : $"turn {status} on or off for {whom}";
+    }
+}
+
+/// <summary>
+/// Removes "percent" of a status from yourself (rounded half up) and applies that many stacks of another status to the
+/// enemy. Flaming Coal: 10% of your Heat becomes Burn on the enemy.
+/// </summary>
+public sealed class ConvertStatusEffect(StatusType from, StatusType to, ValueRef percent) : IEffect
+{
+    public static ConvertStatusEffect Parse(ParseContext ctx)
+    {
+        var from = ctx.ReadEnum<StatusType>("from");
+        var to = ctx.ReadEnum<StatusType>("to");
+        if (!from.IsCombatantStatus() || from.IsTimed() || !to.IsCombatantStatus() || to.IsTimed())
+            throw new ContentException("'ConvertStatus' needs stacking statuses on fighters in 'from' and 'to'");
+        return new(from, to, ctx.ReadValue("percent"));
+    }
+
+    public void Apply(EffectContext ctx)
+    {
+        var (battle, source) = (ctx.Battle, ctx.Source);
+        var self = battle.Get(source.Owner);
+        int had = self.Statuses.Get(from);
+        int removed = Math.Min(had, (had * percent.Resolve(source) + 50) / 100);
+        if (removed <= 0) return;
+        switch (from)
+        {
+            case StatusType.Heat: self.Statuses.Heat -= removed; break;
+            case StatusType.Burn: self.Statuses.Burn -= removed; break;
+            case StatusType.Poison: self.Statuses.Poison -= removed; break;
+            case StatusType.Chill: self.Statuses.Chill -= removed; break;
+            case StatusType.Pain: self.Statuses.Pain -= removed; break;
+            case StatusType.Nail: self.Statuses.Nail -= removed; break;
+            case StatusType.Power: self.Statuses.Power -= removed; break;
+            default: return;
+        }
+        battle.Emit(new StatusRemoved(battle.Tick, source.Owner, from, removed, source.Id), ctx.Depth, source);
+        battle.ApplyStatus(battle.OpponentOf(source.Owner).Side, to, removed, source, ctx.Depth);
+    }
+
+    public string Describe(DescribeContext ctx)
+    {
+        string your = ctx.IsEnemy ? "its" : "your";
+        return $"remove {ctx.Value(percent)}% of {your} {from} and apply that much {to} to {ctx.Combatant(TargetSpec.Enemy)}";
+    }
 }

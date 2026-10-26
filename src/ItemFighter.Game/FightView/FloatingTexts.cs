@@ -56,11 +56,20 @@ public sealed class FloatingTexts
                 case StatusApplied { TargetSide: Side side, Status: StatusType.Vulnerable }:
                     Add("Vulnerable!", Palette.Vulnerable, FloatAnchor.ForSide(side));
                     break;
+                case StatusApplied { TargetSide: Side side, Status: StatusType.NoHeatGain }:
+                    Add("No Heat Gain", Palette.Freeze, FloatAnchor.ForSide(side));
+                    break;
+                case StatusRemoved { Status: StatusType.NoHeatGain } r:
+                    Add("Heat unlocked", Palette.Heat, FloatAnchor.ForSide(r.Target));
+                    break;
                 case StatusApplied { TargetSide: Side side } s:
                     Add($"+{s.Amount} {s.Status}", Palette.For(s.Status), FloatAnchor.ForSide(side));
                     break;
                 case StatusApplied { TargetSourceId: int id } s:
                     Add(s.Status == StatusType.Freeze ? "Frozen" : s.Status.ToString(), Palette.For(s.Status), FloatAnchor.ForSource(id));
+                    break;
+                case StatusRemoved { Status: StatusType.Heat } r:
+                    Add($"-{r.Amount} Heat", Palette.Heat, FloatAnchor.ForSide(r.Target));
                     break;
                 case StatusRemoved r:
                     Add($"-{r.Status}", Palette.For(r.Status), FloatAnchor.ForSide(r.Target));

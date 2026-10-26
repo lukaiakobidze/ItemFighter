@@ -58,8 +58,10 @@ public class RunStateTests
         Assert.Equal(5, run.ShopStock!.Count);
         string id = run.ShopStock[0];
         int price = run.Price(id);
+        run.Gold = Math.Max(run.Gold, price); // whichever item the seed puts first, it can be bought
+        int before = run.Gold;
         Assert.True(run.Buy(0));
-        Assert.Equal(10 - price, run.Gold);
+        Assert.Equal(before - price, run.Gold);
         Assert.Contains(run.AllOwned, o => o.ItemId == id);
         Assert.Equal(4, run.ShopStock.Count);
         run.LeaveShop();

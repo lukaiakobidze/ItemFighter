@@ -103,8 +103,8 @@ public sealed class FightScreen : Screen
         _floats.Consume(events, Battle);
         _log.Consume(events, Battle);
         _floats.Update(seconds);
-        _playerBars.Update(Battle.Player, Battle.Rules.OverheatAt, seconds);
-        _enemyBars.Update(Battle.Enemy, Battle.Rules.OverheatAt, seconds);
+        _playerBars.Update(Battle.Player, Battle.MaxHeat(Side.Player), seconds);
+        _enemyBars.Update(Battle.Enemy, Battle.MaxHeat(Side.Enemy), seconds);
         _targeting.Update(Battle);
         if (Battle.Result != BattleResult.Ongoing && _endedAt < 0) _endedAt = _time;
     }
@@ -383,7 +383,7 @@ public sealed class FightScreen : Screen
     {
         var rules = Battle.Rules;
         if (c.Statuses.Heat <= 0 && !c.IsStalledAt(Battle.Tick) && !c.Sources.Any(s => s.Def.HasTag("Heat"))) return;
-        int max = rules.OverheatAt;
+        int max = Battle.MaxHeat(c.Side);
         float part = Math.Clamp(shown.Heat / max, 0, 1); // glides up and down (Luka 2026-10-20)
         // Luka 2026-10-20: textured when UI/heat_bar_back, heat_bar_fill and heat_bar_frame exist.
         if (!ui.NineSlice("heat_bar_back", bar, HpBarCorner)) ui.Rect(bar, Palette.HeatBack);
@@ -496,6 +496,7 @@ public sealed class FightScreen : Screen
         if (s.Vulnerable > 0)
             Chip("vulnerable", "Vulnerable", null, Palette.Vulnerable, $"Hits and pain {(c.Side == Side.Player ? "you take" : "it takes")} do {rules.VulnerableDamagePercent}% more damage (not burn or poison).",
                 s.Vulnerable, Math.Max(s.Vulnerable, s.VulnerableFull));
+        if (s.NoHeatGain > 0) Chip("no_heat_gain", "No Heat Gain", null, Palette.Freeze, $"{(c.Side == Side.Player ? "You can't" : "It can't")} gain any Heat until it's turned off.");
         if (c.IsStalledAt(tick)) Chip("overheat", "Overheated", null, Palette.Heat, "Every item is stalled until it cools off.", s.StalledUntilTick - tick + 1, Math.Max(1, s.StallFull));
         if (c.IsFrozenAt(tick)) Chip("freeze", "Frozen", null, Palette.Freeze, "Nothing charges or fires until it thaws.", s.FrozenUntilTick - tick + 1, rules.FreezeTicks);
     }
